@@ -25,19 +25,21 @@ static void develop()
 	a:Apex, 				(a.shouldProduceVegetative() == true) ==>
 	//REPLACEMENT
 	i:Internode	//internode criation
-	[bb:BranchBase RU(35) RH(random(0,360)) aa:Apex] // branch base with a lateral apex (named aa to distinguish between apical and lateral)
+	[bb:BranchBase RU(35) RH(random(0,360)) aa:Apex] [su:Sucrose]// branch base with a lateral apex (named aa to distinguish between apical and lateral)
 	if (a.species==sunflower && (a.rank==1||a.rank==2)) ([l:Leaf] [RH(180) l2:Leaf] {l.initiate(a); l2.initiate(a);}) // if sunflower, creates 2 initial dicotiledons leaves
 	else ([l:Leaf] 
 		{
 			l.initiate(a);			
 		})		
 	RH(a.species==sunflower && a.rank<=2 ? 90 : a.species==sugarcane ? random(phyllotaxis[a.species]-phyllotaxis_rdm[a.species],phyllotaxis[a.species]+phyllotaxis_rdm[a.species]) : phyllotaxis[a.species])// Rotate turtle head related to phyllotaxis
-	RL(random(-2.5,2.5)) //inclination of new Apex
+	{double inc = random(-2.5,2.5);}
+	RL(inc) //inclination of new Apex
 	RV(a.species==sugarcane ? -0.4:-0.4) // gravitropism power
 	a	// Rewrite Apex at the top
 	{
 		i.initiate(a);
 		bb.initiate(a);
+		su.initiate(i);
 		aa.initiateAxillary(a);
 		a.increment();
 			
@@ -52,6 +54,16 @@ static void develop()
 	{
 		i.initiate(a);
 		f.initiate(a);
+	}
+	;
+	
+	// start sucrose accumulation
+	i:Internode, (i.startsucrose == true) ==>
+	i [su:Sucrose]
+	{
+		su.initiate(i);
+		i.startsucrose = false;
+		
 	}
 	;
 	
