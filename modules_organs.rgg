@@ -387,7 +387,7 @@ module Apex extends Organ
 	// conditions for vegetative phytomer productions
 	boolean shouldProduceVegetative()
 	{
-		//println("====="+dormant+"====="+branchType+"====="+numberVegPhyt+"====="+age+"====="+cpn);
+		
 		if (dormant == false && branchType == vegetative && cpn <= numberVegPhyt && age >= tt_app/*cpn * plastochron[species]*/){
 		return true;
 		}
@@ -432,7 +432,7 @@ module Internode extends VisibleOrgan
 		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
 		increment = getModifier() * lbRatio * growth; // based on these assumptions internode could expand up to 20 (max) times the lbRatio
 		length += increment;
-		width = maxWidthInt[species] / (1 + Math.exp(-0.02 * (age - (0.5 * teInt[species]))));
+		width = maxWidthInt[species] / (1 + Math.exp(-0.02 * (age - (0.5 * te))));
 
 		area = 2 * Math.PI * 0.5*width * length;
 		if (order == 0 && plantNumber == profilePlant) {
@@ -467,7 +467,7 @@ module Internode extends VisibleOrgan
 		
 		if(a.species == 11) {
 			// added to account for phyllochron change "broken stick"	
-			te = (Math.max(0,(plas_change[species] - a.rank)) * plastochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,(plas_change[species] - a.rank))) * plastochron2[species]);
+			te = (Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species])) * plastochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species]))) * plastochron2[species]);
 		}else {
 			te = teLeaf[species];
 			}			
@@ -567,10 +567,10 @@ module Leaf extends VisibleOrgan
 			
 			if (rank <=nrShortInternodes[species])
 			{
-			petlength =  Math.min(rank * maxLength_pet, 0.5);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
+			petlength =  Math.min(rank * maxLength_pet, 0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
 			
 			} else {				
-				petlength = Math.min(nrShortInternodes[species] * maxLength_pet,0.5);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
+				petlength = Math.min(nrShortInternodes[species] * maxLength_pet,0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
 			}
 		} else 
 		{		
@@ -651,7 +651,7 @@ module Leaf extends VisibleOrgan
 		
 		if(a.species == 11) {
 			// added to account for phyllochron change "broken stick"	
-			te = (Math.max(0,(phyl_change[species] - a.rank)) * phyllochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,(phyl_change[species] - a.rank))) * phyllochron2[species]);
+			te = (Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species])) * phyllochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species]))) * phyllochron2[species]);
 		}else {
 			te = teLeaf[species];
 			}			

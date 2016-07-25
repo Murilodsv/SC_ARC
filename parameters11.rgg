@@ -4,8 +4,8 @@ import static parameters.*;
 
 {
 	// field parameters
-	nrRows[sugarcane] = 2;//3;                  // number of rows 3
-	nrPlants[sugarcane] = 4;//4;                // number of plants in a row 12
+	nrRows[sugarcane] = 1;//3;                  // number of rows 3
+	nrPlants[sugarcane] = 1;//4;                // number of plants in a row 12
 	borderRows[sugarcane] = 0;//1;              // number of border rows on either side of the field
 	borderPlants[sugarcane] = 0;//1;            // number of border plants on either side of a row
 	rowDistance[sugarcane] = 1.4;           // distance between rows
@@ -30,8 +30,8 @@ import static parameters.*;
 	nrShortInternodes[sugarcane]	= 5;  			// number of bottom internodes that should NOT elongate and have no mass
 	ratooning[sugarcane]			= false;					//Chose wheter is ratoon or not (true or false)
 	tt_em[sugarcane] = (ratooning[sugarcane]? 100:300); // thermal for emergence in ratooning or planted cane
-	plas_change[sugarcane] 			= 13;						//rank number at which plastochron should change 
-	phyl_change[sugarcane] 			= 13;						//rank number at which phyllochron should change
+	plas_change[sugarcane] 			= 10;						//rank number at which plastochron should change 
+	phyl_change[sugarcane] 			= 10;						//rank number at which phyllochron should change
 	
 	
 	wmaxRoot[sugarcane] = 20000;            			// maximum root system biomass
