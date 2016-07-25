@@ -1,0 +1,293 @@
+import static environment.*;
+
+
+
+// species value and name assignment
+static int dicot1 = 0; static int dicot2 = 1; static int cheno = 2; static int at = 3; static int cereal = 4;
+static int grass = 5; static int progenitor = 6; static int weed = 7; static int sunflower = 8;
+static int maize = 9; static int quinoa = 10; static int sugarcane = 11;
+static String[] speciesNames = {"dicot1","dicot2","chenopodium","at","cereal","other wild","progenitor","weed",
+									"sunflower","maize","quinoa","sugarcane"};	// species names to be used in output
+static int totalSpecies	= speciesNames.length;						// total number of species defined
+
+// general
+static int profilePlant			= 1;			// plantNumber of the plant used in the Organ Length Profile chart
+static int leafLayer			= 3;			// layer in which to show the leaves
+static int borderLayer			= 4;			// layer in which to show the border plants
+static boolean showLabels		= false;		// show text labels with leaves and organs indicating fraction of potential biomass
+static boolean sRFR				= false;		// toggle PAR or R:FR visualisation (default value for swColor() method)
+static boolean snapShot			= true;			// take snapshots?
+static String path				= "C:/Murilo/DOUTORADO/WUR/Plant_Architecture/Data/";	//"C:/Users/Murilo/Dropbox/DOUTORADO/WUR/Plant_Architecture/Data/";	// location for the snapshots
+static String pathData			= "C:/Murilo/DOUTORADO/WUR/Plant_Architecture/Data/";	//"C:/Users/Murilo/Dropbox/DOUTORADO/WUR/Plant_Architecture/Data/";	// location for the output text files
+static boolean writePlantTable	= true;		// true: write plant-level tables
+static boolean writeFieldTable	= true;			// true: write field-level tables
+static boolean writeLight		= true;			// true: record tile and sensor light variable (only for plant-independent tiles)
+static boolean functional		= true;			// false: structural model only (light is intercepted but not used for growth)
+static boolean plantDeath		= true;		// toggle possibilities for entire plants to taken from the scene
+static boolean oldLM			= true;			// true: use old light model, false: use FluxLM
+static boolean seeRays			= false;		// see direction of rays from light sources if true
+
+// Setting clones (Infinity Canopy)
+static boolean infinityCanopy   = true;			// Set whether cloning is on/off (true/false)
+static int X_times				= 10;			// Number of cloned plots on X axis
+static int Y_times				= 10;			// Number of cloned plots on Y axis
+
+// time and environmental settings
+const float latitude 			= -22.708 * Math.PI/180;	// the latitude of location of the scene
+static int startingDayOfYear	= 197;				// overall starting simulation day of year
+static int startingyear			= 2014;				//
+
+// general field parameters                 
+static int[] sequence			= {sugarcane};		// sequence of species in adjacent strips (nr of values determines nr of strips)
+static double stripDistance		= 1.4;			// distance between adjacent strips (try to prevent overlap between tiles!)
+static boolean checker			= false;			// true: 50% of the positions receives a second species according to a checkerboard design
+static int checkerSize			= 5;			// size of checkerboard unit (e.g.: 3 would give units of 3x3 plants arranged in a checkboard design
+static int checkerSpecies		= dicot1;		// which species# should represent the second species in the design
+												// distances and densities will be taken from primary species in the design
+static boolean randomArrangement = false;		// overrule plant arrangement and randomize plant location in strip
+
+// weed parameters
+static boolean weeds			= false;		// true: weeds grow according to parameters below
+static double weedDens			= 100;			// density of weeds (per m2)
+static int weedSpecies			= weed;		// which species# should represent the weed
+static int nrWeedPlants;
+
+// timers
+static int halt;							// time at which simulation should stop irrespective of any harvests
+static int nrSims 				= 1;//21;		// total number of simulations (treatments times runs per treatment
+static int sims;							// keeps track of the total number of simulations
+static int time;							// in days
+static double tt;							// thermal time in degree days
+static int dayOfYear;					// day in the year
+static int year;						// year of simulation
+static boolean end;
+
+// leaf senescence parameters (TO BE MADE SPECIES SPECIFIC)
+static boolean leafSenescence	= true;			// toggles falling of leaves
+static double fallPAR 			= 10;			// light level below which leaf should drop (umol/m2/s)
+
+// SAS (SHADE AVOIDANCE SYNDROME) internode extension (TO BE MADE SPECIES SPECIFIC)
+static boolean avoid			= true;			// toggle internode SAS extention response
+
+// optical properties (TO BE MADE SPECIES SPECIFIC)
+static double reflectancePAR		= 0.1;		// reflectance of PAR by leaves and stem
+static double transmittancePAR		= 0.05;		// transmittance of PAR by leaves
+static double reflectanceRed		= 0.05;		// reflectance of red light by leaves and stem
+static double transmittanceRed		= 0.03;		// transmittance of red light by leaves
+static double reflectanceFarRed		 = 0.4;		// reflectance of far-red light by leaves and stem
+static double transmittanceFarRed	= 0.45;		// transmittance of far-red light by leaves
+
+// tile light sensors
+static boolean iTile				= false;		// true: use plant-independent tiles;
+ // plant-associated tiles
+static int nrTiles					= 1;		// nr tiles per plant per edge (e.g. nrTiles=3 means 3*3=9 tiles per plant)
+ // plant-independent tiles
+static double offSetX				= 0;		// x location of tile 1 with respect to plant 1
+static double offSetY				= 0;		// y location of tile 1 with respect to plant 1
+static int nrX						= 10;		// number of tiles in x direction
+static int nrY						= 10;		// number of tiler in y direction
+static double tSizeX				= 0.07071;		// width of tile
+static double tSizeY				= 0.07071;		// length of tile
+
+// field parameters per species
+static int[] nrRows				= new int[totalSpecies];		// number of rows
+static int[] nrPlants			= new int[totalSpecies];		// number of plants in a row
+static int[] borderRows			= new int[totalSpecies];		// number of border rows on either side of the field
+static int[] borderPlants		= new int[totalSpecies];		// number of border plants on either side of a row
+static double[] rowDistance		= new double[totalSpecies];		// distance between rows
+static double[] plantDistance	= new double[totalSpecies];		// distance between plants in a row
+static int[] delay				= new int[totalSpecies];		// germination delay after start of simulation (in days, to represent late sowing)
+static double[] delayDD			= new double[totalSpecies];		// germination delay after start of simulation (in degreeDays, to represent late sowing)
+static int[] harvest			= new int[totalSpecies];		// duration, i.e. harvest/removal time after emergence (in days)
+static boolean[] hexa			= new boolean[totalSpecies];	// true: hexagonal layout, rectangular otherwise
+
+// plant parameters 
+static double[] plastochron		= new double[totalSpecies];		// time between creation of two phytomers (dd)
+static double[] phyllochron		= new double[totalSpecies];		// time between appearance of two leaves (dd)
+static double[] plastochron2	= new double[totalSpecies];		// time between creation of two phytomers (dd)
+static double[] phyllochron2	= new double[totalSpecies];		// time between appearance of two leaves (dd)
+static double[] tillochron		= new double[totalSpecies];		// time between appearance of two tillers [sugarcane] (dd)
+static double[] plas_change		= new double[totalSpecies];		//
+static double[] phyl_change		= new double[totalSpecies];		//
+
+static int[] finalLeafNumber	= new int[totalSpecies];		// final number of main stem leaves
+static int[] MaxGreenLeafNumber = new int[totalSpecies];
+static int[] MaxDewlapNumber	= new int[totalSpecies];
+static int[] nrShortInternodes	= new int[totalSpecies];		// number of bottom internodes that should not elongate
+static int[] MaxPop				= new int[totalSpecies];
+
+static double[] tt_em			= new double[totalSpecies];
+static boolean[] ratooning		= new boolean[totalSpecies];
+
+static double[] wmaxRoot		= new double[totalSpecies];		// maximum root system biomass
+static double[] wmaxFlower		= new double[totalSpecies];		// maximum flower/fruit biomass
+static double[] wmaxInt			= new double[totalSpecies];		// maximum internode biomass
+static double[] wmaxSucrose		= new double[totalSpecies];		// maximum sucrose mass into an internode (mg) 
+static double[] wmaxLeaf		= new double[totalSpecies];		// maximum leaf biomass
+static double[] teRoot			= new double[totalSpecies];		// root growth duration
+static double[] teFlower		= new double[totalSpecies];		// flower/fruit growth duration
+static double[] teInt			= new double[totalSpecies];		// internode growth duration
+static double[] teInt2			= new double[totalSpecies];		// internode growth duration
+static double[] teLeaf			= new double[totalSpecies];		// leaf growth duration
+static double[] teLeaf2			= new double[totalSpecies];		// leaf growth duration
+
+
+static double[] maxWidthInt		= new double[totalSpecies];		// maximum internode width
+
+static double[] lengthBiomassRatio = new double[totalSpecies];	// internode ratio length / biomass (mm/mg)
+static double[] amax			= new double[totalSpecies];		// max photosynthesis rate
+static double[] eff				= new double[totalSpecies];		// initial light use efficiency (initial slope of light response curve)
+static double[] LMA				= new double[totalSpecies];		// leaf mass per unit area (mg / cm2)
+static double[] leafLife		= new double[totalSpecies];		// life span of a leaf since appearance (expressed as X times its growth duration (te))
+static double[] leafLife2		= new double[totalSpecies];		// life span of a leaf since appearance (expressed as X times its growth duration (te))
+
+static double[] lwRatio			= new double[totalSpecies];		// ratio between leaf blade length and width
+static double[] maxWidth		= new double[totalSpecies];		// location on the leaf where width is maximal (fraction of length)
+static double[] shapeCoeff		= new double[totalSpecies];		// leaf shape coefficient (0 = rectangular, high value = pinched)
+static double[] fPet			= new double[totalSpecies];		// petiole length (expressed as fraction of leaf blade length)
+static double[] leafAngle		= new double[totalSpecies];		// insertion angle of all leaves (90 = horizontal)
+static double[] leafCurve		= new double[totalSpecies];		// leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+static double[] phyllotaxis		= new double[totalSpecies];		// angle between consecutive leaves along a stem
+static double[] phyllotaxis_rdm = new double[totalSpecies];		// standard deviation angle between consecutive leaves along a stem
+
+static int[] varDelay			= new int[totalSpecies];		// max variation in germination delay (in days, 0 = simultaneous germination)
+static double[] varDelayDD		= new double[totalSpecies];		// max variation in germination delay (in degreeDays, 0 = simultaneous germination)
+static double[] seedMass		= new double[totalSpecies];		// seed endosperm mass in mg
+
+static boolean[] branching		= new boolean[totalSpecies];	// toggle branching
+static double[] srThresh		= new double[totalSpecies];		// threshold sink/source ratio for bud break
+static double[] srThresh2		= new double[totalSpecies];		// threshold sink/source ratio for branch abortion
+
+static double[] tb				= new double[totalSpecies];		// base temperature for thermal time calculation
+
+// derived parameters
+static int nrSpecies;										// number of plant species in the scene
+static boolean[] spPresence		= new boolean[totalSpecies];// true or false for each species defined; true = present in scene
+static int nrStrips				= sequence.length;			// total number of strips in the field
+static double[] betweenStripSpace	= new double[nrStrips-1];	// additional space between strips if there is any (e.g. stripDistance is large with respect to rowDistance)
+static long globalTotalPlants;								// total number of plants in the scene
+static long[] totalPlants		= new long[totalSpecies];	// total number of plants per species
+static long[] focalPlants		= new long[totalSpecies];	// number of plants not in the border per species
+static double[] area			= new double[totalSpecies];	// total ground area per species
+static double totalArea;									// total ground area for the whole scene
+static double[] focalArea		= new double[totalSpecies];	// area containing focal plants per species
+static double totalFocalArea;								// total focal ground area for the whole scene
+static double[] dens			= new double[totalSpecies];	// population density (plants / m2) per species
+static void calcNrSpecies() {
+	for (int i=0; i <= nrStrips-1; i++) {
+		spPresence[sequence[i]] = true;			// set presence to true per species if present in scene
+	}
+	if (weeds == true) {
+		spPresence[weedSpecies] = true;			// if weeds are present, also set true for the weed species
+	}
+	if (checker == true) {
+		spPresence[checkerSpecies] = true;		// if design is checkerboard, also set true for the 2nd species in the design
+	}
+	for (int j=0; j <= totalSpecies-1; j++) {
+		if (spPresence[j] == true) {
+			nrSpecies++;						// count number of species present (count the 'trues' in spPresence)
+		}
+	}	
+}
+static void calcHalt() {
+	for (int j=0; j <= totalSpecies-1; j++) {
+		if (spPresence[j] == true) {
+			int h = delay[j]+harvest[j]-1;
+			if (h > halt) {halt = h;}
+		}
+	}
+}
+static double borderX;		// coordinates of the far corner of the field - to determine weed area in init()
+static double borderY;
+static double originX;		// coordinates of the closest corner of the field 
+static double originY;	
+const Phong LightShader			= new Phong().(setDiffuse(new RGBColor(reflectancePAR,reflectanceRed,reflectanceFarRed)), setDiffuseTransparency(new RGBColor(transmittancePAR,transmittanceRed,transmittanceFarRed)));
+const Phong LightOpaqueShader	= new Phong().(setDiffuse(new RGBColor(reflectancePAR+transmittancePAR,reflectanceRed+transmittanceRed,reflectanceFarRed+transmittanceFarRed)), setDiffuseTransparency(new RGBColor(0,0,0)));
+static double absorbanceRed		= 1 - reflectanceRed - transmittanceRed;
+static double absorbanceFarRed	= 1 - reflectanceFarRed - transmittanceFarRed;
+static double cm				= 1 + rfrIncoming + 1;
+
+// simulation time measurement
+static double start;						// starting system time (ms)
+static double stop;							// stopping system time (ms)
+static double realTime;						// simulation running time (s)
+static double simRate;						// current rate of simulation (model time step per second)
+static double avgRate;						// average rate of simulation (model time step per second)
+static void calcSimTime() {
+	if (time==0) {start = System.currentTimeMillis();}
+	double prev = realTime;
+	realTime = (System.currentTimeMillis() - start)/1000;
+	simRate = 0.01*Math.round(100/(realTime - prev));
+	if (time>0) {simulationRate.getRow(time).(set(0,simRate));}
+}
+
+// species-specific geometry parameterization
+const Shader sunflowerTexture = shader("sunflower");
+const Shader sunflowerBackTexture = shader("sunflowerBack");
+const Shader leafStripes = shader("Lambert 2");
+const Shader earTexture = shader("ear");
+const Shader earTextureBW = shader("earBW");
+const Shader earTextureRed = shader("Lambert");
+const Shader quinoaSpikeTexture = shader("quinoaSpike");
+const Shader maizeSpikeTexture = shader("maizeSpike");
+module FlowerShape(int species, double biomass, double frBio, boolean border, double rotation) ==> 
+if (species == cereal || species == grass || species == progenitor) (
+		//Cylinder(biomass/20000,biomass/200000).(setLayer(border?borderLayer:0), setShader(border?GRAY:ORANGE))
+		for (1:2) (
+			{
+				double a[] = {0,0,0,0,25000,3750,11250};		// conversion factors from biomass to ear size
+				double b[] = {0,0,0,0,125000,60000,180000};
+			}
+			[Parallelogram(biomass/a[species],biomass/b[species]).(setLayer(border?borderLayer:0), setShader(border?earTextureBW:sRFR?earTextureRed:earTexture))]
+			RH(90)
+		)
+		Translate(0,0,biomass/200000) if (showLabels) (TextLabel(frBio))
+	) else if (species == cheno || species == quinoa) (
+		[Parallelogram(biomass/300000,biomass/750000).(setShader(quinoaSpikeTexture))]
+		RH(90)
+		[Parallelogram(biomass/300000,biomass/750000).(setShader(quinoaSpikeTexture))]
+	) else if (species == sunflower) (
+		RH(-rotation)
+		[Parallelogram(biomass/300000,biomass/300000).(setShader(sunflowerTexture))]
+		Translate(0,0.001,0)
+		[Parallelogram(biomass/300000,biomass/300000).(setShader(sunflowerBackTexture))]
+	) else if (species == maize) (
+		[Parallelogram(biomass/600000,biomass/1500000).(setShader(maizeSpikeTexture))]
+		RH(90)
+		[Parallelogram(biomass/600000,biomass/1500000).(setShader(maizeSpikeTexture))]
+	) else (
+		Translate(0,0,biomass/2000000) Sphere(biomass/2000000).(setLayer(border?borderLayer:0), setShader(border?GRAY:YELLOW))
+		Translate(0,0,biomass/2000000) if (showLabels) (TextLabel(frBio))
+	)
+;                                                   
+
+// datasets
+const DatasetRef fieldOutput = new DatasetRef("Field-level output");
+const DatasetRef plantOutput = new DatasetRef("Plant-level output");
+
+const DatasetRef laidata = new DatasetRef("Leaf area index");
+const DatasetRef tillering = new DatasetRef("Tillering");
+const DatasetRef fieldFabs = new DatasetRef("Field fPAR");
+const DatasetRef fieldBiomass = new DatasetRef("Field biomass");
+const DatasetRef fieldYield = new DatasetRef("Field yield");
+const DatasetRef fieldRFR = new DatasetRef("Field RFR");
+
+const DatasetRef lightTransectX =  new DatasetRef("Light Transect X");
+const DatasetRef lightTransectY =  new DatasetRef("Light Transect Y");
+const DatasetRef combiLight = new DatasetRef("Tile and sensor light");
+
+const DatasetRef organLength = new DatasetRef("Organ length profile");
+const DatasetRef nGreenLeaves = new DatasetRef("Number of Green Leaves");
+const DatasetRef leafInitApp = new DatasetRef("Leaf init & appearance");
+const DatasetRef thermalTime = new DatasetRef("Thermal time accumulated");
+
+const DatasetRef plantLeafArea = new DatasetRef("Plant Leaf Area (m2)");
+const DatasetRef plantHeight = new DatasetRef("Plant Height (m)");
+const DatasetRef plantBranches = new DatasetRef("Branch number");
+const DatasetRef plantFabs = new DatasetRef("Plant fPAR");
+const DatasetRef plantRFR = new DatasetRef("Plant R:FR");
+const DatasetRef sourceSink = new DatasetRef("Plant source/sink ratio");
+const DatasetRef reserves = new DatasetRef("Plant substrate reserves (g)");
+const DatasetRef plantYield = new DatasetRef("Plant yield (g)");
+const DatasetRef plantBiomass = new DatasetRef("Plant Biomass (g)");
+const DatasetRef simulationRate = new DatasetRef("Simulation rate (steps/s)");

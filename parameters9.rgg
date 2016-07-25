@@ -1,0 +1,54 @@
+import static parameters.*;
+
+/* maize */
+
+{
+	// field parameters
+	nrRows[maize] = 2;                  // number of rows
+	nrPlants[maize] = 2;                // number of plants in a row
+	borderRows[maize] = 0;              // number of border rows on either side of the field
+	borderPlants[maize] = 0;            // number of border plants on either side of a row
+	rowDistance[maize] = 0.4;          // distance between rows
+	plantDistance[maize] = 0.2;        // distance between plants in a row
+	delay[maize] = 0;                   // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[maize] = 110;               // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[maize] = false;                // true: hexagonal layout, rectangular otherwise
+	                                    
+	// plant parameters                 
+	plastochron[maize] = 50;            // time between creation of two phytomers (dd)
+	phyllochron[maize] = 70;			// time between appearance of two leaves (dd)
+	finalLeafNumber[maize] = 14;        // final number of main stem leaves
+	nrShortInternodes[maize] = 2;       // number of bottom internodes that should not elongate 
+                                        
+	wmaxRoot[maize] = 20000;            // maximum root system biomass
+	wmaxFlower[maize] = 200000;         // maximum flower/fruit biomass
+	wmaxInt[maize] = 2000;              // maximum internode biomass
+	wmaxLeaf[maize] = 1500;              // maximum leaf biomass
+	teRoot[maize] = 1800;               // root growth duration
+	teFlower[maize] = 1000;              // flower/fruit growth duration
+	teInt[maize] = 500;                 // internode growth duration
+	teLeaf[maize] = 500;                // leaf growth duration
+
+	maxWidthInt[maize] = 0.01;			// maxium internode width
+	
+	lengthBiomassRatio[maize] = 0.075;  // internode ratio length / biomass (mm/mg)
+	amax[maize] = 25;                   // max photosynthesis rate
+	eff[maize] = 0.06;                  // initial light use efficiency (initial slope of light response curve)
+	LMA[maize] = 4;                     // leaf mass per unit area (mg / cm2)
+	leafLife[maize] = 3;                // life span of a leaf since appearance (expressed as X times its growth duration (te))
+	                                    
+	lwRatio[maize] = 10;               // ratio between leaf blade length and width
+	maxWidth[maize] = 0.6235;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[maize] = 0.7552;            // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[maize] = 0;                   // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[maize] = 30;             // insertion angle of all leaves (90 = horizontal)
+	leafCurve[maize] = 120;            // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[maize] = 137;          // angle between consecutive leaves along a stem
+	                                    
+	varDelay[maize] = 0;                // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[maize] = 100;             // seed endosperm mass in mg
+	
+	branching[maize] = false;			 // toggle branching
+	
+	tb[maize] = 0;						// base temperature for thermal time calculation
+}

@@ -1,0 +1,56 @@
+import static parameters.*;
+
+/* chenopodium */
+
+{
+	// field parameters
+	nrRows[cheno] = 5;                 // number of rows
+	nrPlants[cheno] = 35;               // number of plants in a row
+	borderRows[cheno] = 0;             // number of border rows on either side of the field
+	borderPlants[cheno] = 0;           // number of border plants on either side of a row
+	rowDistance[cheno] = 0.25;        // distance between rows
+	plantDistance[cheno] = 0.02;       // distance between plants in a row
+	delay[cheno] = 0;                  // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[cheno] = 110;               // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[cheno] = false;               // true: hexagonal layout, rectangular otherwise
+	                                  
+	// plant parameters               
+	plastochron[cheno] = 40;           // time between creation of two phytomers (dd)
+	phyllochron[cheno] = 40;			// time between appearance of two leaves (dd)
+	finalLeafNumber[cheno] = 23;        // final number of main stem leaves
+	nrShortInternodes[cheno] = 0;      // number of bottom internodes that should not elongate 
+	                                  
+	wmaxRoot[cheno] = 5000;           // maximum root system biomass
+	wmaxFlower[cheno] = 125000;        // maximum flower/fruit biomass
+	wmaxInt[cheno] = 500;              // maximum internode biomass
+	wmaxLeaf[cheno] = 500;             // maximum leaf biomass
+	teRoot[cheno] = 1800;              // root growth duration
+	teFlower[cheno] = 500;             // flower/fruit growth duration
+	teInt[cheno] = 300;                // internode growth duration
+	teLeaf[cheno] = 600;               // leaf growth duration
+
+	maxWidthInt[cheno] = 0.005;			// maxium internode width
+		                              
+	lengthBiomassRatio[cheno] = 0.1;  // internode ratio length / biomass (mm/mg)
+	amax[cheno] = 25;                  // max photosynthesis rate
+	eff[cheno] = 0.06;                 // initial light use efficiency (initial slope of light response curve)
+	LMA[cheno] = 4;                    // leaf mass per unit area (mg / cm2)
+	leafLife[cheno] = 2;               // life span of a leaf since appearance (expressed as X times its growth duration (te))
+	                                  
+	lwRatio[cheno] = 1.25;                // ratio between leaf blade length and width
+	maxWidth[cheno] = 0.7;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[cheno] = 0.3;           // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[cheno] = 0.75;                // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[cheno] = 70;             // insertion angle of all leaves (90 = horizontal)
+	leafCurve[cheno] = 70;             // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[cheno] = 137;          // angle between consecutive leaves along a stem
+	                                  
+	varDelay[cheno] = 3;               // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[cheno] = 100;            // seed endosperm mass in mg
+
+	branching[cheno] = false;			 // toggle branching
+	srThresh[cheno] = 1.0;				// threshold sink/source ratio for bud break
+	srThresh2[cheno] = 0.2;			// threshold sink/source ratio for branch abortion
+	
+	tb[cheno] = 0;						// base temperature for thermal time calculation
+}

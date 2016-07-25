@@ -1,0 +1,54 @@
+import static parameters.*;
+
+/* quinoa */
+
+{
+	// field parameters
+	nrRows[quinoa] = 1;                  // number of rows
+	nrPlants[quinoa] = 1;                // number of plants in a row
+	borderRows[quinoa] = 0;              // number of border rows on either side of the field
+	borderPlants[quinoa] = 0;            // number of border plants on either side of a row
+	rowDistance[quinoa] = 0.4;          // distance between rows
+	plantDistance[quinoa] = 0.2;        // distance between plants in a row
+	delay[quinoa] = 20;                   // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[quinoa] = 110;               // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[quinoa] = false;                // true: hexagonal layout, rectangular otherwise
+	                                    
+	// plant parameters                 
+	plastochron[quinoa] = 40;            // time between creation of two phytomers (dd)
+	phyllochron[quinoa] = 40;			// time between appearance of two leaves (dd)
+	finalLeafNumber[quinoa] = 23;        // final number of main stem leaves
+	nrShortInternodes[quinoa] = 0;       // number of bottom internodes that should not elongate 
+                                        
+	wmaxRoot[quinoa] = 5000;            // maximum root system biomass
+	wmaxFlower[quinoa] = 125000;         // maximum flower/fruit biomass
+	wmaxInt[quinoa] = 500;              // maximum internode biomass
+	wmaxLeaf[quinoa] = 500;              // maximum leaf biomass
+	teRoot[quinoa] = 1800;               // root growth duration
+	teFlower[quinoa] = 500;              // flower/fruit growth duration
+	teInt[quinoa] = 300;                 // internode growth duration
+	teLeaf[quinoa] = 600;                // leaf growth duration
+
+	maxWidthInt[dicot1] = 0.0075;			// maxium internode width
+	
+	lengthBiomassRatio[quinoa] = 0.075;  // internode ratio length / biomass (mm/mg)
+	amax[quinoa] = 25;                   // max photosynthesis rate
+	eff[quinoa] = 0.06;                  // initial light use efficiency (initial slope of light response curve)
+	LMA[quinoa] = 4;                     // leaf mass per unit area (mg / cm2)
+	leafLife[quinoa] = 2;                // life span of a leaf since appearance (expressed as X times its growth duration (te))
+	                                    
+	lwRatio[quinoa] = 1.25;                 // ratio between leaf blade length and width
+	maxWidth[quinoa] = 0.7;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[quinoa] = 0.3;            // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[quinoa] = 0.75;       	          // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[quinoa] = 70;              // insertion angle of all leaves (90 = horizontal)
+	leafCurve[quinoa] = 70;              // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[quinoa] = 137;           // angle between consecutive leaves along a stem
+	                                    
+	varDelay[quinoa] = 0;                // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[quinoa] = 50;             // seed endosperm mass in mg
+	
+	branching[quinoa] = false;			 // toggle branching
+	
+	tb[quinoa] = 0;						// base temperature for thermal time calculation
+}

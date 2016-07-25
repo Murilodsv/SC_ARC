@@ -1,0 +1,56 @@
+import static parameters.*;
+
+/* grass */
+
+{
+	// field parameters
+	nrRows[grass] = 4;                // number of rows
+	nrPlants[grass] = 4;              // number of plants in a row
+	borderRows[grass] = 0;            // number of border rows on either side of the field
+	borderPlants[grass] = 0;          // number of border plants on either side of a row
+	rowDistance[grass] = 0.75;       // distance between rows
+	plantDistance[grass] = 0.75;      // distance between plants in a row
+	delay[grass] = 0;                 // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[grass] = 120;             // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[grass] = false;              // true: hexagonal layout, rectangular otherwise
+	                                         
+	// plant parameters                      
+	plastochron[grass] = 45;          // time between creation of two phytomers (dd)
+	phyllochron[grass] = 90;			// time between appearance of two leaves (dd)
+	finalLeafNumber[grass] = 10;      // final number of main stem leaves
+	nrShortInternodes[grass] = 4;     // number of bottom internodes that should not elongate and have no mass
+	                                         
+	wmaxRoot[grass] = 2000;          // maximum root system biomass
+	wmaxFlower[grass] = 300;       // maximum flower/fruit biomass
+	wmaxInt[grass] = 100;            // maximum internode biomass
+	wmaxLeaf[grass] = 39;            // maximum leaf biomass
+	teRoot[grass] = 1800;             // root growth duration
+	teFlower[grass] = 800;            // flower/fruit growth duration
+	teInt[grass] = 200;               // internode growth duration
+	teLeaf[grass] = 100;              // leaf growth duration
+    
+	maxWidthInt[grass] = 0.002;		// maximum internode width
+		                                     
+	lengthBiomassRatio[grass] = 0.5;   // internode ratio length / biomass (mm/mg)
+	amax[grass] = 25;                 // max photosynthesis rate
+	eff[grass] = 0.06;                // initial light use efficiency (initial slope of light response curve)
+	LMA[grass] = 4.3;                   // leaf mass per unit area (mg / cm2)
+	leafLife[grass] = 4;              // life span of a leaf since appearance (expressed as X times its growth duration (te))
+    
+	lwRatio[grass] = 28;              // ratio between leaf blade length and width
+	maxWidth[grass] = 0.6235;            // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[grass] = 0.7552;           // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[grass] = 0;                  // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[grass] = 40;            // insertion angle of all leaves (90 = horizontal)
+	leafCurve[grass] = 100;           // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[grass] = 137;         // angle between consecutive leaves along a stem
+	                                         
+	varDelay[grass] = 0;              // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[grass] = 7;      	  // seed endosperm mass in mg
+	
+	branching[grass] = true;			 // toggle branching
+	srThresh[grass] = 0.2;				// threshold sink/source ratio for bud break
+	srThresh2[grass] = 0;		// threshold sink/source ratio for branch abortion
+	
+	tb[grass] = 0;						// base temperature for thermal time calculation
+}

@@ -1,0 +1,57 @@
+import static parameters.*;
+
+/* cereal */
+
+//static void set4()
+{
+	// field parameters
+	nrRows[cereal] = 4;                 // number of rows
+	nrPlants[cereal] = 4;               // number of plants in a row
+	borderRows[cereal] = 0;             // number of border rows on either side of the field
+	borderPlants[cereal] = 0;           // number of border plants on either side of a row
+	rowDistance[cereal] = 0.125;        // distance between rows
+	plantDistance[cereal] = 0.05;       // distance between plants in a row
+	delay[cereal] = 0;                  // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[cereal] = 110;              // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[cereal] = false;               // true: hexagonal layout, rectangular otherwise
+	                                     
+	// plant parameters                  
+	plastochron[cereal] = 45;           // time between creation of two phytomers (dd)
+	phyllochron[cereal] = 90;			// time between appearance of two leaves (dd)
+	finalLeafNumber[cereal] = 10;       // final number of main stem leaves
+	nrShortInternodes[cereal] = 4;      // number of bottom internodes that should not elongate and have no mass
+	                                     
+	wmaxRoot[cereal] = 3000;           // maximum root system biomass
+	wmaxFlower[cereal] = 3000;        // maximum flower/fruit biomass
+	wmaxInt[cereal] = 300;             // maximum internode biomass
+	wmaxLeaf[cereal] = 200;             // maximum leaf biomass
+	teRoot[cereal] = 1800;              // root growth duration
+	teFlower[cereal] = 800;             // flower/fruit growth duration
+	teInt[cereal] = 182;                // internode growth duration
+	teLeaf[cereal] = 110;               // leaf growth duration
+
+	maxWidthInt[cereal] = 0.005;			// maxium internode width
+		                                 
+	lengthBiomassRatio[cereal] = 0.5;   // internode ratio length / biomass (mm/mg)
+	amax[cereal] = 25;                  // max photosynthesis rate
+	eff[cereal] = 0.06;                 // initial light use efficiency (initial slope of light response curve)
+	LMA[cereal] = 3.5;                    // leaf mass per unit area (mg / cm2)
+	leafLife[cereal] = 4;               // life span of a leaf since appearance (expressed as X times its growth duration (te))
+
+	lwRatio[cereal] = 25;               // ratio between leaf blade length and width
+	maxWidth[cereal] = 0.6235;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[cereal] = 0.7552;            // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[cereal] = 0;                   // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[cereal] = 40;             // insertion angle of all leaves (90 = horizontal)
+	leafCurve[cereal] = 100;            // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[cereal] = 137;          // angle between consecutive leaves along a stem
+	                                     
+	varDelay[cereal] = 0;               // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[cereal] = 30;      	      // seed endosperm mass in mg
+	
+	branching[cereal] = true;			 // toggle branching
+	srThresh[cereal] = 0.5;				// threshold sink/source ratio for bud break
+	srThresh2[cereal] = 0.2;			// threshold sink/source ratio for branch abortion
+	
+	tb[cereal] = 0;						// base temperature for thermal time calculation
+}

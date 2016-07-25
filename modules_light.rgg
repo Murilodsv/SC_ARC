@@ -1,0 +1,252 @@
+import static parameters.*;
+import static environment.*;
+import static modules_organs.*;
+
+import de.grogra.ray.physics.Spectrum;
+import de.grogra.ray.physics.Spectrum3d;
+
+// light source module
+module SingleLight(double power) extends LightNode().(setLayer(15), setLight(new DirectionalLight().(setPowerDensity(power), setVisualize(seeRays), getColor().set(new RGBColor(1,rfrIncoming,1)))))
+;
+
+// direct light source
+module DirectLight
+{
+	float mod;
+	float[] power = new float[n]; // Radiation intensity for every node
+	float[] beta = new float[n]; // Solar elevation angle
+	float[] azimuth = new float[n]; // Solar azimuth angle
+
+	void update() {
+		for (int j=0; j <= n-1; j++) {			
+			beta[j] = betaAzimSdr[0][j];
+			azimuth[j] = betaAzimSdr[1][j];
+			power[j] = 1e6 * 0.55 * 4.55 * betaAzimSdr[2][j] / (dayLength*60*60);
+		}
+	}
+} 
+==> AdjustLU RL(90) RU(90*mod)
+[for (int j=0; j <= n-1; j++) ([RU(azimuth[j]) RL(-beta[j]) M(50) RL(180) SingleLight(power[j])] /* {println( power[j]);} */  ) ]
+;
+
+// diffuse light source
+module DiffuseLight
+{
+	float power;
+	void update() {
+		power = 1e6 * 0.55 * 4.55 * DailyDiffuseRadiation / (dayLength*60*60);
+	}
+}
+==> RH(random(0,360))
+	RL(90)
+	[ for (int i = 1; i<=12; i++) ([ RU(i*360/12) RL(-11.7) M(50) RL(180) SingleLight(power*0.003218/0.205)] )]						// 0.205
+	[ for (int i = 1; i<=12; i++) ([ RU(20) RU(i*360/12) RL(-34.2) M(50) RL(180) SingleLight(power*0.01163/0.563)] )]				// 0.563
+	[ for (int i = 1; i<=12; i++) ([ RU(40) RU(i*360/12) RL(-54.9) M(50) RL(180) SingleLight(power*0.019812/0.817)] )]				// 0.817
+	[ for (int i = 1; i<=12; i++) ([ RU(60) RU(i*360/12) RL(-71.1) M(50) RL(180) SingleLight(power*0.023022/0.945)] )]				// 0.945
+	[ for (int i = 1; i<=12; i++) ([ RU(80) RU(i*360/12) RL(-82.8) M(50) RL(180) SingleLight(power*0.018522/0.991)] )]				// 0.991
+	[ for (int i = 1; i<=12; i++) ([ RU(80) RU(i*360/12) RL(-89.1) M(50) RL(180) SingleLight(power*0.007096/0.998)])]  	// 0.998
+;
+
+// general tile sensor
+module TileSensor
+{
+	double length;
+	double width;
+	double area;
+	double abs;						// absorbed radiation (umol / s)
+	double absm2;					// absorbed radiation per unit area (umol / m2 / s)
+	double fabs;					// fraction of globRad absorbed
+	double red;						// perceied red light
+	double farred;					// perceived far-red light
+	double rfr;						// red/far-red ratio
+
+	// calculate light absorption
+ 	void calcLight()
+	{
+		if (area > 0) {
+			Spectrum3d spec = lm.getAbsorbedPower3d(this);
+			abs = cm * spec.x;
+			absm2 = abs / area ;
+			fabs = absm2 / PPFD;
+			red = cm * spec.y;
+			farred = cm * spec.z;			
+			
+			if (red / farred > 0) {rfr = red / farred;}
+		}
+	}
+}
+
+// tile sensor accociated to an individual plant
+module Tile extends TileSensor
+{
+	int row;
+	int pos;
+	boolean border;
+	int species;
+	int plantNumber;
+	int strip;
+	
+	// assigns border based on location in the plot
+	void assignBorder(int row, int pos, int strip) {
+		if (strip == 1) {
+			if (row <= borderRows[species] || pos <= borderPlants[species] || pos > nrPlants[species] - borderPlants[species]) {
+				border = true;
+			}
+		}
+		if (strip > 1 && strip < nrStrips) {
+			if (pos <= borderPlants[species] || pos > nrPlants[species] - borderPlants[species]) {
+				border = true;
+			}
+		}
+		if (strip == nrStrips) {
+			if (row > nrRows[species] - borderRows[species] || pos <= borderPlants[species] || pos > nrPlants[species] - borderPlants[species]) {
+				border = true;
+			}
+		}
+	}
+
+	// initiation of the tile
+	void initiate(int species, int i, int row, int pos, int strip)
+	{
+		this.species = species;
+		plantNumber = i;		
+		this.strip = strip;
+		this.row = row;
+		this.pos = pos;
+		assignBorder(row,pos,strip);
+		length = rowDistance[species]/nrTiles;
+		width = plantDistance[species]/nrTiles;
+		area = rowDistance[species]/nrTiles * plantDistance[species]/nrTiles;
+	}
+} 
+==> RL(-90) Translate(0,0,-0.5*rowDistance[species])
+Parallelogram(length,width).(setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,border?(sRFR?rfr-0.2:fabs):0),new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,border?(sRFR?rfr-0.2:fabs):0),BLACK)))
+;
+
+// plant-independent tile sensor
+module ITile extends TileSensor
+{
+	int nr;
+	int x;
+	int y;
+	void initiate(int j, int x, int y) {
+		nr = j;
+		this.x = x;
+		this.y = y;
+		length = tSizeY;
+		width = tSizeX;
+		area = length*width;
+	}
+}
+==> RL(-90) Translate(0.5*width,0,0)
+Parallelogram(length,width).(setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,0),new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,0),BLACK)))
+;
+
+// base module for ITile (gathers averaged light data)
+module TileBase
+{
+	double[][] transectX = new double[nrX+1][2];
+	double[][] transectY = new double[nrY+1][2];
+	
+	// calculate transect light variables by averaging 5 individual transects: -2, -1, halfway, +1, +2
+	void updateTransect() {
+		for (int i=1; i<=nrX; i++) {
+			for (int j=-2; j<=2; j++) {
+				ITile it = selectWhere((*itx:ITile*), itx.y == nrY/2+j && itx.x == i);
+				transectX[i][0] += it.fabs;
+				transectX[i][1] += it.rfr;
+				//print(it.y+" ");print(it.x+" ");println(it.fabs);
+			}			
+		}
+		for (int i=1; i<=nrY; i++) {
+			for (int j=-2; j<=2; j++) {
+				ITile it = selectWhere((*ity:ITile*), ity.x == nrX/2+j && ity.y == i);
+				transectY[i][0] += it.fabs;
+				transectY[i][1] += it.rfr;
+			}
+		}
+		for (int i=1; i<=nrX; i++) {
+			lightTransectX.getRow(i).(set(0,transectX[i][0]/5), set(1,transectX[i][1]/5));
+			transectX[i][0] = 0;
+			transectX[i][1] = 0;
+		}
+		for (int i=1; i<=nrY; i++) {
+			lightTransectY.getRow(i).(set(0,transectY[i][0]/5), set(1,transectY[i][1]/5));
+			transectY[i][0] = 0;
+			transectY[i][1] = 0;
+		}
+	
+	}
+}
+
+// light sensor(used for R:FR)
+module LightSensor extends SensorNode().(setRadius(0.02), setTwoSided(false), setLayer(15)) {
+	double par;				// sensed PAR
+	double red;				// sensed red light
+	double farred;			// sensed farred light
+	double rfr;				// sensed r:fr
+	double area;
+	double fpar;
+	int nr;
+	int x;
+	int y;
+	
+	// initiation of the sensor
+	void initiate(int j, int x, int y) {
+		nr = j;
+		this.x = x;
+		this.y = y;
+	}	
+	
+	// calculate light perception
+	void calcLight() {
+		Spectrum3d spec = lm.getSensedIrradiance3d(this);
+		par = cm * spec.x;
+		fpar = par / PPFD; 
+		red = cm * spec.y;
+		farred = cm * spec.z;
+		if (red/farred > 0) {rfr = red/farred;}
+	}
+}
+
+
+// module that combines associated ITile and LightSensor data
+module CombiSensor {
+	int nr;
+	int x;
+	int y;
+	
+	void initiate(int j, int x, int y) {
+		nr = j;
+		this.x = x;
+		this.y = y;
+	}
+	
+	void updateTables() {
+		if (writeLight == true) {
+			ITile it = first((* this > ITile *));
+			LightSensor ls = first((* this > +> > LightSensor *));
+			//println("me "+x+" "+y+" it "+it.x+" "+it.y+" ls "+ls.x+" "+ls.y);
+			combiLight.addRow().(
+				set(0,time),
+				set(1,tt),
+				set(2,nr),
+				set(3,x),
+				set(4,y),
+				set(5,tSizeX*x),
+				set(6,tSizeY*y),
+				set(7,it.fabs),
+				set(8,it.rfr),
+				set(9,ls.fpar),
+				set(10,ls.rfr)
+			);
+		}
+	}
+}
+
+
+// dummy module to keep simulation running
+module temp()
+{
+	
+}

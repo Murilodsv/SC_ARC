@@ -1,0 +1,189 @@
+import java.io.*;
+
+import static initiation.*;
+import static updates.*;
+import static rewrites.*;
+import static parameters.*;
+import static environment.*;
+import static modules_organs.*;
+import static modules_base.*;
+
+protected void init()// init() is an embedded method of GroIMP.
+{
+	initiate();
+	if (functional == false) {println("!! SET TO FIXED GROWTH AND DEVELOPMENT !!");println();}
+	println("number of species in scene: "+nrSpecies);
+	println("total number of plants: "+globalTotalPlants);
+	println("total area: "+0.01 * Math.round(100 * totalArea)+" m2");
+	println("total focal area: "+0.01 * Math.round(100 * totalFocalArea)+" m2");
+	println("Starting day: "+startingDayOfYear+" of year "+startingyear);
+	println("Latitude: "+(latitude / Math.PI*180));
+	
+	println();
+	
+	for (int s=0; s<=totalSpecies-1; s++) {
+		if (spPresence[s] == true) {
+				println("species "+s+": "+speciesNames[s]);
+				println("population density: "+0.01 * Math.round(100 * dens[s])+" plants/m2");
+				println("number of plants: "+totalPlants[s]+"; focal plants = "+focalPlants[s]);
+				println("area: "+0.01 * Math.round(100 * area[s])+" m2; focal area = "+0.01 * Math.round(100 * focalArea[s])+" m2");
+				println();
+				
+				
+		}
+	}
+}
+
+		
+private void step()
+{
+	calcSimTime();		//Calculate the pc sim time
+	
+	println(
+		time+" days, "
+		+realTime+" s, "+"DOY "
+		+dayOfYear+", PPFD "
+		+Math.round(PPFD)+" umol/m2/s, temp "
+		+0.001*Math.round(1000*tav)+" C"+" Qg = "+globalRadiationIntensity
+	);
+	
+	
+	if (oldLM==true) {lm.compute();} else {flm.compute();} // Condition to define which light model to use
+	develop();
+	renew();
+	
+	if (snapShot == true) {
+		if      (time < 10)		{makeSnapshot(path+"basic00"+time+".png");} //makeRenderedImage(String) use this API to render each snapshot
+		else if (time < 100)	{makeSnapshot(path+"basic0" +time+".png");}
+		else             		{makeSnapshot(path+"basic"  +time+".png");}
+	}	
+}
+
+// contains parameter changes in consecutive runs. If no changes, simulations are replicates
+// NB first simulation sims == 0, takes parameters from parameterX.rgg
+void updateParameters()
+{
+/*	// emergence 0
+	if (sims == 0) {
+		delay[weed] = 0; halt = 90;
+		weedDens = 0;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.07071;
+	}
+	if (sims == 1) {weedDens = 100;}
+	if (sims == 2) {weedDens = 200;}
+	if (sims == 3) {
+		weedDens = 0;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.05;
+	}
+	if (sims == 4) {weedDens = 100;}
+	if (sims == 5) {weedDens = 200;}
+	if (sims == 6) {
+		weedDens = 0;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.04082;
+	}
+	if (sims == 7) {weedDens = 100;}
+	if (sims == 8) {weedDens = 200;}
+	
+	//emergence 1
+	if (sims == 9) {
+		delay[weed] = 3; 
+		weedDens = 100;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.07071;
+	}
+	if (sims == 10) {weedDens = 200;}
+	if (sims == 11) {
+		weedDens = 100;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.05;
+	}
+	if (sims == 12) {weedDens = 200;}
+	if (sims == 13) {
+		weedDens = 100;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.04082;
+	}
+	if (sims == 14) {weedDens = 200;}
+
+	//emergence -1
+	if (sims == 15) {
+		delay[weed] = 0; delay[cereal] = 3; halt = 93;
+		weedDens = 100;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.07071;
+	}
+	if (sims == 16) {weedDens = 200;}
+	if (sims == 17) {
+		weedDens = 100;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.05;
+	}
+	if (sims == 18) {weedDens = 200;}
+	if (sims == 19) {
+		weedDens = 100;
+		rowDistance[cereal] = rowDistance[weed] = plantDistance[cereal] = plantDistance[weed] = 0.04082;
+	}
+	if (sims == 20) {weedDens = 200;}
+*/
+}
+
+public void run()
+{
+	// at the start initiate and clear all tables
+	if (sims == 0 && time == 0) {initDatasets();}
+	// simulate until end is reached
+	if (end == false && time != halt) {
+		step();
+	} else {
+		sims++;
+		// change parameters and reset scene for next simulation
+		if (sims < nrSims) {
+			updateParameters();
+			resetCounters();
+			reset();
+		// if all simulations are done, write output files
+		} else {
+			stop = System.currentTimeMillis();
+			avgRate = 0.01*Math.round(100 * time / ((stop-start)/1000));
+			println("average simulation rate: "+avgRate+" steps/s");
+			if (writeFieldTable == true) {exportData(fieldOutput, "field");}
+			if (writePlantTable == true) {exportData(plantOutput, "plant");}
+			if (writeLight == true) {exportData(combiLight, "light");}
+		}
+	}
+}
+
+public void swColor() {
+	de.grogra.imp3d.View3D view = de.grogra.imp3d.View3D.getDefaultView(workbench());
+	if (sRFR == false) {sRFR = false;} else {sRFR = true;}
+	view.repaint();
+}
+
+/* removes all organs with area > 0; NEEDS TO BE INTEGRATED IN MODULES */
+/*public void defiolate()
+[
+	go:GrowingOrgan, (go.area > 0) ==>>;
+	{derive();}
+	pb:PlantBase ::> {
+		double x = pb[biomass];
+		pb.updateBiomass();
+		double r = pb[biomass]/x;
+		println(r);
+		pb[reservePool]*=r;
+	}
+]
+*/
+
+void exportData(DatasetRef dsr, String name) {
+	PrintWriter tmpfile = new PrintWriter(new FileWriter(pathData+name+".txt"));
+	Dataset dataset = dsr.resolve();
+	for(int j=0;j<dataset.getColumnCount(); j++) {
+		tmpfile.print(dataset.getColumnKey(j)+"	");
+	}
+	tmpfile.println();
+	for(int i=0;i<dataset.getRowCount(); i++) {
+		for(int j=0;j<dataset.getColumnCount(); j++) {
+			tmpfile.print(dataset.getCell(i,j)+"	");
+		}
+		tmpfile.println();
+	}
+	tmpfile.flush();
+	tmpfile.close();
+}
+
+

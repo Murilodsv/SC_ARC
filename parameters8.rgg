@@ -1,0 +1,54 @@
+import static parameters.*;
+
+/* sunflower */
+
+{
+	// field parameters
+	nrRows[sunflower] = 5;                  // number of rows
+	nrPlants[sunflower] = 5;                // number of plants in a row
+	borderRows[sunflower] = 0;              // number of border rows on either side of the field
+	borderPlants[sunflower] = 0;            // number of border plants on either side of a row
+	rowDistance[sunflower] = 0.2;          // distance between rows
+	plantDistance[sunflower] = 0.2;        // distance between plants in a row
+	delay[sunflower] = 0;                   // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[sunflower] = 110;               // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[sunflower] = false;                // true: hexagonal layout, rectangular otherwise
+	                                    
+	// plant parameters                 
+	plastochron[sunflower] = 70;            // time between creation of two phytomers (dd)
+	phyllochron[sunflower] = 70;			// time between appearance of two leaves (dd)
+	finalLeafNumber[sunflower] = 12;        // final number of main stem leaves
+	nrShortInternodes[sunflower] = 0;       // number of bottom internodes that should not elongate 
+                                        
+	wmaxRoot[sunflower] = 20000;            // maximum root system biomass
+	wmaxFlower[sunflower] = 250000;         // maximum flower/fruit biomass
+	wmaxInt[sunflower] = 1000;              // maximum internode biomass
+	wmaxLeaf[sunflower] = 1000;              // maximum leaf biomass
+	teRoot[sunflower] = 1800;               // root growth duration
+	teFlower[sunflower] = 650;              // flower/fruit growth duration
+	teInt[sunflower] = 500;                 // internode growth duration
+	teLeaf[sunflower] = 600;                // leaf growth duration
+
+	maxWidthInt[sunflower] = 0.005;			// maxium internode width
+	
+	lengthBiomassRatio[sunflower] = 0.1;  // internode ratio length / biomass (mm/mg)
+	amax[sunflower] = 25;                   // max photosynthesis rate
+	eff[sunflower] = 0.06;                  // initial light use efficiency (initial slope of light response curve)
+	LMA[sunflower] = 4;                     // leaf mass per unit area (mg / cm2)
+	leafLife[sunflower] = 2;                // life span of a leaf since appearance (expressed as X times its growth duration (te))
+	                                    
+	lwRatio[sunflower] = 1.5;                 // ratio between leaf blade length and width
+	maxWidth[sunflower] = 0.7;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[sunflower] = 0.6;            // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[sunflower] = 0.25;                 // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[sunflower] = 75;              // insertion angle of all leaves (90 = horizontal)
+	leafCurve[sunflower] = 50;              // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[sunflower] = 137;           // angle between consecutive leaves along a stem
+	                                    
+	varDelay[sunflower] = 0;                // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[sunflower] = 100;             // seed endosperm mass in mg
+	
+	branching[sunflower] = false;			 // toggle branching
+	
+	tb[sunflower] = 0;						// base temperature for thermal time calculation
+}

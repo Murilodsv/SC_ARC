@@ -1,0 +1,56 @@
+import static parameters.*;
+
+/* arabidopsis thaliana */
+
+{
+	// field parameters
+	nrRows[at] = 7;                 // number of rows
+	nrPlants[at] = 7;               // number of plants in a row
+	borderRows[at] = 0;             // number of border rows on either side of the field
+	borderPlants[at] = 0;           // number of border plants on either side of a row
+	rowDistance[at] = 0.02;         // distance between rows
+	plantDistance[at] = 0.02;       // distance between plants in a row
+	delay[at] = 0;                  // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[at] = 100;              // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[at] = false;               // true: hexagonal layout, rectangular otherwise
+	                                
+	// plant parameters             
+	plastochron[at] = 50;           // time between creation of two phytomers (dd)
+	phyllochron[at] = 50;			// time between appearance of two leaves (dd)
+	finalLeafNumber[at] = 25;       // final number of main stem leaves
+	nrShortInternodes[at] = 10;     // number of bottom internodes that should not elongate 
+                                    
+	wmaxRoot[at] = 500;            // maximum root system biomass
+	wmaxFlower[at] = 25000;         // maximum flower/fruit biomass
+	wmaxInt[at] = 15;               // maximum internode biomass
+	wmaxLeaf[at] = 10;              // maximum leaf biomass
+	teRoot[at] = 1800;              // root growth duration
+	teFlower[at] = 500;             // flower/fruit growth duration
+	teInt[at] = 500;                // internode growth duration
+	teLeaf[at] = 500;               // leaf growth duration
+ 
+	maxWidthInt[at] = 0.005;			// maxium internode width
+                                   
+	lengthBiomassRatio[at] = 0.075; // internode ratio length / biomass (mm/mg)
+	amax[at] = 25;                  // max photosynthesis rate
+	eff[at] = 0.06;                 // initial light use efficiency (initial slope of light response curve)
+	LMA[at] = 4;                    // leaf mass per unit area (mg / cm2)
+	leafLife[at] = 2;               // life span of a leaf since appearance (expressed as X times its growth duration (te))
+	                                
+	lwRatio[at] = 1.75;             // ratio between leaf blade length and width
+	maxWidth[at] = 0.5;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[at] = 0.6;           // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[at] = 0.2;                 // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[at] = 85;             // insertion angle of all leaves (90 = horizontal)
+	leafCurve[at] = 20;             // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[at] = 137;          // angle between consecutive leaves along a stem
+	                                
+	varDelay[at] = 0;               // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[at] = 15;             // seed endosperm mass in mg
+	
+	branching[at] = false;			 // toggle branching
+	srThresh[at] = 1.0;				// threshold sink/source ratio for bud break
+	srThresh2[at] = 0.2;			// threshold sink/source ratio for branch abortion
+	
+	tb[at] = 0;						// base temperature for thermal time calculation
+}

@@ -1,0 +1,56 @@
+import static parameters.*;
+
+/* dicot2 */
+
+{
+	// field parameters
+	nrRows[dicot2] = 3;                  // number of rows
+	nrPlants[dicot2] = 3;                // number of plants in a row
+	borderRows[dicot2] = 0;              // number of border rows on either side of the field
+	borderPlants[dicot2] = 0;            // number of border plants on either side of a row
+	rowDistance[dicot2] = 0.25;          // distance between rows
+	plantDistance[dicot2] = 0.25;        // distance between plants in a row
+	delay[dicot2] = 0;                   // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[dicot2] = 110;               // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[dicot2] = false;                // true: hexagonal layout, rectangular otherwise
+	                                    
+	// plant parameters                 
+	plastochron[dicot2] = 70;            // time between creation of two phytomers (dd)
+	phyllochron[dicot2] = 70;			// time between appearance of two leaves (dd)
+	finalLeafNumber[dicot2] = 14;        // final number of main stem leaves
+	nrShortInternodes[dicot2] = 0;       // number of bottom internodes that should not elongate 
+                                        
+	wmaxRoot[dicot2] = 20000;            // maximum root system biomass
+	wmaxFlower[dicot2] = 250000;         // maximum flower/fruit biomass
+	wmaxInt[dicot2] = 1000;              // maximum internode biomass
+	wmaxLeaf[dicot2] = 750;              // maximum leaf biomass
+	teRoot[dicot2] = 1800;               // root growth duration
+	teFlower[dicot2] = 500;              // flower/fruit growth duration
+	teInt[dicot2] = 500;                 // internode growth duration
+	teLeaf[dicot2] = 500;                // leaf growth duration
+
+	maxWidthInt[dicot2] = 0.01;			// maxium internode width
+	
+	lengthBiomassRatio[dicot2] = 0.075;  // internode ratio length / biomass (mm/mg)
+	amax[dicot2] = 25;                   // max photosynthesis rate
+	eff[dicot2] = 0.06;                  // initial light use efficiency (initial slope of light response curve)
+	LMA[dicot2] = 4;                     // leaf mass per unit area (mg / cm2)
+	leafLife[dicot2] = 2;                // life span of a leaf since appearance (expressed as X times its growth duration (te))
+	                                    
+	lwRatio[dicot2] = 2;                 // ratio between leaf blade length and width
+	maxWidth[dicot2] = 0.65;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[dicot2] = 1.2;            // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[dicot2] = 0.25;                 // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[dicot2] = 75;              // insertion angle of all leaves (90 = horizontal)
+	leafCurve[dicot2] = 50;              // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[dicot2] = 137;           // angle between consecutive leaves along a stem
+	                                    
+	varDelay[dicot2] = 5;                // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[dicot2] = 1000;             // seed endosperm mass in mg
+	
+	branching[dicot2] = false;			 // toggle branching
+	srThresh[dicot2] = 1.0;				// threshold sink/source ratio for bud break
+	srThresh2[dicot2] = 0.2;			// threshold sink/source ratio for branch abortion
+	
+	tb[dicot2] = 0;						// base temperature for thermal time calculation
+}

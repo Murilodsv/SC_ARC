@@ -1,0 +1,56 @@
+import static parameters.*;
+
+/* cereal as a weed */
+
+{
+	// field parameters
+	nrRows[weed] = nrRows[cereal];                 // number of rows
+	nrPlants[weed] = nrPlants[cereal];               // number of plants in a row
+	borderRows[weed] = borderRows[cereal];             // number of border rows on either side of the field
+	borderPlants[weed] = borderPlants[cereal];           // number of border plants on either side of a row
+	rowDistance[weed] = rowDistance[cereal];        // distance between rows
+	plantDistance[weed] = plantDistance[cereal];       // distance between plants in a row
+	delay[weed] = 0;                  // germination delay after start of simulation (in days, to represent late sowing)
+	harvest[weed] = harvest[cereal];              // duration, i.e. harvest/removal time after emergence (in days)
+	hexa[weed] = false;               // true: hexagonal layout, rectangular otherwise
+	                                     
+	// plant parameters                  
+	plastochron[weed] = 45;           // time between creation of two phytomers (dd)
+	phyllochron[weed] = 90;			// time between appearance of two leaves (dd)
+	finalLeafNumber[weed] = 10;       // final number of main stem leaves
+	nrShortInternodes[weed] = 4;      // number of bottom internodes that should not elongate and have no mass
+	                                     
+	wmaxRoot[weed] = 3000;           // maximum root system biomass
+	wmaxFlower[weed] = 3000;        // maximum flower/fruit biomass
+	wmaxInt[weed] = 300;             // maximum internode biomass
+	wmaxLeaf[weed] = 200;             // maximum leaf biomass
+	teRoot[weed] = 1800;              // root growth duration
+	teFlower[weed] = 800;             // flower/fruit growth duration
+	teInt[weed] = 182;                // internode growth duration
+	teLeaf[weed] = 110;               // leaf growth duration
+
+	maxWidthInt[weed] = 0.005;			// maxium internode width
+		                                 
+	lengthBiomassRatio[weed] = 0.5;   // internode ratio length / biomass (mm/mg)
+	amax[weed] = 25;                  // max photosynthesis rate
+	eff[weed] = 0.06;                 // initial light use efficiency (initial slope of light response curve)
+	LMA[weed] = 3.5;                    // leaf mass per unit area (mg / cm2)
+	leafLife[weed] = 4;               // life span of a leaf since appearance (expressed as X times its growth duration (te))
+
+	lwRatio[weed] = 25;               // ratio between leaf blade length and width
+	maxWidth[weed] = 0.6235;             // location on the leaf where width is maximal (fraction of length)
+	shapeCoeff[weed] = 0.7552;            // leaf shape coefficient (0 = rectangular, high value = pinched)
+	fPet[weed] = 0;                   // petiole length (expressed as fraction of leaf blade length)
+	leafAngle[weed] = 40;             // insertion angle of all leaves (90 = horizontal)
+	leafCurve[weed] = 100;            // leaf curvature - angle between bottom and top of leaf blade (0 = flat)
+	phyllotaxis[weed] = 137;          // angle between consecutive leaves along a stem
+	                                     
+	varDelay[weed] = 3;               // max variation in germination delay (in days, 0 = simultaneous germination)
+	seedMass[weed] = 30;      	      // seed endosperm mass in mg
+	
+	branching[weed] = false;			 // toggle branching
+	srThresh[weed] = 0.5;				// threshold sink/source ratio for bud break
+	srThresh2[weed] = 0.1;			// threshold sink/source ratio for branch abortion
+	
+	tb[weed] = 0;						// base temperature for thermal time calculation
+}

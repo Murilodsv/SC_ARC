@@ -1,0 +1,737 @@
+import static parameters.*;
+import static environment.*;
+import static modules_base.*;
+import static modules_light.*;
+
+import de.grogra.ray.physics.Spectrum;
+import de.grogra.ray.physics.Spectrum3d;
+
+// parent module for all plant organs
+abstract module Organ(super.length) extends M(length)
+{
+	int species;			// plant species
+	int plantNumber;		// plant number in the field
+	boolean border;			// true = organ is part of a border plant
+	boolean weed;			// true = organ is part of a weed plant
+	int rank;				// phytomer rank
+	int cpn;				// cumulative phytomer number
+	int order;				// order (0 = main stem)
+	double tt_app;			// thermal time for next phytomer production
+	double agePrevious;		// organ age in the previous time step (dd)
+	double age;				// organ age (dd)
+	double ageWait;			// organ age including waiting for release
+	double ageD;			// organ age (days)
+	double delay;			// delay between organ initation and appearance
+	int deb = 1;			// debbuging
+	
+	// calculate age for EACH organ
+	void calcAge() 
+	{
+		ageWait += Math.max(0,(tav - tb[species]));
+		
+		if (ageWait >= delay) 
+		{
+			agePrevious = age;	
+			age += Math.max(0,(tav - tb[species]));
+			ageD++;
+		}
+	}
+}
+
+// parent module for all organs that grow
+module GrowingOrgan extends Organ
+{
+	double area;			// area (m2)
+	double rg = 0.3;		// growth respiration in fraction biomass
+	double wmax;			// potential biomass (mg) (assigned on organ initiation as species's parameter)
+	double te;				// growth duration (dd)
+	double tm;				// age at maximum growth (dd)
+	double growth;			// biomass gain per time step (mg)
+	double biomass;			// biomass (mg)
+	double frBio;			// fraction of potential biomass
+	double sinkStrength;	// potential growth rate (mg substrate / dd)
+	double relativeSinkStrength;	// sink strength fration of total plant sink strength
+	double assimilatesAvailable;	// assimilates available for growth
+	double assimilatesAllocated;	// assimilates allocated
+	
+	// calculate sink strength (based on Yin et al. 2003)
+	void calcSinkStrength()
+	{
+		double dt = age-agePrevious;
+		double maxSinkStrength = wmax*((2*te-tm)/(te*(te-tm)))*(tm/te)**(tm/(te-tm));
+		double result = maxSinkStrength/(1-rg) * ((te-age)/(te-tm))*(age/tm)**(tm/(te-tm));		
+		
+		
+		if (age > te)
+		{
+			sinkStrength = 0;
+		}
+		else
+		{
+			sinkStrength = result * dt;
+		}
+		
+		
+	}
+
+	// calculate assimilate allocation and actual growth
+	void calcAssimilateAllocation()
+	{
+		PlantBase pb = first((* a:PlantBase, (a[plantNumber] == plantNumber) *));
+		relativeSinkStrength = sinkStrength / pb[sinkStrength]; //pb[sinkStrength] is the total sink strength, here we have a ratio for each organ
+		assimilatesAvailable = relativeSinkStrength * pb[substrates];	
+		
+		if (assimilatesAvailable > sinkStrength) 
+		{
+			assimilatesAllocated = sinkStrength;
+			
+			if (functional == true) 
+			{
+				pb[reservePool] += assimilatesAvailable - sinkStrength; // Plant substrate reserves
+			}
+		} 
+		else 
+		{
+			assimilatesAllocated = assimilatesAvailable;
+		}
+		
+		if (functional == true) {
+			growth = (1-rg) * assimilatesAllocated;		// source limitation when functional == true
+		} else {
+			growth = (1-rg) * 0.75*sinkStrength;		// no source limitation when functional == false
+		}
+		biomass += growth;
+		frBio = 0.01* Math.round(100 * biomass / wmax);
+	}
+}
+
+// parent module for all organs that can absorb light and photosynthesize
+module VisibleOrgan extends GrowingOrgan
+{
+	// light absorption
+	double abs;						// absorbed radiation (umol / s)
+	double absm2;					// absorbed radiation per unit area (umol / m2 / s)
+	double fabs;					// fraction of PPFD absorbed
+	double red;						// perceied red light
+	double farred;					// perceived far-red light
+	double rfr;						// red/far-red ratio
+	double phi;						// phytochrome status
+	double photosynthesisRate;		// rate of photosynthesis  (umol CO2 / m2 / s)
+	double assimilated;				// assimilates acquired (mol CO2 / day)
+	
+	// calculate light absorption
+ 	void calcLight()
+	{
+		if (area > 0.00001) {
+			Spectrum3d spec = lm.getAbsorbedPower3d(this);
+			abs = cm * spec.x;
+			absm2 = abs / area ;
+			fabs = absm2 / PPFD; // franction of total PAR that this organ absorbed
+			red = cm * spec.y / absorbanceRed;
+			farred = cm * spec.z / absorbanceFarRed;
+						
+			if (red / farred > 0) {
+				rfr = red / farred;
+			}
+		} else {
+			absm2 = 0;
+			abs = absm2 * area;
+			fabs = absm2 / PPFD;
+			red = 0;//PPFD / absorbanceRed;
+			farred = 0;//PPFD / absorbanceFarRed;
+			if (area > 0 && red / farred > 0) {
+				rfr = red / farred;
+			} else {
+				rfr = rfrIncoming;
+			}
+		}
+	}
+
+	// calculates phytochrome status from R:FR
+	void calcPhytochrome()
+	{
+		double Zpfr = 1.7;						// slope parameter
+		double phiR = 0.75;						// value of phi at high R:FR
+		double phiFR = 0.03;					// value of phi at R:FR = zero;
+		phi = 1 - (rfr + Zpfr) / ( (rfr/(1-phiR)) + (Zpfr/(1-phiFR)) );
+	} 
+
+	// calculate photosynthesis and assimilation
+	void calcPhotosynthesis()
+	{
+		double Amax0 = amax[species];	// maximum photosynthesis rate at top of canopy
+		double Amax;						// maximum photosynthesis rate in any leaf (Anten, 1997)
+		if (fabs > 0) {
+			Amax = Amax0 * fabs**0.4;
+		} else {
+			Amax = Amax0;
+		}
+		double epsilon = eff[species];		// initial light use efficiency (initial slope of light response curve)
+		double Rd = 0.05*Amax0;			// dark respiration
+		photosynthesisRate = Amax * (1 - Math.exp(-epsilon * (absm2 / Amax)));// - Rd;		Rd taken out to get to gross photosynthesis
+		assimilated = photosynthesisRate * area * dayLength*60*60;// [mmol] May overestimate photosynthesis, what area is used? abaxial and adaxial?
+	}
+	
+	// calculate organ dimensions (implemented in specific organ modules)
+	void calcDimensions();
+}
+
+
+
+// seed module
+module Seed extends Null
+{
+	int species;						// plant species
+	int plantNumber;					// plant number in the field
+	double endo;						// endosperm biomass (mg)
+	double germinationDelay;			// delay before gemination takes place
+	double germinationDelayDD;			// delay before gemination takes place
+	
+	// seed initiation
+	void initiate(int species, int i)
+	{
+		
+		this.species = species;
+		plantNumber = i;
+		endo = seedMass[species];
+		germinationDelay = delay[species] + random(0,varDelay[species]);
+		germinationDelayDD = random(0,varDelayDD[species]);
+		
+	}
+	
+	// conditions for germinations
+	boolean shouldGerminate(PlantBase pb) 
+	{
+		
+		if(species == 11) {
+			
+			double fPAR = mean((*t:Tile, (t.strip == pb.strip) *) [fabs]);			
+			if (pb.age >= (tt_em[species] + germinationDelayDD +(pb.tiller_order *tillochron[species])) && fPAR > 0.35){
+			
+				pb.emerged = true;
+				return true;			
+			}
+							
+		}else { 
+			return (pb.ageD > germinationDelay);		
+		}
+	}
+	
+	// emergence delay time
+	double shouldEmerge(PlantBase pb)
+	{
+		if(pb.species == 11)
+		{
+			
+		}
+	}
+	
+}
+
+
+// root module
+module RootSystem extends GrowingOrgan
+{
+	// root initiation
+	void initiate(PlantBase pb)
+	{
+		species = pb.species;
+		plantNumber = pb.plantNumber;
+		border = pb.border;
+		length = 0;
+		wmax = wmaxRoot[species];
+		te = teRoot[species];
+		tm = te / 2;
+	}
+}
+==> Translate(0,0,-0.001-biomass/200000) Box(biomass/200000,biomass/200000,biomass/200000).(setShader(WHITE));
+
+
+
+// module for the reproductive organ
+module Flower extends GrowingOrgan
+{
+	double rotation;
+	
+	// flower initiation
+	void initiate(Apex a)
+	{
+		species = a.species;
+		plantNumber = a.plantNumber;
+		border = a.border;
+		weed = a.weed;
+		order = a.order;
+		length = 0;
+		wmax = wmaxFlower[species];
+		te = teFlower[species];
+		tm = te / 2;
+		
+		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		rotation = pb.initialAngle+140;
+	}
+}                             
+==> FlowerShape(species, biomass, frBio, border, rotation);
+
+// module for sucrose accumulation
+module Sucrose extends GrowingOrgan
+{
+	
+	// sucrose initiation
+	void initiate(Internode i)
+	{
+		species = i.species;
+		plantNumber = i.plantNumber;
+		border = i.border;
+		weed = i.weed;
+		order = i.order;
+		length = 0;
+		wmax = wmaxSucrose[species];
+		te = teFlower[species];
+		tm = te / 2;
+		
+			
+	}
+}                             
+==>;
+
+// apex module, represents the apical meristem that produces new phytomers
+module Apex extends Organ
+{
+	boolean dormant;						// true: apex is dormant, false: apex can develop
+	int numberVegPhyt;						// number of leaves (vegetative phytomers) to produce
+	int vegetative = 1; int fruiting = 2;
+	int branchType;							// regular branch = vegetative; sympodial branch = fruiting (e.g. cotton)
+	int parentRank;							// phytomer rank of the parent shoot
+		
+	// initiation of main apex
+	void initiate(PlantBase pb)
+	{
+		species = pb.species;
+		plantNumber = pb.plantNumber;
+		border = pb.border;
+		weed = pb.weed;
+		rank = 1;
+		cpn = 1;
+		order = 0;
+		age = plastochron[species];
+		tt_app = age + plastochron[species];
+		numberVegPhyt = finalLeafNumber[species];
+		branchType = vegetative;
+		
+	}
+		
+	// initiation of lateral apex (bud)
+	void initiateAxillary(Apex a)
+	{
+		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		species = a.species;
+		plantNumber = a.plantNumber;
+		border = a.border;
+		rank = 1;
+		cpn = a.cpn;
+		order = a.order +1; 
+		dormant = true;
+		numberVegPhyt = finalLeafNumber[species];
+		parentRank = a.rank;
+		branchType = vegetative;
+		//tt_app = age + plastochron[species];//age here is the age of organ (alwaays = 0)
+		
+		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between bud initiation and bud potential outgrowth, which increases with rank
+	}
+	
+	// increase in identifiers after phytomer creation
+	void increment()
+	{
+		rank = rank +1;
+		cpn = cpn + 1;		
+		
+		if(species == 11 && rank < plas_change[species])
+		{
+			tt_app = tt_app + plastochron[species]; // tt required for next phytomer creation
+		} else
+		{
+			tt_app = tt_app + plastochron2[species];
+		}
+			
+	}
+	
+	// evaluate dormancy conditions
+	void updateDormancy()
+	{
+		if (branching[species] == true) {
+			BranchBase bb = first((* this (<--)+ BranchBase *));
+			PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+			Flower fl = selectWhere((*f:Flower*), f.plantNumber == plantNumber && f.order == 0);
+			
+			if (functional == true) {
+				if (dormant == true && age > 0 && /*pb.sr > srThresh[species]&&pb.fabs > 0.55*/ pb.nrBranches < 6  && (
+															(fl != null && fl.frBio < 0.1) ||
+															(fl == null)
+															)
+				) {
+					
+					dormant = false;
+					bb.dormant = false;
+					
+				}
+			} else {          
+				double maxBranch = 20 * Math.exp( -0.0175 * dens[species] );
+				if (dormant == true && age > 100 && pb.age < 700 && pb.nrBranches < maxBranch) {
+					dormant = false;       
+					bb.dormant = false;
+				}
+			}                               
+		}
+	}
+	
+	// conditions for vegetative phytomer productions
+	boolean shouldProduceVegetative()
+	{
+		//println("====="+dormant+"====="+branchType+"====="+numberVegPhyt+"====="+age+"====="+cpn);
+		if (dormant == false && branchType == vegetative && cpn <= numberVegPhyt && age >= tt_app/*cpn * plastochron[species]*/){
+		return true;
+		}
+	}
+	                                                                  
+	// conditions fot reproductive phytomer production
+	boolean shouldTerminateGeneratively()
+	{
+		if (dormant == false && cpn >= numberVegPhyt && age >= cpn * plastochron[species]) {
+			PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+			pb.flowering = true;      
+			return true;
+		}                                                          
+	}             
+}
+
+// internode module
+module Internode extends VisibleOrgan
+{
+	double width;						// internode width
+	double increment;					// length increment per time step
+	double lbRatio;						// stem ratio length / biomass (m/mg)
+
+	double getModifier()
+	{
+		Leaf lf = first((* this +> l:Leaf *));
+		//println("SAS ? : "+(avoid == true && lf != null));
+		if (avoid == true && lf != null) {		// lf check is needed to prevent extra peduncle extension (would not make sense since no leaf on top) 
+			PlantBase pb = selectWhere((* p:PlantBase *), p.plantNumber == plantNumber);
+			double max = 20;//10;
+			double min = 1;
+			double k = 6;//4;
+			return (max-min) * Math.exp(-k * pb.sr) + min; //sr = plant source/sink ratio
+		} else {
+			return 1;
+		}
+	}
+	
+	// calculate dimensions
+	void calcDimensions()
+	{
+		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		increment = getModifier() * lbRatio * growth; // based on these assumptions internode could expand up to 20 (max) times the lbRatio
+		length += increment;
+		width = maxWidthInt[species] / (1 + Math.exp(-0.02 * (age - (0.5 * teInt[species]))));
+
+		area = 2 * Math.PI * 0.5*width * length;
+		if (order == 0 && plantNumber == profilePlant) {
+			organLength.getRow(rank).set(1,length);
+		}
+		
+		// tell BranchBase the branch is extending so it cannot be aborted anymore
+		if (order > 0 && length > 0) {
+			BranchBase bb = first((* this (<--)+ BranchBase *));
+			bb.extending = true;
+		}   
+		// tell PlantBase the plant has started extending
+		if (order == 0 && length > 0) {
+			pb.extending = true;
+		}           
+	}
+	
+	// internode initiation
+	void initiate(Apex a)
+	{
+		
+		species = a.species;
+		plantNumber = a.plantNumber;
+		border = a.border;
+		weed = a.weed;
+		rank = a.rank;
+		cpn = a.cpn;
+		order = a.order;
+		length = 0;
+		lbRatio = lengthBiomassRatio[species] / 1000;
+		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
+		
+		if(a.species == 11) {
+			// added to account for phyllochron change "broken stick"	
+			te = (Math.max(0,(plas_change[species] - a.rank)) * plastochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,(plas_change[species] - a.rank))) * plastochron2[species]);
+		}else {
+			te = teLeaf[species];
+			}			
+		
+		tm = te / 2;
+		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between internode initiation and appearance increases with rank
+	}
+}
+==> if (area > 0.00001) (
+		if (border == false) (
+			Cylinder(length,width/2).(setLayer(border?borderLayer:0), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),LightOpaqueShader)))
+		) else (
+			Cylinder(length,width/2).(setLayer(border?borderLayer:0), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:fabs*2,sRFR?rfr-0.2:fabs*2,sRFR?rfr-0.2:fabs*2),new RGBAShader(sRFR?rfr-0.2:fabs*2,sRFR?rfr-0.2:fabs*2,sRFR?rfr-0.2:fabs*2),LightOpaqueShader)))
+		)
+	)
+;
+
+// leaf module	
+module Leaf extends VisibleOrgan
+{
+	int live_rank;										// live rank number per 
+	double width;										// width at widest point
+	double increment;									// area increase per time step
+	double area2;										// area of leaf blade after segmentation
+	double shapeCoefficient;							// normalized leaf area
+	long segments;										// number of segments the leaf blade is composed of
+	double bendingAngleSegment;							// bending angle per segment
+	double angle;										// insertion angle of the leaf
+	double petangle;									// insertion angle of the petiole of a leaf
+	double petlength;									// petiole length
+	double petdiameter;									// petiole diameter
+	boolean appeared;									// true if leaf biomass is no longer 0
+	boolean dewlap;										// Check whether the dewlap is developed
+
+	
+	double getModifier() // use this modifier to adjust plant extention rate (PER mm °C-1 h-1)
+	{
+			PlantBase pb = selectWhere((* p:PlantBase *), p.plantNumber == plantNumber);
+			double max = 20;//10;
+			double min = 1;
+			double k = 6;//4;
+			return (max-min) * Math.exp(-k * pb.sr) + min; //sr = plant source/sink ratio
+	}
+	
+	double getGrav()
+		{			
+			if(species == 11) {
+				return -10.;
+			} else {
+				return 0.;
+			}
+		}
+		
+	double getRatioBladeLeafSheath(){
+		
+		double a = 0.15;
+		double b = -2.;
+		double c = 0.1;
+		double d = 2;
+		double m = 250;
+		
+		return d + ((a - d) / (1 + (live_rank/c)**b)**m);
+		
+	}
+	
+	// calculate dimensions
+	void calcDimensions()
+	{
+		// record leaf appearance		
+				
+		if (growth != 0 && appeared == false) //!= represent condition of growth > 0 
+		{
+			if (order == 0 && plantNumber == profilePlant) {
+				PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+				leafInitApp.getRow(rank).set(1,pb.age);
+			}			
+			appeared = true;
+		}		
+		
+		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		increment = (growth / LMA[species]) / 10000;	// leaf area in m2
+		area += increment;
+				
+		length = Math.sqrt(area * lwRatio[species] / shapeCoefficient);
+		width = length / lwRatio[species];
+		
+		// dimensions of leaf sheath (as petiole)
+		if (species == 11) // using petiole as leaf sheath for sugarcane 
+		{
+			Internode it = selectWhere((* i:Internode *), (i.plantNumber == plantNumber && i.rank == rank));
+			if(live_rank <= (MaxGreenLeafNumber[species] - MaxDewlapNumber[species])) {
+			petdiameter = width* 1.05;}
+			else{								
+			petdiameter = it.width* 1.1;//Assuming leaf sheath's diameter to be 10% higher than internode
+			}
+			double maxLength_pet = wmaxInt[species] * lengthBiomassRatio[species] / 1000;
+			
+			if (rank <=nrShortInternodes[species])
+			{
+			petlength =  Math.min(rank * maxLength_pet, 0.5);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
+			
+			} else {				
+				petlength = Math.min(nrShortInternodes[species] * maxLength_pet,0.5);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
+			}
+		} else 
+		{		
+		petlength = fPet[species]*length;
+		petdiameter = 0.002;		
+		}
+		
+		if (order == 0 && plantNumber == profilePlant) {
+			organLength.getRow(rank).set(0,length);
+		}
+	}
+	
+	// calculate the number of segments that the leaf is composed of
+	void calcSegments() {
+		long maxSegments = 60;
+		segments = Math.max(30,Math.round(frBio * maxSegments));
+	}
+	
+	// calculate leaf shape as the width along the midrib, from tip to base
+	double getNormalizedLeafWidth(float lnorm) {
+		return (((1-lnorm)/(1-maxWidth[species]))*(lnorm/maxWidth[species])**(maxWidth[species]/(1-maxWidth[species])))**shapeCoeff[species];
+	}
+
+	// calculate shape coefficient by integrating the leaf shape function in 100 steps of 0.01
+	void calcShapeCoefficient() {
+		for (double i = 0; i<=1; i+=0.01) {
+			shapeCoefficient += getNormalizedLeafWidth(i)*0.01;
+		}
+	}
+	
+	
+	// calculate leaf insertion angle
+	void calcAngle() {
+		double max = leafAngle[species];
+		double k = 4;
+		angle = max*(1-Math.exp(-k * (age / te)));
+		petangle = angle;
+		
+		double maxS = leafCurve[species] / segments;
+		bendingAngleSegment = maxS*(1-Math.exp(-k * (age / te)));
+				
+		if (species == 11) {
+			
+			petangle = 0;
+			
+			if (rank <= 4)	{
+				k = 4;	
+				angle = max;		
+				bendingAngleSegment = maxS;
+			} else {
+				k = 2;
+				angle = max*(Math.exp(k * Math.min(1.,age / te))/Math.exp(k));				
+				bendingAngleSegment = maxS*(Math.exp(k * Math.min(1.,age / te))/Math.exp(k));
+			}
+			
+			if(live_rank ==0) {
+				angle =0;
+				bendingAngleSegment = 0;
+			}				
+			
+		}	
+		
+	}	
+	
+	// leaf initiation
+	void initiate(Apex a)
+	{
+		species = a.species;
+		plantNumber = a.plantNumber;
+		border = a.border;
+		weed = a.weed;
+		rank = a.rank;
+		cpn = a.cpn;
+		order = a.order;
+		length = 0;
+		live_rank = 0;		
+		wmax = wmaxLeaf[species];		
+		
+		if(a.species == 11) {
+			// added to account for phyllochron change "broken stick"	
+			te = (Math.max(0,(phyl_change[species] - a.rank)) * phyllochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,(phyl_change[species] - a.rank))) * phyllochron2[species]);
+		}else {
+			te = teLeaf[species];
+			}			
+			
+		tm = te / 2;
+		width = 0;
+		calcShapeCoefficient();
+		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between leaf initiation and appearance increases with rank
+		
+		// record leaf initiation  
+		if (order == 0 && plantNumber == profilePlant) 
+		{
+			PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+			leafInitApp.getRow(rank).set(0,pb.age);
+		}
+	}
+
+
+	// conditions for leaf shedding
+	boolean shouldFall()
+	{
+		
+		double lifeSpan;
+		
+		if (species == 11)
+		{ if(rank < plas_change[species])
+		{
+			lifeSpan = leafLife[species] * teLeaf[species];					// age beyond which leaf should drop
+		} else {
+			lifeSpan = leafLife2[species] * teLeaf2[species];					// age beyond which leaf should drop
+		}
+		} else{
+			
+			lifeSpan = leafLife[species] * teLeaf[species];
+		}
+		
+		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+			
+		if (functional == true) {
+			if (leafSenescence == true && age > 0.5 * te && (absm2 < fallPAR || species==11 ? 
+			(pb.nLiveLeaves > MaxGreenLeafNumber[species] && live_rank == MaxGreenLeafNumber[species]):(age > lifeSpan))) 
+			{
+				return true;
+			}
+		} else {
+			if (leafSenescence == true && age > lifeSpan) {		// if functional == false: no light driven leaf shedding
+				return true;
+			}
+		}
+	}
+} //use Cylinder to construct the leaf sheath (as petiole)
+
+==> if (area > 0.00001) (		
+		RL(petangle)
+		RV(getGrav())
+		if (border == false) (
+			Cylinder(petlength, petdiameter*0.5).(setLayer(border?borderLayer:leafLayer), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),LightOpaqueShader)))
+		) else (
+			Cylinder(petlength, petdiameter*0.5).(setLayer(border?borderLayer:leafLayer), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs),new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs),LightOpaqueShader)))
+		)
+		{area2 = 0;}
+		for (double i=1; i < segments; i++)
+		(
+			{
+				double segmentLength;
+				segmentLength = length/segments;
+				double segmentWidth = 0.5*width*getNormalizedLeafWidth(1-i/segments);
+				area2 += segmentLength*2*segmentWidth;
+			}
+			if (border == false) (
+				Parallelogram(segmentLength,2*segmentWidth).(setLayer(border?borderLayer:leafLayer), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),LightShader)))
+			) else (
+				Parallelogram(segmentLength,2*segmentWidth).(setLayer(border?borderLayer:leafLayer), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs),new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs),LightShader)))
+			)
+			if (i==1 && species ==11)  (
+			RL(angle)
+			) else (
+			RL(bendingAngleSegment)
+			)
+		)
+		if (showLabels) (TextLabel(frBio))
+	)
+	;
