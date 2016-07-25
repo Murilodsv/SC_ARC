@@ -73,7 +73,7 @@ static void renew()
 		g.calcAssimilateAllocation();
 	}
 	
-	// calculate physical sizes of visible organs
+	// calculate dimensions of visible organs
 	v:VisibleOrgan ::> 
 	{
 		v.calcDimensions();

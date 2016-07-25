@@ -28,7 +28,7 @@ static boolean oldLM			= true;			// true: use old light model, false: use FluxLM
 static boolean seeRays			= false;		// see direction of rays from light sources if true
 
 // Setting clones (Infinity Canopy)
-static boolean infinityCanopy   = true;			// Set whether cloning is on/off (true/false)
+static boolean infinityCanopy   = false;			// Set whether cloning is on/off (true/false)
 static int X_times				= 10;			// Number of cloned plots on X axis
 static int Y_times				= 10;			// Number of cloned plots on Y axis
 
@@ -126,6 +126,7 @@ static double[] wmaxSucrose		= new double[totalSpecies];		// maximum sucrose mas
 static double[] wmaxLeaf		= new double[totalSpecies];		// maximum leaf biomass
 static double[] teRoot			= new double[totalSpecies];		// root growth duration
 static double[] teFlower		= new double[totalSpecies];		// flower/fruit growth duration
+static double[] teSucrose		= new double[totalSpecies];		// sucrose accumulation duration
 static double[] teInt			= new double[totalSpecies];		// internode growth duration
 static double[] teInt2			= new double[totalSpecies];		// internode growth duration
 static double[] teLeaf			= new double[totalSpecies];		// leaf growth duration

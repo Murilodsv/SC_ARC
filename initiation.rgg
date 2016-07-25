@@ -262,7 +262,8 @@ static void initiate()
 										
 										
 										pb_tl.setTranslation(random(-plantDistance[species]/2,plantDistance[species]/2),random(-0.1,0.1),0);
-										//println(location(s_tl));
+										
+										
 									}								
 								]
 								)

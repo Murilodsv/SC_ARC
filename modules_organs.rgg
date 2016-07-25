@@ -272,23 +272,31 @@ module Flower extends GrowingOrgan
 }                             
 ==> FlowerShape(species, biomass, frBio, border, rotation);
 
+
+
+
+
 // module for sucrose accumulation
 module Sucrose extends GrowingOrgan
 {
+	
+	void calcDimensions(){
+	
+	
+	}
 	
 	// sucrose initiation
 	void initiate(Internode i)
 	{
 		species = i.species;
+		rank = i.rank;
 		plantNumber = i.plantNumber;
 		border = i.border;
 		weed = i.weed;
 		order = i.order;
-		length = 0;
 		wmax = wmaxSucrose[species];
-		te = teFlower[species];
+		te = teSucrose[species];
 		tm = te / 2;
-		
 			
 	}
 }                             
@@ -410,6 +418,8 @@ module Internode extends VisibleOrgan
 	double width;						// internode width
 	double increment;					// length increment per time step
 	double lbRatio;						// stem ratio length / biomass (m/mg)
+	boolean startsucrose;					//
+	double sucrosecontent;				//
 
 	double getModifier()
 	{
@@ -439,6 +449,12 @@ module Internode extends VisibleOrgan
 			organLength.getRow(rank).set(1,length);
 		}
 		
+		// Flag to initiate sucrose acumulation in internode
+		if (age > te) {
+		startsucrose = true;
+		//PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		}
+		
 		// tell BranchBase the branch is extending so it cannot be aborted anymore
 		if (order > 0 && length > 0) {
 			BranchBase bb = first((* this (<--)+ BranchBase *));
@@ -449,6 +465,8 @@ module Internode extends VisibleOrgan
 			pb.extending = true;
 		}           
 	}
+	
+	
 	
 	// internode initiation
 	void initiate(Apex a)
@@ -462,6 +480,7 @@ module Internode extends VisibleOrgan
 		cpn = a.cpn;
 		order = a.order;
 		length = 0;
+		startsucrose = false;
 		lbRatio = lengthBiomassRatio[species] / 1000;
 		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
 		
@@ -472,7 +491,7 @@ module Internode extends VisibleOrgan
 			te = teLeaf[species];
 			}			
 		
-		tm = te / 2;
+		tm = te * 0.5; 
 		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between internode initiation and appearance increases with rank
 	}
 }
@@ -559,7 +578,7 @@ module Leaf extends VisibleOrgan
 		{
 			Internode it = selectWhere((* i:Internode *), (i.plantNumber == plantNumber && i.rank == rank));
 			if(live_rank <= (MaxGreenLeafNumber[species] - MaxDewlapNumber[species])) {
-			petdiameter = width* 1.05;}
+			petdiameter = it.width* 1.05;}
 			else{								
 			petdiameter = it.width* 1.1;//Assuming leaf sheath's diameter to be 10% higher than internode
 			}
@@ -656,7 +675,7 @@ module Leaf extends VisibleOrgan
 			te = teLeaf[species];
 			}			
 			
-		tm = te / 2;
+		tm = te * 0.5;
 		width = 0;
 		calcShapeCoefficient();
 		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between leaf initiation and appearance increases with rank
