@@ -419,7 +419,8 @@ module Internode extends VisibleOrgan
 	double increment;					// length increment per time step
 	double lbRatio;						// stem ratio length / biomass (m/mg)
 	boolean startsucrose;					//
-	double sucrosecontent;				//
+	double sucContent;				//
+	double sucStart;
 
 	double getModifier()
 	{
@@ -450,9 +451,9 @@ module Internode extends VisibleOrgan
 		}
 		
 		// Flag to initiate sucrose acumulation in internode
-		if (age > te) {
+		if (length > 0.01 && age > (te * sucStart)) {
 		startsucrose = true;
-		//PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		
 		}
 		
 		// tell BranchBase the branch is extending so it cannot be aborted anymore
@@ -483,7 +484,7 @@ module Internode extends VisibleOrgan
 		startsucrose = false;
 		lbRatio = lengthBiomassRatio[species] / 1000;
 		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
-		
+		if(a.species == 11) {sucStart =  SucroseStart[species];}
 		if(a.species == 11) {
 			// added to account for phyllochron change "broken stick"	
 			te = (Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species])) * plastochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species]))) * plastochron2[species]);

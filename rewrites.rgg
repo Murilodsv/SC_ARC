@@ -25,7 +25,7 @@ static void develop()
 	a:Apex, 				(a.shouldProduceVegetative() == true) ==>
 	//REPLACEMENT
 	i:Internode	//internode criation
-	[bb:BranchBase RU(35) RH(random(0,360)) aa:Apex] [su:Sucrose]// branch base with a lateral apex (named aa to distinguish between apical and lateral)
+	[bb:BranchBase RU(35) RH(random(0,360)) aa:Apex] // branch base with a lateral apex (named aa to distinguish between apical and lateral)
 	if (a.species==sunflower && (a.rank==1||a.rank==2)) ([l:Leaf] [RH(180) l2:Leaf] {l.initiate(a); l2.initiate(a);}) // if sunflower, creates 2 initial dicotiledons leaves
 	else ([l:Leaf] 
 		{
@@ -39,7 +39,7 @@ static void develop()
 	{
 		i.initiate(a);
 		bb.initiate(a);
-		su.initiate(i);
+		//su.initiate(i);
 		aa.initiateAxillary(a);
 		a.increment();
 			
@@ -58,12 +58,11 @@ static void develop()
 	;
 	
 	// start sucrose accumulation
-	i:Internode, (i.startsucrose == true) ==>
+	i:Internode, (i.startsucrose == true && count((* s:Sucrose, (s.rank == i.rank) *)) < 1) ==>
 	i [su:Sucrose]
 	{
 		su.initiate(i);
-		i.startsucrose = false;
-		
+			
 	}
 	;
 	

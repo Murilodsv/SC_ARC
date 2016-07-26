@@ -41,9 +41,11 @@ import static parameters.*;
 	wmaxLeaf[sugarcane] = 2000;             // maximum leaf biomass
 	teRoot[sugarcane] = 4000;               // root growth duration
 	teFlower[sugarcane] = 0;                // flower/fruit growth duration
-	teSucrose[sugarcane] = 15 * plastochron2[sugarcane];
 	teInt[sugarcane] = 688;                // internode growth duration
 	teLeaf[sugarcane] = 1008;                // leaf growth duration
+	teSucrose[sugarcane] = 15 * plastochron2[sugarcane];
+	SucroseStart[sugarcane] = 1.;			// Determines when sucrose ("as an organ") accumulatation will start within an internode (expressed as X times te of internode)
+	
 
 
 	maxWidthInt[sugarcane] = 0.04;			// maxium internode width

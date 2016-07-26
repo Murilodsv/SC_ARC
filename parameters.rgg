@@ -127,6 +127,7 @@ static double[] wmaxLeaf		= new double[totalSpecies];		// maximum leaf biomass
 static double[] teRoot			= new double[totalSpecies];		// root growth duration
 static double[] teFlower		= new double[totalSpecies];		// flower/fruit growth duration
 static double[] teSucrose		= new double[totalSpecies];		// sucrose accumulation duration
+static double[] SucroseStart	= new double[totalSpecies];		// Thereshold to start sucrose accumulation within an internode
 static double[] teInt			= new double[totalSpecies];		// internode growth duration
 static double[] teInt2			= new double[totalSpecies];		// internode growth duration
 static double[] teLeaf			= new double[totalSpecies];		// leaf growth duration
