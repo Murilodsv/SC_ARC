@@ -94,6 +94,14 @@ static void renew()
 		
 	}
 	
+	// Update live_rank leaves (used only for sugarcane)
+	(*l:Leaf <+ i:Internode (-->)* a:Apex, (a.shouldProduceVegetative() == true && l.species == 11) *) ::>
+	{		
+		l.live_rank++;
+		if (l.live_rank > (MaxGreenLeafNumber[l.species] - MaxDewlapNumber[l.species])) {l.dewlap = true;}
+		if (l.rank <= MaxDewlapNumber[l.species]) {l.dewlap = true;}
+	}	
+	
 	
 	// update plant-level variables using info from individual organs
 	pb:PlantBase ::>
@@ -107,13 +115,6 @@ static void renew()
 		if (writePlantTable == true) {pb.updateTable();}
 	}
 	
-	// Update live_rank leaves
-	(*l:Leaf <+ i:Internode (-->)* a:Apex, (a.shouldProduceVegetative() == true && l.species == 11) *) ::>
-	{		
-		l.live_rank++;
-		if (l.live_rank > (MaxGreenLeafNumber[l.species] - MaxDewlapNumber[l.species])) {l.dewlap = true;}
-		if (l.rank <= MaxDewlapNumber[l.species]) {l.dewlap = true;}
-	}	
 	
 	// update field-level variables
 	fb:FieldBase ::>

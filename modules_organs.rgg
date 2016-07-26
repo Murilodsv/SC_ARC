@@ -77,9 +77,9 @@ module GrowingOrgan extends Organ
 	// calculate assimilate allocation and actual growth
 	void calcAssimilateAllocation()
 	{
-		PlantBase pb = first((* a:PlantBase, (a[plantNumber] == plantNumber) *));
-		relativeSinkStrength = sinkStrength / pb[sinkStrength]; //pb[sinkStrength] is the total sink strength, here we have a ratio for each organ
-		assimilatesAvailable = relativeSinkStrength * pb[substrates];	
+		PlantBase pb = first((* p:PlantBase, (p.plantNumber == plantNumber) *));
+		relativeSinkStrength = sinkStrength / pb.sinkStrength; //pb[sinkStrength] is the total sink strength, here we have a ratio for each organ
+		assimilatesAvailable = relativeSinkStrength * pb.substrates; // substrates produced in this day plus reserve pool, by photosynthesis	
 		
 		if (assimilatesAvailable > sinkStrength) 
 		{
@@ -87,7 +87,7 @@ module GrowingOrgan extends Organ
 			
 			if (functional == true) 
 			{
-				pb[reservePool] += assimilatesAvailable - sinkStrength; // Plant substrate reserves
+				pb[reservePool] += assimilatesAvailable - sinkStrength; // Accumulation of remaining substrates produced into a single pool
 			}
 		} 
 		else 
@@ -167,7 +167,7 @@ module VisibleOrgan extends GrowingOrgan
 			Amax = Amax0;
 		}
 		double epsilon = eff[species];		// initial light use efficiency (initial slope of light response curve)
-		double Rd = 0.05*Amax0;			// dark respiration
+		double Rd = 0.05*Amax0;			// dark respiration (photorespiration? -murilo)
 		photosynthesisRate = Amax * (1 - Math.exp(-epsilon * (absm2 / Amax)));// - Rd;		Rd taken out to get to gross photosynthesis
 		assimilated = photosynthesisRate * area * dayLength*60*60;// [mmol] May overestimate photosynthesis, what area is used? abaxial and adaxial?
 	}
@@ -217,15 +217,6 @@ module Seed extends Null
 		}
 	}
 	
-	// emergence delay time
-	double shouldEmerge(PlantBase pb)
-	{
-		if(pb.species == 11)
-		{
-			
-		}
-	}
-	
 }
 
 
@@ -272,35 +263,6 @@ module Flower extends GrowingOrgan
 }                             
 ==> FlowerShape(species, biomass, frBio, border, rotation);
 
-
-
-
-
-// module for sucrose accumulation
-module Sucrose extends GrowingOrgan
-{
-	
-	void calcDimensions(){
-	
-	
-	}
-	
-	// sucrose initiation
-	void initiate(Internode i)
-	{
-		species = i.species;
-		rank = i.rank;
-		plantNumber = i.plantNumber;
-		border = i.border;
-		weed = i.weed;
-		order = i.order;
-		wmax = wmaxSucrose[species];
-		te = teSucrose[species];
-		tm = te / 2;
-			
-	}
-}                             
-==>;
 
 // apex module, represents the apical meristem that produces new phytomers
 module Apex extends Organ
@@ -418,9 +380,9 @@ module Internode extends VisibleOrgan
 	double width;						// internode width
 	double increment;					// length increment per time step
 	double lbRatio;						// stem ratio length / biomass (m/mg)
-	boolean startsucrose;					//
-	double sucContent;				//
-	double sucStart;
+	boolean startsucrose;				// Flag to indicate sucrose accumulation starts
+	double sucContent;					// Sucrose content mg
+	double sucStart;					//
 
 	double getModifier()
 	{
@@ -437,6 +399,7 @@ module Internode extends VisibleOrgan
 		}
 	}
 	
+	
 	// calculate dimensions
 	void calcDimensions()
 	{
@@ -452,8 +415,13 @@ module Internode extends VisibleOrgan
 		
 		// Flag to initiate sucrose acumulation in internode
 		if (length > 0.01 && age > (te * sucStart)) {
-		startsucrose = true;
+		startsucrose = true;		
+		}
 		
+		// Compute sucrose content
+		if(count((* s:Sucrose, (s.rank == rank && s.plantNumber == plantNumber) *)) == 1){
+			Sucrose su = selectWhere((*s:Sucrose*), (s.rank == rank && s.plantNumber == plantNumber));			
+			sucContent = su.biomass;
 		}
 		
 		// tell BranchBase the branch is extending so it cannot be aborted anymore
@@ -504,6 +472,33 @@ module Internode extends VisibleOrgan
 		)
 	)
 ;
+
+// module for sucrose accumulation
+module Sucrose extends GrowingOrgan
+{
+	
+	void calcDimensions(){
+	
+	
+	}
+	
+	// sucrose initiation
+	void initiate(Internode i)
+	{
+		species = i.species;
+		rank = i.rank;
+		plantNumber = i.plantNumber;
+		border = i.border;
+		weed = i.weed;
+		order = i.order;
+		wmax = wmaxSucrose[species];
+		te = teSucrose[species];
+		tm = te / 2;
+			
+	}
+}                             
+;
+
 
 // leaf module	
 module Leaf extends VisibleOrgan

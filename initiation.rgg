@@ -122,6 +122,11 @@ static void initDatasets()
 		leafInitApp.(setColumnKey(0,"init (dd)"), setColumnKey(1,"app (dd)"));
 		organLength.clear(); chart(organLength,SCATTER_PLOT);
 		organLength.(setColumnKey(0,"blade (m)"), setColumnKey(1,"internode (m)"));
+		
+		biomassPart.clear(); chart(biomassPart,XY_PLOT);
+		biomassPart.(setColumnKey(0,"Roots (g)"), setColumnKey(1,"internode (g)"),setColumnKey(2,"leaves (g)"),setColumnKey(3,"sucrose (g)"),setColumnKey(4,"substrates reserve (g)"));
+		
+		
 		nGreenLeaves.clear(); chart(nGreenLeaves,XY_PLOT);
 		nGreenLeaves.(setColumnKey(0,"Appeared Leaves"), setColumnKey(1,"Expanded Leaves"));
 		

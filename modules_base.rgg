@@ -181,6 +181,7 @@ module PlantBase extends Null
 	double biomLeaf;			// leaf biomass
 	double biomStem;			// stem biomass
 	double biomRoots;			// root system biomass
+	double biomSucro;			// sucrose mass
 	double shootRoot;			// shoot/root ratio (leaf+stem / roots)
 	double biomassAbove;		// aboveground biomass (leaf+stem+reproductive organs)
 	double sinkStrength;		// total plant sink strength
@@ -271,8 +272,7 @@ module PlantBase extends Null
 		double rm = 0.015;		// maintenance respiration  (gr CO2 / gr plant biomass / day)
 		double fCO2 = 0.6;		// conversion factor grom gr CO2 to gr biomass
 		substrates = Math.max(0,(mCO2 * assimilated * 1e-3/*mmol to mol*/ - rm * biomass) * fCO2 + reservePool);
-		//println("hereeeee"+count((* l:Leaf, (l.plantNumber == plantNumber) *)));
-		//println(count((* g:GrowingOrgan, (g.plantNumber == plantNumber) *)) > 0);
+		
 		if (count((* g:GrowingOrgan, (g.plantNumber == plantNumber) *)) > 0) {
 			reservePool = 0;
 		}
@@ -302,21 +302,32 @@ module PlantBase extends Null
 	// update plant biomass and yield
 	void updateBiomass()
 	{
-		//double p = biomass;
+		
 		biomass = reservePool + sum((* g:GrowingOrgan, (g.plantNumber == plantNumber) *)[biomass]);
 		yld = sum((* f:Flower, (f.plantNumber == plantNumber) *)[biomass]);
 		biomLeaf = sum((* l:Leaf, (l.plantNumber == plantNumber) *)[biomass]);
 		biomStem = sum((* i:Internode, (i.plantNumber == plantNumber) *)[biomass]);
 		biomRoots = sum((* r:RootSystem, (r.plantNumber == plantNumber) *)[biomass]);
+		biomSucro = sum((* i:Internode, (i.plantNumber == plantNumber) *)[sucContent]);
 		shootRoot = (biomLeaf + biomStem) / biomRoots;
-		biomassAbove = yld + biomLeaf + biomStem;
-		plantYield.getRow(plantNumber-1).set(0,yld/1000);
+		biomassAbove = yld + biomLeaf + biomStem;		
 		plantBiomass.getRow(time).set(plantNumber,biomass/1000);
+		plantYield.getRow(plantNumber-1).set(0,yld/1000);
+		
+		if (plantNumber == profilePlant) {
+			biomassPart.getRow(time).set(0,biomRoots/1000);
+			biomassPart.getRow(time).set(1,biomStem/1000);
+			biomassPart.getRow(time).set(2,biomLeaf/1000);
+			biomassPart.getRow(time).set(3,biomSucro/1000);
+			biomassPart.getRow(time).set(4,reservePool/1000);
+		}
+		
 		nLiveLeaves = count((* l:Leaf, (l.plantNumber == plantNumber) *));
 		nDevelopedLeaves = count((* l:Leaf, (l.plantNumber == plantNumber && l.dewlap == true) *));
 		nGreenLeaves.getRow(time).set(0,nLiveLeaves);
 		nGreenLeaves.getRow(time).set(1,nDevelopedLeaves);
-		plantBiomass.getRow(time).set(plantNumber,biomass/1000);
+		
+		
 		nInternodes = count((* i:Internode, (i.plantNumber == plantNumber) *));
 		if (sr<2) {sourceSink.getRow(time).set(plantNumber,sr);}
 		//sourceSink.getRow(time).set(plantNumber,sr);
@@ -405,7 +416,8 @@ module PlantBase extends Null
 				set(17,biomStem),
 				set(18,biomRoots),
 				set(19,shootRoot),
-				set(20,biomassAbove)
+				set(20,biomassAbove),
+				set(21,biomSucro)
 			);
 		}
 	}

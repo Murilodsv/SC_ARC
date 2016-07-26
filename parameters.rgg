@@ -28,7 +28,7 @@ static boolean oldLM			= true;			// true: use old light model, false: use FluxLM
 static boolean seeRays			= false;		// see direction of rays from light sources if true
 
 // Setting clones (Infinity Canopy)
-static boolean infinityCanopy   = false;			// Set whether cloning is on/off (true/false)
+static boolean infinityCanopy   = true;			// Set whether cloning is on/off (true/false)
 static int X_times				= 10;			// Number of cloned plots on X axis
 static int Y_times				= 10;			// Number of cloned plots on Y axis
 
@@ -279,6 +279,7 @@ const DatasetRef lightTransectY =  new DatasetRef("Light Transect Y");
 const DatasetRef combiLight = new DatasetRef("Tile and sensor light");
 
 const DatasetRef organLength = new DatasetRef("Organ length profile");
+const DatasetRef biomassPart = new DatasetRef("Biomass partitioning (Profile Plant)");
 const DatasetRef nGreenLeaves = new DatasetRef("Number of Green Leaves");
 const DatasetRef leafInitApp = new DatasetRef("Leaf init & appearance");
 const DatasetRef thermalTime = new DatasetRef("Thermal time accumulated");

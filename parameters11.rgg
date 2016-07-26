@@ -43,7 +43,7 @@ import static parameters.*;
 	teFlower[sugarcane] = 0;                // flower/fruit growth duration
 	teInt[sugarcane] = 688;                // internode growth duration
 	teLeaf[sugarcane] = 1008;                // leaf growth duration
-	teSucrose[sugarcane] = 15 * plastochron2[sugarcane];
+	teSucrose[sugarcane] = 13 * plastochron2[sugarcane];
 	SucroseStart[sugarcane] = 1.;			// Determines when sucrose ("as an organ") accumulatation will start within an internode (expressed as X times te of internode)
 	
 
@@ -51,7 +51,7 @@ import static parameters.*;
 	maxWidthInt[sugarcane] = 0.04;			// maxium internode width
 		                                 
 	lengthBiomassRatio[sugarcane] = 0.0085;   // internode ratio length / biomass (mm/mg)
-	amax[sugarcane] = 40;                  // max photosynthesis rate
+	amax[sugarcane] = 35;                  // max photosynthesis rate
 	eff[sugarcane] = 0.05;                 // initial light use efficiency (initial slope of light response curve)
 	LMA[sugarcane] = 4.5;                    // leaf mass per unit area (mg / cm2)
 	leafLife[sugarcane] = 1.0;               // life span of a leaf since appearance (expressed as X times its growth duration (te))
