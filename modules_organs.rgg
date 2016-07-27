@@ -406,11 +406,12 @@ module Internode extends VisibleOrgan
 		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
 		increment = getModifier() * lbRatio * growth; // based on these assumptions internode could expand up to 20 (max) times the lbRatio
 		length += increment;
-		width = maxWidthInt[species] / (1 + Math.exp(-0.02 * (age - (0.5 * te))));
+		width = maxWidthInt[species] / (1 + Math.exp(-0.005 * (age - (0.5 * te))));
 
 		area = 2 * Math.PI * 0.5*width * length;
 		if (order == 0 && plantNumber == profilePlant) {
 			organLength.getRow(rank).set(1,length);
+			organLength.getRow(rank).set(2,width*10);
 		}
 		
 		// Flag to initiate sucrose acumulation in internode
@@ -481,9 +482,7 @@ module Internode extends VisibleOrgan
 module Sucrose extends GrowingOrgan
 {
 	
-	void calcDimensions(){
-	
-	
+	void calcDimensions(){	
 	}
 	
 	// sucrose initiation
@@ -577,6 +576,7 @@ module Leaf extends VisibleOrgan
 		if (species == 11) // using petiole as leaf sheath for sugarcane 
 		{
 			Internode it = selectWhere((* i:Internode *), (i.plantNumber == plantNumber && i.rank == rank));
+			
 			if(live_rank <= (MaxGreenLeafNumber[species] - MaxDewlapNumber[species])) {
 			petdiameter = it.width* 1.05;}
 			else{								
@@ -599,6 +599,8 @@ module Leaf extends VisibleOrgan
 		
 		if (order == 0 && plantNumber == profilePlant) {
 			organLength.getRow(rank).set(0,length);
+			organLength.getRow(rank).set(3,width*10);
+			organLength.getRow(rank).set(4,petlength);
 		}
 	}
 	
