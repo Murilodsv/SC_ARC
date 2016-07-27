@@ -37,21 +37,21 @@ import static parameters.*;
 	wmaxRoot[sugarcane] = 20000;            			// maximum root system biomass
 	wmaxFlower[sugarcane] = 0;        					// maximum flower/fruit biomass	
 	wmaxInt[sugarcane] = 17400;            				// maximum internode biomass (value from
-	wmaxSucrose[sugarcane] = 0.5 * wmaxInt[sugarcane]; 	// Fraction of internode biomass Value from inman-bamber 2012
+	wmaxSucrose[sugarcane] = 0.6 * wmaxInt[sugarcane]; 	// Fraction of internode biomass Value from inman-bamber 2012
 	wmaxLeaf[sugarcane] = 2000;             // maximum leaf biomass
 	teRoot[sugarcane] = 4000;               // root growth duration
 	teFlower[sugarcane] = 0;                // flower/fruit growth duration
 	teInt[sugarcane] = 688;                // internode growth duration
 	teLeaf[sugarcane] = 1008;                // leaf growth duration
-	teSucrose[sugarcane] = 13 * plastochron2[sugarcane];
-	SucroseStart[sugarcane] = 1.;			// Determines when sucrose ("as an organ") accumulatation will start within an internode (expressed as X times te of internode)
+	teSucrose[sugarcane] = 14 * plastochron2[sugarcane];
+	SucroseStart[sugarcane] = 0.75;			// Determines when sucrose ("as an organ") accumulatation will start within an internode (expressed as X times te of internode)
 	
 
 
 	maxWidthInt[sugarcane] = 0.04;			// maxium internode width
 		                                 
 	lengthBiomassRatio[sugarcane] = 0.0085;   // internode ratio length / biomass (mm/mg)
-	amax[sugarcane] = 35;                  // max photosynthesis rate
+	amax[sugarcane] = 40;                  // max photosynthesis rate
 	eff[sugarcane] = 0.05;                 // initial light use efficiency (initial slope of light response curve)
 	LMA[sugarcane] = 4.5;                    // leaf mass per unit area (mg / cm2)
 	leafLife[sugarcane] = 1.0;               // life span of a leaf since appearance (expressed as X times its growth duration (te))

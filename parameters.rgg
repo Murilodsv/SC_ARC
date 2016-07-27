@@ -271,7 +271,9 @@ const DatasetRef laidata = new DatasetRef("Leaf area index");
 const DatasetRef tillering = new DatasetRef("Tillering");
 const DatasetRef fieldFabs = new DatasetRef("Field fPAR");
 const DatasetRef fieldBiomass = new DatasetRef("Field biomass");
+const DatasetRef fieldBiomass_2 = new DatasetRef("Field biomass Sugarcane");
 const DatasetRef fieldYield = new DatasetRef("Field yield");
+const DatasetRef fieldYield_sugar = new DatasetRef("Field yield Sugarcane");
 const DatasetRef fieldRFR = new DatasetRef("Field RFR");
 
 const DatasetRef lightTransectX =  new DatasetRef("Light Transect X");
@@ -279,6 +281,7 @@ const DatasetRef lightTransectY =  new DatasetRef("Light Transect Y");
 const DatasetRef combiLight = new DatasetRef("Tile and sensor light");
 
 const DatasetRef organLength = new DatasetRef("Organ length profile");
+const DatasetRef sucroIntern = new DatasetRef("Sucrose content profile");
 const DatasetRef biomassPart = new DatasetRef("Biomass partitioning (Profile Plant)");
 const DatasetRef nGreenLeaves = new DatasetRef("Number of Green Leaves");
 const DatasetRef leafInitApp = new DatasetRef("Leaf init & appearance");

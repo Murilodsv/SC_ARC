@@ -424,6 +424,10 @@ module Internode extends VisibleOrgan
 			sucContent = su.biomass;
 		}
 		
+		if (order == 0 && plantNumber == profilePlant) {
+			sucroIntern.getRow(rank).set(0,(sucContent/biomass)*100);
+		}
+		
 		// tell BranchBase the branch is extending so it cannot be aborted anymore
 		if (order > 0 && length > 0) {
 			BranchBase bb = first((* this (<--)+ BranchBase *));
@@ -457,7 +461,7 @@ module Internode extends VisibleOrgan
 			// added to account for phyllochron change "broken stick"	
 			te = (Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species])) * plastochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species]))) * plastochron2[species]);
 		}else {
-			te = teLeaf[species];
+			te = teInt[species];
 			}			
 		
 		tm = te * 0.5; 

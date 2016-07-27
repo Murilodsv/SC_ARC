@@ -117,14 +117,19 @@ static void initDatasets()
 		fieldFabs.clear(); chart(fieldFabs,XY_PLOT);
 		fieldRFR.clear(); chart(fieldRFR,XY_PLOT);
 		fieldYield.clear(); chart(fieldYield,XY_PLOT);
+		fieldYield_sugar.clear(); chart(fieldYield_sugar,XY_PLOT);
+		fieldYield_sugar.(setColumnKey(0,"Stalk DM (t ha-1)"), setColumnKey(1,"Stalk DM ()"));
 		fieldBiomass.clear(); chart(fieldBiomass,XY_PLOT);
+		fieldBiomass_2.clear(); chart(fieldBiomass_2,XY_PLOT);
+		fieldBiomass_2.(setColumnKey(0,"Roots DM (t ha-1)"), setColumnKey(1,"Stalk DM (t ha-1)"),setColumnKey(2,"leaves DM (t ha-1)"),setColumnKey(3,"sucrose DM (t ha-1)"));
 		leafInitApp.clear(); chart(leafInitApp,SCATTER_PLOT);
 		leafInitApp.(setColumnKey(0,"init (dd)"), setColumnKey(1,"app (dd)"));
 		organLength.clear(); chart(organLength,SCATTER_PLOT);
 		organLength.(setColumnKey(0,"blade (m)"), setColumnKey(1,"internode (m)"));
-		
+		sucroIntern.clear(); chart(sucroIntern,SCATTER_PLOT);
+		sucroIntern.(setColumnKey(0,"sugar content (%)"));
 		biomassPart.clear(); chart(biomassPart,XY_PLOT);
-		biomassPart.(setColumnKey(0,"Roots (g)"), setColumnKey(1,"internode (g)"),setColumnKey(2,"leaves (g)"),setColumnKey(3,"sucrose (g)"),setColumnKey(4,"substrates reserve (g)"));
+		biomassPart.(setColumnKey(0,"Roots (g)"), setColumnKey(1,"Stem (g)"),setColumnKey(2,"leaves (g)"),setColumnKey(3,"sucrose (g)"),setColumnKey(4,"substrates reserve (g)"));
 		
 		
 		nGreenLeaves.clear(); chart(nGreenLeaves,XY_PLOT);
@@ -140,6 +145,7 @@ static void initDatasets()
 				fieldRFR.(setColumnKey(2*s,"Focal "+speciesNames[s]), setColumnKey(2*s+1,"All "+speciesNames[s]));
 				fieldYield.(setColumnKey(2*s,"Focal "+speciesNames[s]+" (g/m2)"), setColumnKey(2*s+1,"All "+speciesNames[s]+" (g/m2)"));
 				fieldBiomass.(setColumnKey(2*s,"Focal "+speciesNames[s]+" (g/m2)"), setColumnKey(2*s+1,"All "+speciesNames[s]+" (g/m2)"));
+				
 			}
 		}
 }
@@ -167,7 +173,7 @@ static void initiate()
 	GridClonerNode(X_times, nrPlants[11] * plantDistance[11] , Y_times, nrRows[11] * rowDistance[11]) // Do infinite canopy!
 	)
 	[ // creating light sources objetcts
-		Translate(15,15,0) 			//Set location of the "Light Dome"
+		Translate(5,10,0) 			//Set location of the "Light Dome"
 		RH(0) 						//Orientation of "Light Dome"
 		
 		dr:DirectLight

@@ -27,6 +27,10 @@ module FieldBase
 	double[] yldBorder = new double[totalSpecies];				// biomass of the reproductive organs of the entire field (focal + border) (gr / m2)
 	double[] biomassAbove = new double[totalSpecies];			// aboveground biomass of the focal plants (gr /m2)
 	double[] hi = new double[totalSpecies];						// harvest index (yield / aboveground biomass)
+	double[] biomassRoot = new double[totalSpecies];
+	double[] biomassStem = new double[totalSpecies];
+	double[] biomassLeaves = new double[totalSpecies];
+	double[] biomassSucrose = new double[totalSpecies];
 	boolean[] harvested = new boolean[totalSpecies];			// flagged to true after harvest
 	
 	// determine whether it is time to stop the whole simulation
@@ -99,7 +103,16 @@ module FieldBase
 				biomass[s] = 0.001 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomass]) / focalArea[s];
 				biomassBorder[s] = 0.001 * sum((* pb:PlantBase, (pb.species == s) *)[biomass]) / area[s];
 				biomassAbove[s] = 0.001 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomassAbove]) / focalArea[s];
-				fieldBiomass.getRow(time).(set(2*s,biomass[s]), set(2*s+1,biomassBorder[s]));
+				
+				biomassRoot[s] = 1e-5 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomRoots]) / focalArea[s];
+				biomassStem[s] = 1e-5 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomStem]) / focalArea[s];
+				biomassLeaves[s] = 1e-5 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomLeaf]) / focalArea[s];
+				biomassSucrose[s] = 1e-5 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomSucro]) / focalArea[s];
+				
+				fieldBiomass.getRow(time).(set(2*s,biomass[s]), set(2*s+1,biomassBorder[s]));				
+				fieldBiomass_2.getRow(time).(set(0,biomassRoot[s]), set(1,biomassStem[s]), set(2,biomassLeaves[s]), set(3,biomassSucrose[s]));
+				
+				
 			}
 		}
 	}
