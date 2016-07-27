@@ -4,6 +4,7 @@ import static modules_organs.*;
 import static modules_light.*;
 import static parameters.*;
 import static environment.*;
+import static modules_soil.*;
 import static parameters0.*;
 import static parameters1.*;
 import static parameters2.*;
@@ -125,7 +126,7 @@ static void initDatasets()
 		leafInitApp.clear(); chart(leafInitApp,SCATTER_PLOT);
 		leafInitApp.(setColumnKey(0,"init (dd)"), setColumnKey(1,"app (dd)"));
 		organLength.clear(); chart(organLength,SCATTER_PLOT);
-		organLength.(setColumnKey(0,"blade (m)"), setColumnKey(1,"internode (m)"));
+		organLength.(setColumnKey(0,"blade (m)"), setColumnKey(1,"internode (m)"), setColumnKey(2,"internode width (dm)"), setColumnKey(3,"blade width (dm)"), setColumnKey(4,"Leaf Sheath (m)"));
 		sucroIntern.clear(); chart(sucroIntern,SCATTER_PLOT);
 		sucroIntern.(setColumnKey(0,"sugar content (%)"));
 		biomassPart.clear(); chart(biomassPart,XY_PLOT);
@@ -215,6 +216,14 @@ static void initiate()
 									[
 										for (1:nrTiles) (
 											t:Tile
+										
+											//adding soil layers for each tile
+											if(UseSoil) (
+											for(int nLayer=1; nLayer<=5; nLayer++)
+												(
+											[sl:SoilLayer {sl.initiate(nLayer);}]
+												)
+												)
 											Translate(plantDistance[species]/nrTiles,0,0)
 											{
 												if (checker == true) {

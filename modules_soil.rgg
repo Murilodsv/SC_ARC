@@ -1,0 +1,40 @@
+import static parameters.*;
+import static environment.*;
+import static modules_base.*;
+import static modules_light.*;
+
+import de.grogra.ray.physics.Spectrum;
+import de.grogra.ray.physics.Spectrum3d;
+
+// soil profile associated to an individual plant
+module SoilLayer
+{
+	double upper;
+	double bottom;
+	double LL;
+	double DUL;
+	double SAT;
+	double KSAT;
+	double Thickness;
+	double PlantDist;
+	double RowDist;
+	double Depth;
+	
+	
+	void waterbalance(){
+	}
+	
+
+	// initiation of a soil layer
+	void initiate(int nLayer)
+	{
+		Thickness = 0.1;
+		PlantDist = 0.25;
+		RowDist = 1.4;
+		Depth = 0.1 * nLayer;
+		if(nLayer == 1) {Depth = Depth + 0.001;}
+	}
+} 
+==> 
+Translate(0,0,-Depth) Box(Thickness,PlantDist,RowDist).(setColor(0.51,0.33,0.16))
+;
