@@ -374,6 +374,25 @@ module Apex extends Organ
 	}             
 }
 
+module NodeSugar extends Organ
+{
+	
+	// Node initiation
+	void initiate(Apex a)
+	{
+		species = a.species;
+		rank = a.rank;
+		plantNumber = a.plantNumber;
+		border = a.border;
+		weed = a.weed;
+		order = a.order;	
+			
+	}
+}                             
+==>;
+
+
+
 // internode module
 module Internode extends VisibleOrgan
 {
@@ -572,27 +591,27 @@ module Leaf extends VisibleOrgan
 		length = Math.sqrt(area * lwRatio[species] / shapeCoefficient);
 		width = length / lwRatio[species];
 		
-		// dimensions of leaf sheath (as petiole)
-		if (species == 11) // using petiole as leaf sheath for sugarcane 
+		
+		// dimensions of Petiole/LeafSheath 
+		if (species == 11)  
 		{
+			// LeafSheath diameter as equal corresponding internode width + Leaf thickness (assumed as 1 mm) 
 			Internode it = selectWhere((* i:Internode *), (i.plantNumber == plantNumber && i.rank == rank));
+			double LeafThickness = 0.001;			
+			petdiameter = it.width + 2 * LeafThickness;
 			
-			if(live_rank <= (MaxGreenLeafNumber[species] - MaxDewlapNumber[species])) {
-			petdiameter = it.width* 1.05;}
-			else{								
-			petdiameter = it.width* 1.1;//Assuming leaf sheath's diameter to be 10% higher than internode
-			}
+			//
 			double maxLength_pet = wmaxInt[species] * lengthBiomassRatio[species] / 1000;
+			double Fblade = 0.8;
+			petlength = area*(1-Fblade) / (Math.PI * petdiameter);
 			
-			if (rank <=nrShortInternodes[species])
-			{
-			petlength =  Math.min(rank * maxLength_pet, 0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
+			if (rank <=nrShortInternodes[species]){
+			//petlength =  Math.min(rank * maxLength_pet, 0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
 			
 			} else {				
-				petlength = Math.min(nrShortInternodes[species] * maxLength_pet,0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
+				//petlength = Math.min(nrShortInternodes[species] * maxLength_pet,0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
 			}
-		} else 
-		{		
+		} else {		
 		petlength = fPet[species]*length;
 		petdiameter = 0.002;		
 		}
@@ -735,7 +754,12 @@ module Leaf extends VisibleOrgan
 		)
 		{area2 = 0;}
 		for (double i=1; i < segments; i++)
-		(
+		(	
+			if (i==1 && species ==11)  (
+			RL(angle)
+			) else (
+			RL(bendingAngleSegment)
+			)
 			{
 				double segmentLength;
 				segmentLength = length/segments;
@@ -747,11 +771,7 @@ module Leaf extends VisibleOrgan
 			) else (
 				Parallelogram(segmentLength,2*segmentWidth).(setLayer(border?borderLayer:leafLayer), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs),new RGBAShader(sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs,sRFR?rfr-0.2:fabs),LightShader)))
 			)
-			if (i==1 && species ==11)  (
-			RL(angle)
-			) else (
-			RL(bendingAngleSegment)
-			)
+			
 		)
 		if (showLabels) (TextLabel(frBio))
 	)

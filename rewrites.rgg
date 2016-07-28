@@ -16,12 +16,30 @@ static void develop()
 		r.initiate(pb);
 		a.initiate(pb);
 	}
-	; //  <--- FINAL OF REWRITING
-
+	; 
 	
-	// produce vegetative phytomer
-	// RULE:
-	// MATCHING POINTER 			CONDITION						
+	//REWRITING RULE FOR SUGARCANE
+	a:Apex, 				(a.shouldProduceVegetative() == true && a.species == sugarcane) ==>
+	n:NodeSugar
+	[l:Leaf] 
+	[bb:BranchBase RU(35) RH(180) aa:Apex]	
+	i:Internode	
+	RH(random(phyllotaxis[a.species]-phyllotaxis_rdm[a.species],phyllotaxis[a.species]+phyllotaxis_rdm[a.species]))// Rotate turtle head related to phyllotaxis
+	RL(random(-2.5,2.5)) 
+	RV(-0.4) // gravitropism power
+	a	
+	{		
+		n.initiate(a);
+		l.initiate(a);
+		bb.initiate(a);
+		aa.initiateAxillary(a);		
+		i.initiate(a);
+		a.increment();			
+	}
+	; // end of rewriting for sugarcane
+	
+	//REWRITING RULES FOR OTHER PLANTS
+	
 	a:Apex, 				(a.shouldProduceVegetative() == true) ==>
 	//REPLACEMENT
 	i:Internode	//internode criation
@@ -39,12 +57,16 @@ static void develop()
 	{
 		i.initiate(a);
 		bb.initiate(a);
-		//su.initiate(i);
 		aa.initiateAxillary(a);
 		a.increment();
 			
 	}
 	; // end of rewriting
+	
+	
+	
+	
+	
 	
 		
 	// produce flower
@@ -61,8 +83,7 @@ static void develop()
 	i:Internode, (i.startsucrose == true && count((* s:Sucrose, (s.rank == i.rank) *)) < 1) ==>
 	i [su:Sucrose]
 	{
-		su.initiate(i);
-			
+		su.initiate(i);			
 	}
 	;
 	
