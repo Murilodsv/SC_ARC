@@ -215,6 +215,7 @@ module PlantBase extends Null
 	boolean tiller;				// To flag whether it is a tiller
 	int tiller_order;			// order of tillering		
 	boolean emerged;			// Flag for emerged shoots
+	double PlantDepth;			// Depth of planting
 	
 	// assigns border based on location in the plot
 	void assignBorder(int row, int pos, int strip) {
@@ -268,6 +269,7 @@ module PlantBase extends Null
 		reservePool = s[endo];
 		this.weed = weed;
 		emerged = false;
+		PlantDepth = PlantingDepth[species];
 	}
 	
 	// calculate plant age
@@ -303,7 +305,7 @@ module PlantBase extends Null
 		if (functional == true) {
 			sr = substrates / sinkStrength;
 											
-			if (species == 11 && emerged && fabs < 0.15/*0.1 < fPAR && fPAR < 0.45*/ && nInternodes <= nrShortInternodes[species]) {die = true;}
+			if (species == 11 && emerged && fabs < 0.15/*0.1 < fPAR && fPAR < 0.45*/ && nInternodes <= nrShortInternodes[species]+10) {die = true;}
 			//if (age > 300 && sr < 0.01 && flowering == false) {die = true;}
 			
 			
@@ -462,6 +464,7 @@ module BranchBase extends Null
 		plantNumber = a.plantNumber;
 		species = a.species;
 		dormant = true;
+		
 	}
 	
 	boolean shouldFall() {

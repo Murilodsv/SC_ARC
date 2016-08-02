@@ -94,8 +94,9 @@ static void renew()
 		
 	}
 	
+		
 	// Update live_rank leaves (used only for sugarcane)
-	(*l:Leaf <+ i:Internode (-->)* a:Apex, (a.shouldProduceVegetative() == true && l.species == 11) *) ::>
+	(*l:Leaf < <+ n:StemNode > i:Internode (-->)* a:Apex, (a.shouldProduceVegetative() == true && l.age > 0 && l.species == 11) *) ::>
 	{		
 		l.live_rank++;
 		if (l.live_rank > (MaxGreenLeafNumber[l.species] - MaxDewlapNumber[l.species])) {l.dewlap = true;}

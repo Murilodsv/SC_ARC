@@ -259,7 +259,7 @@ static void initiate()
 								for (int ord=1; ord<=nrTillers; ord++) (
 	
 								[
-								
+									
 									pb_tl:PlantBase
 									rh_tl:RH(random(0,360)) //Rotate turtle Head							
 									s_tl:Seed
@@ -288,7 +288,7 @@ static void initiate()
 								]
 								)
 							)	 				
-						
+	
 							pb:PlantBase							
 							rh:RH(random(0,360)) //Rotate turtle Head							
 							s:Seed							

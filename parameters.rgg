@@ -16,7 +16,7 @@ static int leafLayer			= 3;			// layer in which to show the leaves
 static int borderLayer			= 4;			// layer in which to show the border plants
 static boolean showLabels		= false;		// show text labels with leaves and organs indicating fraction of potential biomass
 static boolean sRFR				= false;		// toggle PAR or R:FR visualisation (default value for swColor() method)
-static boolean snapShot			= true;			// take snapshots?
+static boolean snapShot			= false;			// take snapshots?
 static String path				= "C:/Murilo/DOUTORADO/WUR/Plant_Architecture/Data/";	//"C:/Users/Murilo/Dropbox/DOUTORADO/WUR/Plant_Architecture/Data/";	// location for the snapshots
 static String pathData			= "C:/Murilo/DOUTORADO/WUR/Plant_Architecture/Data/";	//"C:/Users/Murilo/Dropbox/DOUTORADO/WUR/Plant_Architecture/Data/";	// location for the output text files
 static boolean writePlantTable	= true;		// true: write plant-level tables
@@ -33,7 +33,7 @@ static int X_times				= 10;			// Number of cloned plots on X axis
 static int Y_times				= 10;			// Number of cloned plots on Y axis
 
 // Soil Profile Settings
-static boolean UseSoil			= false;
+static boolean UseSoil			= true;
 
 // time and environmental settings
 const float latitude 			= -22.708 * Math.PI/180;	// the latitude of location of the scene
@@ -158,6 +158,7 @@ static double[] phyllotaxis_rdm = new double[totalSpecies];		// standard deviati
 static int[] varDelay			= new int[totalSpecies];		// max variation in germination delay (in days, 0 = simultaneous germination)
 static double[] varDelayDD		= new double[totalSpecies];		// max variation in germination delay (in degreeDays, 0 = simultaneous germination)
 static double[] seedMass		= new double[totalSpecies];		// seed endosperm mass in mg
+static double[] PlantingDepth	= new double[totalSpecies];		// Planting depth
 
 static boolean[] branching		= new boolean[totalSpecies];	// toggle branching
 static double[] srThresh		= new double[totalSpecies];		// threshold sink/source ratio for bud break

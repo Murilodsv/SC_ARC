@@ -9,42 +9,63 @@ static void develop()
 [
 	
 	// gemination
-	// RULE:
-	// MATCHING POINTER 			CONDITION					REPLACEMENT
 	pb:PlantBase rh:RH s:Seed, (s.shouldGerminate(pb)) ==> pb rh r:RootSystem a:Apex
-	{	/* ACTIONS REGARDING THIS REPLACEMENT*/
+	{	
 		r.initiate(pb);
 		a.initiate(pb);
 	}
-	; //  <--- FINAL OF REWRITING
+	;
 
 	
 	// produce vegetative phytomer
-	// RULE:
-	// MATCHING POINTER 			CONDITION						
 	a:Apex, 				(a.shouldProduceVegetative() == true) ==>
-	//REPLACEMENT
-	i:Internode	//internode criation
-	[bb:BranchBase RU(35) RH(random(0,360)) aa:Apex] // branch base with a lateral apex (named aa to distinguish between apical and lateral)
-	if (a.species==sunflower && (a.rank==1||a.rank==2)) ([l:Leaf] [RH(180) l2:Leaf] {l.initiate(a); l2.initiate(a);}) // if sunflower, creates 2 initial dicotiledons leaves
-	else ([l:Leaf] 
+	
+	// Rewrite rules for sugarcane
+	if(a.species == sugarcane) (	
+		
+		sn:StemNode
+		[bb:BranchBase RL(90) aa:Apex]
+		[RH (180) l:Leaf]
+		i:Internode		
+		RH(random(phyllotaxis[a.species]-phyllotaxis_rdm[a.species],phyllotaxis[a.species]+phyllotaxis_rdm[a.species]))// Rotate turtle head related to phyllotaxis
+		{double inc = random(-2.5,2.5);}
+		RL(inc) //inclination of new Apex
+		RV(-0.4) // gravitropism power
+		a
+		{
+			sn.initiate(a);
+			bb.initiate(a);		
+			aa.initiateAxillary(a);			
+			l.initiate(a);			
+			i.initiate(a);			
+			a.increment();
+			
+		}
+	
+	// Rewrite rules for anyother plant
+	)else(
+	
+	
+		i:Internode	
+		[bb:BranchBase RU(35) RH(random(0,360)) aa:Apex] // branch base with a lateral apex (named aa to distinguish between apical and lateral)
+		if (a.species==sunflower && (a.rank==1||a.rank==2)) ([l:Leaf] [RH(180) l2:Leaf] {l.initiate(a); l2.initiate(a);}) // if sunflower, creates 2 initial dicotiledons leaves
+		else ([l:Leaf] 
 		{
 			l.initiate(a);			
 		})		
-	RH(a.species==sunflower && a.rank<=2 ? 90 : a.species==sugarcane ? random(phyllotaxis[a.species]-phyllotaxis_rdm[a.species],phyllotaxis[a.species]+phyllotaxis_rdm[a.species]) : phyllotaxis[a.species])// Rotate turtle head related to phyllotaxis
-	{double inc = random(-2.5,2.5);}
-	RL(inc) //inclination of new Apex
-	RV(a.species==sugarcane ? -0.4:-0.4) // gravitropism power
-	a	// Rewrite Apex at the top
-	{
+		RH(a.species==sunflower && a.rank<=2 ? 90 : phyllotaxis[a.species])// Rotate turtle head related to phyllotaxis
+		RL(random(-2.5,2.5)) //inclination of new Apex
+		RV(-0.4) // gravitropism power
+		a	// Rewrite Apex at the top
+		{
 		i.initiate(a);
 		bb.initiate(a);
-		//su.initiate(i);
 		aa.initiateAxillary(a);
 		a.increment();
 			
-	}
-	; // end of rewriting
+		}
+	)
+	; 
 	
 		
 	// produce flower

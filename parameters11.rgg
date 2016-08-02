@@ -4,8 +4,8 @@ import static parameters.*;
 
 {
 	// field parameters
-	nrRows[sugarcane] = 1;//3;                  // number of rows 3
-	nrPlants[sugarcane] = 1;//4;                // number of plants in a row 12
+	nrRows[sugarcane] = 2;//3;                  // number of rows 3
+	nrPlants[sugarcane] = 4;//4;                // number of plants in a row 12
 	borderRows[sugarcane] = 0;//1;              // number of border rows on either side of the field
 	borderPlants[sugarcane] = 0;//1;            // number of border plants on either side of a row
 	rowDistance[sugarcane] = 1.4;           // distance between rows
@@ -26,7 +26,7 @@ import static parameters.*;
 	finalLeafNumber[sugarcane]		= 70;				// final number of main stem leaves
 	MaxGreenLeafNumber[sugarcane]	= 10;				// Maximun number of green leaves that a stalk can hold
 	MaxDewlapNumber[sugarcane]		= 5;				// Maximun number of developed leaves (appeared dewlap) that a stalk can hold
-	MaxPop[sugarcane]				= 3;				// Maximun number of shoots per m-2
+	MaxPop[sugarcane]				= 26;				// Maximun number of shoots per m-2
 	nrShortInternodes[sugarcane]	= 5;  			// number of bottom internodes that should NOT elongate and have no mass
 	ratooning[sugarcane]			= false;					//Chose wheter is ratoon or not (true or false)
 	tt_em[sugarcane] = (ratooning[sugarcane]? 100:300); // thermal for emergence in ratooning or planted cane
@@ -37,7 +37,7 @@ import static parameters.*;
 	wmaxRoot[sugarcane] = 20000;            			// maximum root system biomass
 	wmaxFlower[sugarcane] = 0;        					// maximum flower/fruit biomass	
 	wmaxInt[sugarcane] = 17400;            				// maximum internode biomass (value from
-	wmaxSucrose[sugarcane] = 0.6 * wmaxInt[sugarcane]; 	// Fraction of internode biomass Value from inman-bamber 2012
+	wmaxSucrose[sugarcane] = 0.5 * wmaxInt[sugarcane]; 	// Fraction of internode biomass Value from inman-bamber 2012
 	wmaxLeaf[sugarcane] = 2000;             // maximum leaf biomass
 	teRoot[sugarcane] = 4000;               // root growth duration
 	teFlower[sugarcane] = 0;                // flower/fruit growth duration
@@ -48,10 +48,10 @@ import static parameters.*;
 	
 
 
-	maxWidthInt[sugarcane] = 0.04;			// maxium internode width
+	maxWidthInt[sugarcane] = 0.03;			// maxium internode width
 		                                 
 	lengthBiomassRatio[sugarcane] = 0.0085;   // internode ratio length / biomass (mm/mg)
-	amax[sugarcane] = 40;                  // max photosynthesis rate
+	amax[sugarcane] = 44;                  // max photosynthesis rate
 	eff[sugarcane] = 0.05;                 // initial light use efficiency (initial slope of light response curve)
 	LMA[sugarcane] = 4.5;                    // leaf mass per unit area (mg / cm2)
 	leafLife[sugarcane] = 1.0;               // life span of a leaf since appearance (expressed as X times its growth duration (te))
@@ -67,9 +67,10 @@ import static parameters.*;
 	phyllotaxis_rdm[sugarcane] = 10;		// standard deviation angle between consecutive leaves along a stem	                                     
 	
 	varDelay[sugarcane] = 10;                 // max variation in germination delay (in days, 0 = simultaneous germination)
-	varDelayDD[sugarcane] = 30;                 // max variation in germination delay (in days, 0 = simultaneous germination)
+	varDelayDD[sugarcane] = 50;                 // max variation in germination delay (in days, 0 = simultaneous germination)
 
-	seedMass[sugarcane] = 1000;      	     // seed endosperm mass in mg
+	seedMass[sugarcane] 		= 1000;      	     // seed endosperm mass in mg
+	PlantingDepth[sugarcane]	= 0.25;				// Planting Depth
 	
 	branching[sugarcane] = false;			 // toggle branching
 	srThresh[sugarcane] = 2;				 // threshold sink/source ratio for bud break
