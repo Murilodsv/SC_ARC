@@ -4,8 +4,8 @@ import static parameters.*;
 
 {
 	// field parameters
-	nrRows[sugarcane] = 2;//3;                  // number of rows 3
-	nrPlants[sugarcane] = 4;//4;                // number of plants in a row 12
+	nrRows[sugarcane] = 1;//3;                  // number of rows 3
+	nrPlants[sugarcane] = 1;//4;                // number of plants in a row 12
 	borderRows[sugarcane] = 0;//1;              // number of border rows on either side of the field
 	borderPlants[sugarcane] = 0;//1;            // number of border plants on either side of a row
 	rowDistance[sugarcane] = 1.4;           // distance between rows
@@ -26,7 +26,7 @@ import static parameters.*;
 	finalLeafNumber[sugarcane]		= 70;				// final number of main stem leaves
 	MaxGreenLeafNumber[sugarcane]	= 10;				// Maximun number of green leaves that a stalk can hold
 	MaxDewlapNumber[sugarcane]		= 5;				// Maximun number of developed leaves (appeared dewlap) that a stalk can hold
-	MaxPop[sugarcane]				= 26;				// Maximun number of shoots per m-2
+	MaxPop[sugarcane]				= 4;				// Maximun number of shoots per m-2
 	nrShortInternodes[sugarcane]	= 5;  			// number of bottom internodes that should NOT elongate and have no mass
 	ratooning[sugarcane]			= false;					//Chose wheter is ratoon or not (true or false)
 	tt_em[sugarcane] = (ratooning[sugarcane]? 100:300); // thermal for emergence in ratooning or planted cane
@@ -38,7 +38,7 @@ import static parameters.*;
 	wmaxFlower[sugarcane] = 0;        					// maximum flower/fruit biomass	
 	wmaxInt[sugarcane] = 17400;            				// maximum internode biomass (value from
 	wmaxSucrose[sugarcane] = 0.5 * wmaxInt[sugarcane]; 	// Fraction of internode biomass Value from inman-bamber 2012
-	wmaxLeaf[sugarcane] = 2000;             // maximum leaf biomass
+	wmaxLeaf[sugarcane] = 3000;             // maximum leaf biomass
 	teRoot[sugarcane] = 4000;               // root growth duration
 	teFlower[sugarcane] = 0;                // flower/fruit growth duration
 	teInt[sugarcane] = 688;                // internode growth duration
@@ -53,12 +53,12 @@ import static parameters.*;
 	lengthBiomassRatio[sugarcane] = 0.0085;   // internode ratio length / biomass (mm/mg)
 	amax[sugarcane] = 44;                  // max photosynthesis rate
 	eff[sugarcane] = 0.05;                 // initial light use efficiency (initial slope of light response curve)
-	LMA[sugarcane] = 4.5;                    // leaf mass per unit area (mg / cm2)
+	LMA[sugarcane] = 4.;                    // leaf mass per unit area (mg / cm2)
 	leafLife[sugarcane] = 1.0;               // life span of a leaf since appearance (expressed as X times its growth duration (te))
 	leafLife2[sugarcane] = 1.0;               // NOT USED FOR NOW..life span of a leaf since appearance (expressed as X times its growth duration (te))
 	
-	lwRatio[sugarcane] = 20;               // ratio between leaf blade length and width
-	maxWidth[sugarcane] = 0.6235;             // location on the leaf where width is maximal (fraction of length)
+	lwRatio[sugarcane] = 30;               // ratio between leaf blade length and width
+	maxWidth[sugarcane] = 0.65;             // location on the leaf where width is maximal (fraction of length)
 	shapeCoeff[sugarcane] = 0.4;            // leaf shape coefficient (0 = rectangular, high value = pinched)
 	fPet[sugarcane] = 0.15;                   // petiole length (expressed as fraction of leaf blade length)
 	leafAngle[sugarcane] = 35;             // insertion angle of all leaves (90 = horizontal)

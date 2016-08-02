@@ -207,7 +207,7 @@ module Seed extends Null
 		if(species == 11) {
 			
 			double fPAR = mean((*t:Tile, (t.strip == pb.strip) *) [fabs]);			
-			if (pb.age >= (tt_em[species] + germinationDelayDD +(pb.tiller_order *tillochron[species])) && fPAR > 0.35){
+			if (pb.age >= (tt_em[species] + germinationDelayDD +(pb.tiller_order *tillochron[species])) && fPAR > 0.4){
 			
 				pb.emerged = true;
 				return true;			
@@ -564,8 +564,8 @@ module Leaf extends VisibleOrgan
 		
 		if(a.species == 11) {
 			// added to account for phyllochron change "broken stick"	
-			te = (Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species])) * phyllochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species]))) * phyllochron2[species]);
-								
+			//te = (Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species])) * phyllochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species]))) * phyllochron2[species]);
+				te = MaxGreenLeafNumber[species] * phyllochron2[species];				
 		}else {
 			te = teLeaf[species];
 			}			
