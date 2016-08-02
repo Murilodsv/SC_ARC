@@ -187,6 +187,7 @@ module Seed extends Null
 	double germinationDelay;			// delay before gemination takes place
 	double germinationDelayDD;			// delay before gemination takes place
 	
+	
 	// seed initiation
 	void initiate(int species, int i)
 	{
@@ -374,7 +375,7 @@ module Apex extends Organ
 	}             
 }
 
-module NodeSugar extends Organ
+module StemNode extends Organ
 {
 	
 	// Node initiation
@@ -385,7 +386,8 @@ module NodeSugar extends Organ
 		plantNumber = a.plantNumber;
 		border = a.border;
 		weed = a.weed;
-		order = a.order;	
+		order = a.order;
+		length = 0;	
 			
 	}
 }                             
@@ -536,8 +538,52 @@ module Leaf extends VisibleOrgan
 	double petangle;									// insertion angle of the petiole of a leaf
 	double petlength;									// petiole length
 	double petdiameter;									// petiole diameter
+	double thickness;									// Leaf Thickness (m)
 	boolean appeared;									// true if leaf biomass is no longer 0
 	boolean dewlap;										// Check whether the dewlap is developed
+	
+	
+	// leaf initiation
+	void initiate(Apex a)
+	{
+		species = a.species;
+		plantNumber = a.plantNumber;
+		border = a.border;
+		weed = a.weed;
+		rank = a.rank;
+		cpn = a.cpn;
+		order = a.order;
+		length = 0;
+		width = 0;
+		thickness = 0.001;		
+		live_rank = 0;		
+		wmax = wmaxLeaf[species];
+		petdiameter = 0;
+		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		petlength = Math.min((pb.PlantDepth / nrShortInternodes[species]) * rank, pb.PlantDepth);
+		
+		if(a.species == 11) {
+			// added to account for phyllochron change "broken stick"	
+			te = (Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species])) * phyllochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species]))) * phyllochron2[species]);
+								
+		}else {
+			te = teLeaf[species];
+			}			
+			
+		tm = te * 0.5;
+		
+		calcShapeCoefficient();
+		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between leaf initiation and appearance increases with rank
+				
+		// record leaf initiation  
+		if (order == 0 && plantNumber == profilePlant) 
+		{
+			
+			leafInitApp.getRow(rank).set(0,pb.age);
+		}	
+		
+	}
+
 
 	
 	double getModifier() // use this modifier to adjust plant extention rate (PER mm °C-1 h-1)
@@ -597,20 +643,16 @@ module Leaf extends VisibleOrgan
 		{
 			// LeafSheath diameter as equal corresponding internode width + Leaf thickness (assumed as 1 mm) 
 			Internode it = selectWhere((* i:Internode *), (i.plantNumber == plantNumber && i.rank == rank));
-			double LeafThickness = 0.001;			
-			petdiameter = it.width + 2 * LeafThickness;
+			petdiameter = it.width + thickness * 2;
 			
 			//
 			double maxLength_pet = wmaxInt[species] * lengthBiomassRatio[species] / 1000;
 			double Fblade = 0.8;
-			petlength = area*(1-Fblade) / (Math.PI * petdiameter);
 			
-			if (rank <=nrShortInternodes[species]){
-			//petlength =  Math.min(rank * maxLength_pet, 0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
+			//petlength = area*(1-Fblade) / (Math.PI * petdiameter);
 			
-			} else {				
-				//petlength = Math.min(nrShortInternodes[species] * maxLength_pet,0.4);//Math.max(0,Math.min(1.9,403.43*(length*100)**-1.534)*length - ((pb.age >= ((nrShortInternodes[species]+1) * plastochron[species]))? 0:0.25));//Math.min(2,700. * length**-1.634)*length; // relations between length of petiole and leaf blade length from Moore & Botha Fig 2.1
-			}
+			
+			
 		} else {		
 		petlength = fPet[species]*length;
 		petdiameter = 0.002;		
@@ -675,40 +717,6 @@ module Leaf extends VisibleOrgan
 		
 	}	
 	
-	// leaf initiation
-	void initiate(Apex a)
-	{
-		species = a.species;
-		plantNumber = a.plantNumber;
-		border = a.border;
-		weed = a.weed;
-		rank = a.rank;
-		cpn = a.cpn;
-		order = a.order;
-		length = 0;
-		live_rank = 0;		
-		wmax = wmaxLeaf[species];		
-		
-		if(a.species == 11) {
-			// added to account for phyllochron change "broken stick"	
-			te = (Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species])) * phyllochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((phyl_change[species] - a.rank),MaxGreenLeafNumber[species]))) * phyllochron2[species]);
-		}else {
-			te = teLeaf[species];
-			}			
-			
-		tm = te * 0.5;
-		width = 0;
-		calcShapeCoefficient();
-		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between leaf initiation and appearance increases with rank
-		
-		// record leaf initiation  
-		if (order == 0 && plantNumber == profilePlant) 
-		{
-			PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
-			leafInitApp.getRow(rank).set(0,pb.age);
-		}
-	}
-
 
 	// conditions for leaf shedding
 	boolean shouldFall()
