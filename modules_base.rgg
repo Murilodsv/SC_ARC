@@ -31,6 +31,16 @@ module FieldBase
 	double[] biomassStem = new double[totalSpecies];
 	double[] biomassLeaves = new double[totalSpecies];
 	double[] biomassSucrose = new double[totalSpecies];
+	
+	double[] stalkFreshMass = new double[totalSpecies];
+	double[] pol			= new double[totalSpecies];
+	
+	// Average Leaf Profile
+	double[] leafLength 	= new double[totalSpecies];    
+	double[] leafWidth 		= new double[totalSpecies];    
+	double[] petlength 		= new double[totalSpecies];     
+	double[] petdiameter 	= new double[totalSpecies];   
+	double[] leafangle 		= new double[totalSpecies];	
 	boolean[] harvested = new boolean[totalSpecies];			// flagged to true after harvest
 	
 	// determine whether it is time to stop the whole simulation
@@ -76,6 +86,32 @@ module FieldBase
 		}
 	}
 	
+	
+	// Leaf Profile
+	void updateLeafProfile() {
+		for (int s=0; s<=totalSpecies-1; s++) {
+			if (spPresence[s] == true && s==11) {
+				
+				for (int r = 0; r<=MaxGreenLeafNumber[s]-1; r++){
+				leafLength[s] = mean((* l:Leaf, (l.border == false && l.species == s && l.live_rank == r) *)[length]);
+				leafWidth[s] = mean((* l:Leaf, (l.border == false && l.species == s && l.live_rank == r) *)[width]);
+				petlength[s]= mean((* l:Leaf, (l.border == false && l.species == s && l.live_rank == r) *)[petlength]);
+				petdiameter[s] = mean((* l:Leaf, (l.border == false && l.species == s && l.live_rank == r) *)[petdiameter]);
+				leafangle[s]= mean((* l:Leaf, (l.border == false && l.species == s && l.live_rank == r) *)[angle]);
+				
+				FieldLeafProfile.getRow(r+1).set(0,leafLength[s]*100);
+				FieldLeafProfile.getRow(r+1).set(1,leafWidth[s]*1000);
+				FieldLeafProfile.getRow(r+1).set(2,petlength[s]*100);
+				FieldLeafProfile.getRow(r+1).set(3,petdiameter[s]*1000);
+				FieldLeafProfile.getRow(r+1).set(4,leafangle[s]);				
+				
+				}						
+			}
+		}
+	}	
+	
+	
+	
 	// calculate absorbed radiation and R:FR at field level
 	void updateAbsorbedRadiation() {
 		for (int s=0; s<=totalSpecies-1; s++)
@@ -90,7 +126,7 @@ module FieldBase
 				k[s] = - Math.log(1-fabs[s]) / lai[s];
 				accumulatedRadiation[s] = sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[accumulatedRadiation]*0.22) / focalArea[s];
 				assCO2[s] = sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[assimilated]) / focalArea[s];
-				println(fabs[s]);
+				
 			}
 		}
 	}
@@ -109,9 +145,12 @@ module FieldBase
 				biomassLeaves[s] = 1e-5 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomLeaf]) / focalArea[s];
 				biomassSucrose[s] = 1e-5 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomSucro]) / focalArea[s];
 				
+				stalkFreshMass[s]  = 1e-5 * sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[biomFreshStem]) / focalArea[s]; 
+				pol[s] = (biomassSucrose[s] / stalkFreshMass[s]) *100; 
+				
 				fieldBiomass.getRow(time).(set(2*s,biomass[s]), set(2*s+1,biomassBorder[s]));				
 				fieldBiomass_2.getRow(time).(set(0,biomassRoot[s]), set(1,biomassStem[s]), set(2,biomassLeaves[s]), set(3,biomassSucrose[s]));
-				
+				sugarcane_yield.getRow(time).(set(0,stalkFreshMass[s]), set(1,pol[s]));
 				
 			}
 		}
@@ -193,8 +232,10 @@ module PlantBase extends Null
 	double yld;					// plant yield (biomass of reproductive organ)
 	double biomLeaf;			// leaf biomass
 	double biomStem;			// stem biomass
+	double biomFreshStem;		// Stem Fresh Biomass
 	double biomRoots;			// root system biomass
 	double biomSucro;			// sucrose mass
+	double StemPol;
 	double shootRoot;			// shoot/root ratio (leaf+stem / roots)
 	double biomassAbove;		// aboveground biomass (leaf+stem+reproductive organs)
 	double sinkStrength;		// total plant sink strength
@@ -305,7 +346,7 @@ module PlantBase extends Null
 		if (functional == true) {
 			sr = substrates / sinkStrength;
 											
-			if (species == 11 && emerged && fabs < 0.15/*0.1 < fPAR && fPAR < 0.45*/ && nInternodes <= nrShortInternodes[species]+10) {die = true;}
+			if (species == 11 && emerged && fabs < 0.15/*0.1 < fPAR && fPAR < 0.45*/ && nInternodes <= (nrShortInternodes[species]+10)) {die = true;}
 			//if (age > 300 && sr < 0.01 && flowering == false) {die = true;}
 			
 			
@@ -324,6 +365,8 @@ module PlantBase extends Null
 		biomStem = sum((* i:Internode, (i.plantNumber == plantNumber) *)[biomass]);
 		biomRoots = sum((* r:RootSystem, (r.plantNumber == plantNumber) *)[biomass]);
 		biomSucro = sum((* i:Internode, (i.plantNumber == plantNumber) *)[sucContent]);
+		biomFreshStem = sum((* i:Internode, (i.plantNumber == plantNumber) *)[FreshBiomass]);
+		StemPol = biomSucro / biomFreshStem;
 		shootRoot = (biomLeaf + biomStem) / biomRoots;
 		biomassAbove = yld + biomLeaf + biomStem;		
 		plantBiomass.getRow(time).set(plantNumber,biomass/1000);

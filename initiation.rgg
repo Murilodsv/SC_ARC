@@ -123,10 +123,16 @@ static void initDatasets()
 		fieldBiomass.clear(); chart(fieldBiomass,XY_PLOT);
 		fieldBiomass_2.clear(); chart(fieldBiomass_2,XY_PLOT);
 		fieldBiomass_2.(setColumnKey(0,"Roots DM (t ha-1)"), setColumnKey(1,"Stalk DM (t ha-1)"),setColumnKey(2,"leaves DM (t ha-1)"),setColumnKey(3,"sucrose DM (t ha-1)"));
+		sugarcane_yield.clear(); chart(sugarcane_yield,XY_PLOT);
+		sugarcane_yield.(setColumnKey(0,"Stalk FM (t ha-1)"), setColumnKey(1,"POL (%)"));		
 		leafInitApp.clear(); chart(leafInitApp,SCATTER_PLOT);
 		leafInitApp.(setColumnKey(0,"init (dd)"), setColumnKey(1,"app (dd)"));
 		organLength.clear(); chart(organLength,SCATTER_PLOT);
 		organLength.(setColumnKey(0,"blade (m)"), setColumnKey(1,"internode (m)"), setColumnKey(2,"internode width (dm)"), setColumnKey(3,"blade width (dm)"), setColumnKey(4,"Leaf Sheath (m)"));
+		LeavesProfile.clear(); chart(LeavesProfile,SCATTER_PLOT);
+		LeavesProfile.(setColumnKey(0,"blade length (cm)"), setColumnKey(1,"blade width (dm)"), setColumnKey(2,"Leaf Sheath Length (cm)"), setColumnKey(3,"Leaf Sheath diameter (dm)"), setColumnKey(4,"Leaf angle"));
+		FieldLeafProfile.clear(); chart(FieldLeafProfile,SCATTER_PLOT);
+		FieldLeafProfile.(setColumnKey(0,"blade length (cm)"), setColumnKey(1,"blade width (dm)"), setColumnKey(2,"Leaf Sheath Length (cm)"), setColumnKey(3,"Leaf Sheath diameter (dm)"), setColumnKey(4,"Leaf angle"));
 		sucroIntern.clear(); chart(sucroIntern,SCATTER_PLOT);
 		sucroIntern.(setColumnKey(0,"sugar content (%)"));
 		biomassPart.clear(); chart(biomassPart,XY_PLOT);

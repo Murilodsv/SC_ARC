@@ -404,6 +404,8 @@ module Internode extends VisibleOrgan
 	boolean startsucrose;				// Flag to indicate sucrose accumulation starts
 	double sucContent;					// Sucrose content mg
 	double sucStart;					//
+	double FreshBiomass;				//
+	int live_rank;										// live rank
 
 	double getModifier()
 	{
@@ -420,6 +422,19 @@ module Internode extends VisibleOrgan
 		}
 	}
 	
+	// Water content fitted based on Lingle & Thomson 2012 data
+	double WaterContent(){
+		
+		double min = 0.1;
+		double b = 4.9;
+		double c = 7.7;
+		double max = 0.25;
+		double m = 2;
+		int position = Math.max(0,live_rank - (MaxGreenLeafNumber[species] - MaxDewlapNumber[species]));
+				
+			return 1 - (max + ((min - max) / (1 + (position/c)**b)**m));		
+	}		
+	
 	
 	// calculate dimensions
 	void calcDimensions()
@@ -427,8 +442,11 @@ module Internode extends VisibleOrgan
 		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
 		increment = getModifier() * lbRatio * growth; // based on these assumptions internode could expand up to 20 (max) times the lbRatio
 		length += increment;
+		
+		if(FreshBiomass < (biomass / (1-WaterContent()))){FreshBiomass = biomass / (1-WaterContent());}
+		
 		width = maxWidthInt[species] / (1 + Math.exp(-0.005 * (age - (0.5 * te))));
-
+		
 		area = 2 * Math.PI * 0.5*width * length;
 		if (order == 0 && plantNumber == profilePlant) {
 			organLength.getRow(rank).set(1,length);
@@ -475,6 +493,7 @@ module Internode extends VisibleOrgan
 		cpn = a.cpn;
 		order = a.order;
 		length = 0;
+		live_rank = 1;		
 		startsucrose = false;
 		lbRatio = lengthBiomassRatio[species] / 1000;
 		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
@@ -662,6 +681,13 @@ module Leaf extends VisibleOrgan
 			organLength.getRow(rank).set(0,length);
 			organLength.getRow(rank).set(3,width*10);
 			organLength.getRow(rank).set(4,petlength);
+			
+			// Leaf profile output
+			LeavesProfile.getRow(live_rank).set(0,length*100);
+			LeavesProfile.getRow(live_rank).set(1,width*1000);
+			LeavesProfile.getRow(live_rank).set(2,petlength*100);
+			LeavesProfile.getRow(live_rank).set(3,petdiameter*1000);
+			LeavesProfile.getRow(live_rank).set(4,angle);
 		}
 	}
 	
@@ -754,6 +780,7 @@ module Leaf extends VisibleOrgan
 
 ==> if (area > 0.00001) (		
 		RL(petangle)
+		
 		RV(getGrav())
 		if (border == false) (
 			Cylinder(petlength, petdiameter*0.5).(setLayer(border?borderLayer:leafLayer), setShader(new AlgorithmSwitchShader(new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),new RGBAShader(sRFR?rfr-0.2:weed?fabs:0,	sRFR||weed?0:fabs,	0),LightOpaqueShader)))

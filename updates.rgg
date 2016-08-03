@@ -95,13 +95,20 @@ static void renew()
 	}
 	
 		
-	// Update live_rank leaves (used only for sugarcane)
+	// Update live_rank (used only for sugarcane)
 	(*l:Leaf < <+ n:StemNode > i:Internode (-->)* a:Apex, (a.shouldProduceVegetative() == true && l.age > 0 && l.species == 11) *) ::>
 	{		
 		l.live_rank++;
 		if (l.live_rank > (MaxGreenLeafNumber[l.species] - MaxDewlapNumber[l.species])) {l.dewlap = true;}
 		if (l.rank <= MaxDewlapNumber[l.species]) {l.dewlap = true;}
-	}	
+	}
+	
+	(*i:Internode (-->)* a:Apex, (a.shouldProduceVegetative() == true && i.species == 11) *) ::>
+	{		
+		i.live_rank++;
+	}
+	
+	
 	
 	
 	// update plant-level variables using info from individual organs
@@ -127,6 +134,7 @@ static void renew()
 		fb.updateBiomass();
 		fb.updateYield();
 		fb.getLeafNumber();
+		fb.updateLeafProfile(); 
 		if (writeFieldTable == true) {fb.updateTable();}
 	}
 	

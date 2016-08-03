@@ -33,7 +33,7 @@ static int X_times				= 10;			// Number of cloned plots on X axis
 static int Y_times				= 10;			// Number of cloned plots on Y axis
 
 // Soil Profile Settings
-static boolean UseSoil			= true;
+static boolean UseSoil			= false;
 
 // time and environmental settings
 const float latitude 			= -22.708 * Math.PI/180;	// the latitude of location of the scene
@@ -276,6 +276,7 @@ const DatasetRef tillering = new DatasetRef("Tillering");
 const DatasetRef fieldFabs = new DatasetRef("Field fPAR");
 const DatasetRef fieldBiomass = new DatasetRef("Field biomass");
 const DatasetRef fieldBiomass_2 = new DatasetRef("Field biomass Sugarcane");
+const DatasetRef sugarcane_yield = new DatasetRef("Sugarcane Yield");
 const DatasetRef fieldYield = new DatasetRef("Field yield");
 const DatasetRef fieldYield_sugar = new DatasetRef("Field yield Sugarcane");
 const DatasetRef fieldRFR = new DatasetRef("Field RFR");
@@ -285,6 +286,8 @@ const DatasetRef lightTransectY =  new DatasetRef("Light Transect Y");
 const DatasetRef combiLight = new DatasetRef("Tile and sensor light");
 
 const DatasetRef organLength = new DatasetRef("Organ dimensions profile");
+const DatasetRef LeavesProfile = new DatasetRef("Leaf Profile");
+const DatasetRef FieldLeafProfile = new DatasetRef("Average Leaf Profile");
 const DatasetRef sucroIntern = new DatasetRef("Sucrose content profile");
 const DatasetRef biomassPart = new DatasetRef("Biomass partitioning (Profile Plant)");
 const DatasetRef nGreenLeaves = new DatasetRef("Number of Green Leaves");

@@ -25,7 +25,7 @@ static void develop()
 		
 		sn:StemNode
 		[bb:BranchBase RL(90) aa:Apex]
-		[RH (180) l:Leaf]
+		[RH(180) l:Leaf]
 		i:Internode		
 		RH(random(phyllotaxis[a.species]-phyllotaxis_rdm[a.species],phyllotaxis[a.species]+phyllotaxis_rdm[a.species]))// Rotate turtle head related to phyllotaxis
 		{double inc = random(-2.5,2.5);}
