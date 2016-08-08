@@ -405,6 +405,9 @@ module Internode extends VisibleOrgan
 	double sucContent;					// Sucrose content mg
 	double sucStart;					//
 	double FreshBiomass;				//
+	double DryBiomass;
+	double wc;
+	int position;
 	int live_rank;										// live rank
 
 	double getModifier()
@@ -430,9 +433,9 @@ module Internode extends VisibleOrgan
 		double c = 7.7;
 		double max = 0.25;
 		double m = 2;
-		int position = Math.max(0,live_rank - (MaxGreenLeafNumber[species] - MaxDewlapNumber[species]));
+		position = Math.max(0,live_rank - (MaxGreenLeafNumber[species] - MaxDewlapNumber[species]));
 				
-			return 1 - (max + ((min - max) / (1 + (position/c)**b)**m));		
+			return (1.-(max + ((min - max) / ((1 + (position/c)**b)**m))));		
 	}		
 	
 	
@@ -443,7 +446,10 @@ module Internode extends VisibleOrgan
 		increment = getModifier() * lbRatio * growth; // based on these assumptions internode could expand up to 20 (max) times the lbRatio
 		length += increment;
 		
-		if(FreshBiomass < (biomass / (1-WaterContent()))){FreshBiomass = biomass / (1-WaterContent());}
+		DryBiomass = sucContent + biomass;
+		
+		wc = WaterContent();		
+		FreshBiomass = Math.min((wmaxInt[species]+ wmaxSucrose[species])/0.25,(DryBiomass / (1-wc)));
 		
 		width = maxWidthInt[species] / (1 + Math.exp(-0.005 * (age - (0.5 * te))));
 		
@@ -465,7 +471,7 @@ module Internode extends VisibleOrgan
 		}
 		
 		if (order == 0 && plantNumber == profilePlant) {
-			sucroIntern.getRow(rank).set(0,(sucContent/biomass)*100);
+			sucroIntern.getRow(rank).set(0,(sucContent/DryBiomass)*100);
 		}
 		
 		// tell BranchBase the branch is extending so it cannot be aborted anymore

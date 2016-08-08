@@ -36,21 +36,21 @@ import static parameters.*;
 	
 	wmaxRoot[sugarcane] = 20000;            			// maximum root system biomass
 	wmaxFlower[sugarcane] = 0;        					// maximum flower/fruit biomass	
-	wmaxInt[sugarcane] = 10962;            				// maximum internode dry biomass (value from Lingle & Thomson 2012)
-	wmaxSucrose[sugarcane] = 6438; 						// maximum sucrose mass within a internode (derived from Lingle & Thomson 2012)
+	wmaxInt[sugarcane] = 8700;            				// maximum internode dry biomass (value from Lingle & Thomson 2012)
+	wmaxSucrose[sugarcane] = 8700; 						// maximum sucrose mass within a internode (derived from Lingle & Thomson 2012)
 	wmaxLeaf[sugarcane] = 3000;             // maximum leaf biomass
 	teRoot[sugarcane] = 4000;               // root growth duration
 	teFlower[sugarcane] = 0;                // flower/fruit growth duration
 	teInt[sugarcane] = 688;                // internode growth duration
 	teLeaf[sugarcane] = 1008;                // leaf growth duration
-	teSucrose[sugarcane] = 8 * plastochron2[sugarcane];
+	teSucrose[sugarcane] = 9 * plastochron2[sugarcane];
 	SucroseStart[sugarcane] = 0.75;			// Determines when sucrose ("as an organ") accumulatation will start within an internode (expressed as X times te of internode)
 	
 
 
 	maxWidthInt[sugarcane] = 0.03;			// maxium internode width derived from field Data
 		                                 
-	lengthBiomassRatio[sugarcane] = 0.01368;   // internode ratio length / biomass (mm/mg) Set to produce internodes of 15 cm
+	lengthBiomassRatio[sugarcane] = 0.01529;   // internode ratio length / biomass (mm/mg) Set to produce internodes of 15 cm
 	amax[sugarcane] = 44;                  // max photosynthesis rate
 	eff[sugarcane] = 0.05;                 // initial light use efficiency (initial slope of light response curve)
 	LMA[sugarcane] = 4.;                    // leaf mass per unit area (mg / cm2)
