@@ -43,8 +43,8 @@ import static parameters.*;
 	teFlower[sugarcane] = 0;                // flower/fruit growth duration
 	teInt[sugarcane] = 688;                // internode growth duration
 	teLeaf[sugarcane] = 1008;                // leaf growth duration
-	teSucrose[sugarcane] = 9 * plastochron2[sugarcane];
-	SucroseStart[sugarcane] = 0.75;			// Determines when sucrose ("as an organ") accumulatation will start within an internode (expressed as X times te of internode)
+	teSucrose[sugarcane] = 8 * plastochron2[sugarcane];
+	SucroseStart[sugarcane] = 0.6;			// Determines when sucrose ("as an organ") accumulatation will start within an internode (expressed as X times te of internode)
 	
 
 
