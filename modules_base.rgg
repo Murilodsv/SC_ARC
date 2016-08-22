@@ -363,13 +363,13 @@ module PlantBase extends Null
 		yld = sum((* f:Flower, (f.plantNumber == plantNumber) *)[biomass]);
 		biomLeaf = sum((* l:Leaf, (l.plantNumber == plantNumber) *)[biomass]);
 		if(species == 11){
-			biomStem = sum((* i:Internode, (i.plantNumber == plantNumber && i.live_rank > 6) *)[DryBiomass]);
+			biomStem = sum((* i:Internode, (i.plantNumber == plantNumber) *)[biomass]);
 		}else{
 			biomStem = sum((* i:Internode, (i.plantNumber == plantNumber) *)[biomass]);
 		}
 		biomRoots = sum((* r:RootSystem, (r.plantNumber == plantNumber) *)[biomass]);
-		biomSucro = sum((* i:Internode, (i.plantNumber == plantNumber) *)[sucContent]);
-		biomFreshStem = sum((* i:Internode, (i.plantNumber == plantNumber && i.live_rank > 6) *)[FreshBiomass]);
+		biomSucro = sum((* i:Internode, (i.plantNumber == plantNumber) *)[SucroseMass]);
+		biomFreshStem = sum((* i:Internode, (i.plantNumber == plantNumber && i.live_rank >= 5) *)[FreshBiomass]);
 		StemPol = biomSucro / biomFreshStem;
 		shootRoot = (biomLeaf + biomStem) / biomRoots;
 		biomassAbove = yld + biomLeaf + biomStem;		

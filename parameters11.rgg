@@ -36,7 +36,7 @@ import static parameters.*;
 	
 	wmaxRoot[sugarcane] = 20000;            			// maximum root system biomass
 	wmaxFlower[sugarcane] = 0;        					// maximum flower/fruit biomass	
-	wmaxInt[sugarcane] = 8700;            				// maximum internode dry biomass (value from Lingle & Thomson 2012)
+	wmaxInt[sugarcane] = 20000;            				// maximum internode dry biomass (value from Lingle & Thomson 2012)
 	wmaxSucrose[sugarcane] = 8700; 						// maximum sucrose mass within a internode (derived from Lingle & Thomson 2012)
 	wmaxLeaf[sugarcane] = 3000;             // maximum leaf biomass
 	teRoot[sugarcane] = 4000;               // root growth duration

@@ -23,6 +23,7 @@ abstract module Organ(super.length) extends M(length)
 	double ageD;			// organ age (days)
 	double delay;			// delay between organ initation and appearance
 	int deb = 1;			// debbuging
+	int type;				// 1 = Roots; 2 = Node; 3 = Internode; 4 = Leaf; 5 = Apex
 	
 	// calculate age for EACH organ
 	void calcAge() 
@@ -34,6 +35,7 @@ abstract module Organ(super.length) extends M(length)
 			agePrevious = age;	
 			age += Math.max(0,(tav - tb[species]));
 			ageD++;
+			
 		}
 	}
 }
@@ -401,15 +403,27 @@ module Internode extends VisibleOrgan
 	double width;						// internode width
 	double increment;					// length increment per time step
 	double lbRatio;						// stem ratio length / biomass (m/mg)
+		
+	double FHexose;
+	double FSucrose;
+	double FStructural;
+	double FSugars;
+	double StructuralMass;
+	double SugarMass;
+	double SucroseMass;
+	double HexoseMass;
 	boolean startsucrose;				// Flag to indicate sucrose accumulation starts
 	double sucContent;					// Sucrose content mg
 	double sucStart;					//
 	double FreshBiomass;				//
-	double DryBiomass;
+	//double DryBiomass;
 	double wc;
 	int position;
 	int live_rank;										// live rank
+	double PERcoef = 0.16;						// Same as CANEGRO
 
+	
+	
 	double getModifier()
 	{
 		Leaf lf = first((* this +> l:Leaf *));
@@ -436,22 +450,65 @@ module Internode extends VisibleOrgan
 		position = Math.max(0,live_rank - (MaxGreenLeafNumber[species] - MaxDewlapNumber[species]));
 				
 			return (1.-(max + ((min - max) / ((1 + (position/c)**b)**m))));		
-	}		
+	}
 	
+	// Partitioning among Structural and non-structural tissues
+	void BiomassPartitioning()
+	{
+		double minStructural	= 0.42;
+		double maxStructural	= 0.47;
+		double x50Structural	= 0.4;
+		double hStructural		= -10;
+		
+		double minSucrose		= 0.2;
+		double maxSucrose		= 0.93;
+		double x50Sucrose		= 0.4;
+		double hSucrose			= 10;
+		
+		// Added to account for variations on sucrose content due to temperature (Hypothesis)
+		x50Structural = 0.2 + Math.max(0,(tav - 16)) * 0.02222;
+		x50Sucrose = x50Structural;
+		
+		FStructural = minStructural + ((maxStructural - minStructural)/(1+(x50Structural/(age/te))** hStructural));
+		FSugars = 1 - FStructural;
+		
+		FSucrose = minSucrose + ((maxSucrose - minSucrose)/(1+(x50Sucrose/(age/te))** hSucrose));
+		FHexose = 1 - FSucrose;
+		
+	}
+	
+	// Plant extension factor m/day
+	double dPER(){
+		
+		double swdf 	= 1.; 
+		double tbPER 	= 16.0;
+		double dPERdt	= 0.375;
+		
+		return swdf * dPERdt * Math.max(0, tav - tbPER) * 24/1000; // Same as CANEGRO (should include hour temp Parton Logan 1981)
+		
+	}	
 	
 	// calculate dimensions
 	void calcDimensions()
 	{
 		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
 		increment = getModifier() * lbRatio * growth; // based on these assumptions internode could expand up to 20 (max) times the lbRatio
-		length += increment;
+		//length += increment;
 		
-		DryBiomass = sucContent + biomass;
+		if(position > 0 && rank > nrShortInternodes[species]) {									  	
+		length += dPER() * PERcoef  * (0.6491 * Math.exp(-0.5*position)); // the last term was added to account as partitioning factor among internodes (Singels & Inmnan-Bamber 2011)
+		}		
+		
+		StructuralMass += FStructural * growth;
+		SugarMass = biomass - StructuralMass;
+		SucroseMass = FSucrose * SugarMass;
+		HexoseMass = SugarMass - SucroseMass;
+		sucContent = SucroseMass/biomass;
 		
 		wc = WaterContent();		
-		FreshBiomass = Math.min((wmaxInt[species]+ wmaxSucrose[species])/0.25,(DryBiomass / (1-wc)));
+		FreshBiomass = Math.min(wmaxInt[species]/0.25,(biomass / (1-wc)));
 		
-		width = maxWidthInt[species] / (1 + Math.exp(-0.005 * (age - (0.5 * te))));
+		width = maxWidthInt[species] / (1 + Math.exp(-0.5*(live_rank - (0.5 * (MaxGreenLeafNumber[species] - MaxDewlapNumber[species])))));
 		
 		area = 2 * Math.PI * 0.5*width * length;
 		if (order == 0 && plantNumber == profilePlant) {
@@ -470,9 +527,9 @@ module Internode extends VisibleOrgan
 			sucContent = su.biomass;
 		}
 		
-		if (order == 0 && plantNumber == profilePlant) {
-			sucroIntern.getRow(rank).set(0,(sucContent/DryBiomass)*100);
-		}
+		//if (order == 0 && plantNumber == profilePlant) {
+		//	sucroIntern.getRow(rank).set(0,(sucContent/DryBiomass)*100);
+		//}
 		
 		// tell BranchBase the branch is extending so it cannot be aborted anymore
 		if (order > 0 && length > 0) {
@@ -493,6 +550,7 @@ module Internode extends VisibleOrgan
 		
 		species = a.species;
 		plantNumber = a.plantNumber;
+		type = 3;
 		border = a.border;
 		weed = a.weed;
 		rank = a.rank;
@@ -501,6 +559,10 @@ module Internode extends VisibleOrgan
 		length = 0;
 		live_rank = 1;		
 		startsucrose = false;
+		StructuralMass =0;
+		SugarMass = 0;
+		SucroseMass = 0;
+		HexoseMass = 0;		
 		lbRatio = lengthBiomassRatio[species] / 1000;
 		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
 		if(a.species == 11) {sucStart =  SucroseStart[species];}
@@ -511,8 +573,10 @@ module Internode extends VisibleOrgan
 			te = teInt[species];
 			}			
 		
-		tm = te * 0.5; 
-		delay = cpn*phyllochron[species] - cpn*plastochron[species]; // time between internode initiation and appearance increases with rank
+			
+		tm = te * 0.5;
+		delay = (Math.max(0,Math.min((plas_change[species] - a.rank),MaxDewlapNumber[species])) * plastochron[species]) + ((MaxDewlapNumber[species] - Math.max(0,Math.min((plas_change[species] - a.rank),MaxDewlapNumber[species]))) * plastochron2[species]);
+		//delay = (MaxGreenLeafNumber[species] - MaxDewlapNumber[species])*plastochron2[species]; // time between internode initiation and appearance increases with rank
 	}
 }
 ==> if (area > 0.00001) (

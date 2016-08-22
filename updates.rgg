@@ -42,6 +42,7 @@ static void renew()
 	o:Organ ::> 
 	{
 		o.calcAge();
+		
 	}
 	
 	
@@ -91,6 +92,13 @@ static void renew()
 		
 		l.calcSegments();
 		l.calcAngle();		
+		
+	}
+	
+	i:Internode ::>
+	{
+	
+		i.BiomassPartitioning();
 		
 	}
 	
