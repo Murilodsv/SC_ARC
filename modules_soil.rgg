@@ -9,32 +9,142 @@ import de.grogra.ray.physics.Spectrum3d;
 // soil profile associated to an individual plant
 module SoilLayer
 {
+	int    row;
+	int	   strip;
+	int    rank;
 	double upper;
 	double bottom;
 	double LL;
 	double DUL;
 	double SAT;
 	double KSAT;
+	double BDEN;
+	double SLOC;
 	double Thickness;
 	double PlantDist;
 	double RowDist;
 	double Depth;
+	double SWC;
+	
+	void initialConditions(){
+	
+		SWC = DUL;
+	}
 	
 	
-	void waterbalance(){
+	void infil(){
+	}
+	
+	void satflow(){
+	}
+	
+	void upflow(){
 	}
 	
 
 	// initiation of a soil layer
-	void initiate(int nLayer)
+	void initiate(int nLayer, int TileRow, int TileStrip)
 	{
-		Thickness = 0.1;
+		rank 	= nLayer;
+		row  	= TileRow;
+		strip 	= TileStrip;
+		Depth 	= Layer_Depth[nLayer-1];
+		LL 		= Layer_LL[nLayer-1];
+		DUL 	= Layer_DUL[nLayer-1];
+		SAT		= Layer_SAT[nLayer-1];
+		KSAT	= Layer_KSAT[nLayer-1];
+		BDEN	= Layer_BDEN[nLayer-1];
+		SLOC	= Layer_SLOC[nLayer-1];
+		
+		Thickness = (nLayer == 1 ? Layer_Depth[nLayer-1]:(Layer_Depth[nLayer-1] - Layer_Depth[nLayer-2]));
+		upper = Depth - Thickness;
+		bottom = Depth;
+		
 		PlantDist = 0.25;
 		RowDist = 1.4;
-		Depth = 0.1 * nLayer;
+		
 		if(nLayer == 1) {Depth = Depth + 0.001;}
+		
+		
 	}
 } 
 ==> 
 Translate(0,0,-Depth) Box(Thickness,PlantDist,RowDist).(setColor(0.51,0.33,0.16))
 ;
+
+module SoilProfile() extends Null{
+	
+	int		row;
+	int		strip;
+	double 	runoff;
+	
+	// Run-off calculations
+	void runoff(int cn, double watavl, boolean mulchEffect, double mulch){
+		
+		//cn = curve number - measure of runoff potential based on soil type and current soil water content. 
+		//watavl = rain + irrigation;
+		
+		double swabi;			// A soil water abstraction index, a unitless indicator of the soil water condition at the time of a rainfall event.  This affects the intercept of the runoff axis when runoff starts to occur--later when drier and sooner when wetter.
+		double iabs;			// Initial abstraction ratio, modified for surface mulch layer effects.
+		double maxiabs = 0.6;	// Maximum initial abstraction ratio
+		double smx;				// Soil storage available for surface water based on CN formula	(mm)
+		double pb;				// Determines threshold amount of rainfall that will occur before runoff starts (mm/d)
+		
+		smx = 254.0 * (100.0/cn - 1.0);
+		
+		// Uses only two firsts layers to compute runoff
+		SoilLayer sl1 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == 1));
+		SoilLayer sl2 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == 2));
+		
+		swabi = Math.max(0, 0.15 * ((sl1.SAT - sl1.SWC)/(sl1.SAT - sl1.LL * 0.5) + (sl2.SAT - sl2.SWC)/(sl2.SAT - sl2.LL * 0.5)));
+		
+		if(mulchEffect){
+		iabs = swabi + (maxiabs - swabi) * mulch;
+		}else{
+		iabs = swabi;
+		}
+		
+		pb = watavl - iabs * smx;
+		
+		if(watavl > 0.001){
+			if(pb > 0){
+				runoff	= pb**2/(watavl + (1-iabs) * smx);
+			}else{
+				runoff	= 0.0;
+			}		
+		}else{		
+			runoff = 0.0;
+		}		
+		
+	}
+	
+	
+	void infiltration(){
+		
+	}
+
+	void WaterBalance(){
+		
+		double winf;		//Water available for infiltration - rainfall minus runoff plus  net irrigation (mm / d)
+		double pinf;
+		
+		// call runoff first of getting here
+		winf = watavl - runoff + irrig; //(mm)
+		pinf = winf * 0.1;				//(cm)
+		
+		
+	}
+	
+	
+	
+	void initiate(int TileRow, int TileStrip){
+		
+		row 	= TileRow;
+		strip 	= TileStrip;
+	
+	
+	}
+
+	
+	
+}

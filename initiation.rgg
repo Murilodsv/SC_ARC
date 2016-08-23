@@ -225,9 +225,9 @@ static void initiate()
 										
 											//adding soil layers for each tile
 											if(UseSoil) (
-											for(int nLayer=1; nLayer<=5; nLayer++)
+											for(int nLayer=1; nLayer<=Layer_Depth.length; nLayer++)
 												(
-											[sl:SoilLayer {sl.initiate(nLayer);}]
+											[sl:SoilLayer {sl.initiate(nLayer,row,strip);}]
 												)
 												)
 											Translate(plantDistance[species]/nrTiles,0,0)

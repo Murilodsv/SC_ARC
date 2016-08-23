@@ -33,12 +33,24 @@ static int X_times				= 10;			// Number of cloned plots on X axis
 static int Y_times				= 10;			// Number of cloned plots on Y axis
 
 // Soil Profile Settings
-static boolean UseSoil			= false;
+static boolean UseSoil			= true;
+static int cn					= 80;
+static double[] Layer_Depth		= {0.10, 0.20, 0.40, 0.60, 0.80, 1.00};
+static double[] Layer_LL		= {0.20, 0.20, 0.20, 0.20, 0.20, 0.20};
+static double[] Layer_DUL		= {0.30, 0.30, 0.30, 0.30, 0.30, 0.30};
+static double[] Layer_SAT		= {0.40, 0.40, 0.40, 0.40, 0.40, 0.40};
+static double[] Layer_KSAT		= {0.10, 0.20, 0.30, 0.40, 0.50, 1.00};
+static double[] Layer_BDEN		= {0.10, 0.20, 0.30, 0.40, 0.50, 1.00};
+static double[] Layer_SLOC		= {0.10, 0.20, 0.30, 0.40, 0.50, 1.00};
+static boolean	irrigation		= false;
 
 // time and environmental settings
 const float latitude 			= -22.708 * Math.PI/180;	// the latitude of location of the scene
 static int startingDayOfYear	= 197;				// overall starting simulation day of year
 static int startingyear			= 2014;				//
+
+// Read File
+static double [][] WeatherData;
 
 // general field parameters                 
 static int[] sequence			= {sugarcane};		// sequence of species in adjacent strips (nr of values determines nr of strips)

@@ -6,12 +6,25 @@ import static parameters.*;
 static double tav;
 static double tmax;
 static double tmin;
+static double rain;
+static double et0;
+static double irrig;
 
 static void calcTemp() {				// calculates average daily temperature parameterized for Piracicaba (should read input data) (Vianna, 2016)
 	double tmaxWeight = 0.5;
 	tmax = 33.02 + 4.00 * Math.sin(2*Math.PI*(dayOfYear-282)/365);
 	tmin = 13.53 + 3.20 * Math.sin(2*Math.PI*(dayOfYear-270)/365);
 	tav = tmaxWeight * tmax + (1-tmaxWeight) * tmin;
+}
+
+static void updateWeather(){
+
+	rain	= WeatherData[dayOfYear-1][4];
+	et0		= WeatherData[dayOfYear-1][7];
+	
+	if(irrigation){
+	irrig	= WeatherData[dayOfYear-1][7];
+	}
 }
 
 // light model

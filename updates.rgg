@@ -4,6 +4,7 @@ import static modules_base.*;
 import static modules_light.*;
 import static parameters.*;
 import static environment.*;
+import static modules_soil.*;
 
 static void renew()
 [
@@ -26,7 +27,20 @@ static void renew()
 		
 		updateIncomingLight();
 		calcTemp();
+		updateWeather();
+		
 	}
+	
+	//Soil Water Balance
+	
+	
+	
+	sl:SoilLayer ::>
+	{
+		if(dayOfYear == (startingDayOfYear+1) && year == (startingyear)){sl.initialConditions();}
+		
+	}
+	
 	
 	// update light sources
 	dr:DirectLight ::>
@@ -37,6 +51,7 @@ static void renew()
 	{
 		df.update();
 	}
+	
 	
 	// calculate all organ ages
 	o:Organ ::> 
@@ -172,11 +187,3 @@ static void renew()
 	o:Organ ::> o[length] += 0;
 ]
 
-static void updateLeaf()
-[
-	//(*Base (-->)* a:A b:B, (a.length==1.5)*)
-	
-	//l:Leaf ::>
-	
-	
-]
