@@ -1,0 +1,114 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.StringTokenizer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import java.util.Arrays;
+
+	protected static String fileType = "csv";
+	protected static char separatorChar = ',';
+	protected static char decimalChar = '.';
+	protected static char quoteChar = '"';
+	protected static boolean header = false; // keep head or not, however current version can not include head.
+	protected static int skipLines = 0; // skip number of lines
+	
+	public static String PATH = "C:\\Users\\Murilo\\Dropbox\\DOUTORADO\\WUR\\Plant_Architecture\\FSPM_Sugarcane_Working\\Input_Data"; 
+	
+	//static String fileName = "Exp_2010_Antony_SWC_transpiration_climate_data.csv";
+	static List dataRecord = new ArrayList();
+	
+	/* #####################  read two dimensional arrays from csv file  ####################*/
+	
+	 public static double [][] readData(String filename) {
+			 try {
+				
+			 //create BufferedReader to read csv file
+			 BufferedReader br = new BufferedReader(new FileReader(PATH +"\\"+ filename));
+			 String strLine = "";
+             StringTokenizer st = null;
+             int lineNumber = 0, tokenNumber = 0;
+             
+			 // skip the header line
+			 if(header == false) br.readLine();
+			 
+			 // skip lines
+ 	 for (int i = 0; i < skipLines; i++) {
+                br.readLine();
+				lineNumber++;
+             } 
+			 
+			 //read file line by line
+			 while( (strLine = br.readLine()) != null) {
+				 lineNumber++;
+				 
+				 //replacing decimalChar if it is not a dot by dot
+				 if(decimalChar!='.') strLine = strLine.replaceAll(decimalChar, '.');
+				 
+                 //break line using separatorChar as separator.
+                 st = new StringTokenizer(strLine, separatorChar);
+                 
+				 if(lineNumber==1 + skipLines) {
+					 for (int i = 0; i < st.countTokens(); i++) {
+						 dataRecord.add(new Vector());
+					 }
+				 }
+				 
+				 Vector tmp;
+				 String token;
+                 while(st.hasMoreTokens()) {
+					 tmp = (Vector)dataRecord.get(tokenNumber);
+					 tmp.add(st.nextToken().replaceAll('"',' '));
+					 tokenNumber++;
+				 }
+				 //reset token number
+				 tokenNumber = 0;
+			 }
+         } catch(Exception e) {
+             println("FileReaderC: Error: " + e);                  
+         }
+
+	     int rowNumber = getColumn(1).size();
+		 int columnNumber = dataRecord.size();
+		 println(rowNumber+"   "+columnNumber);
+		 double dataArray[][] = new double[rowNumber][columnNumber]; 
+		 int row = 0, column = 0;
+		  for ( row = 0; row < rowNumber; row++) {
+			 for( column = 0; column < columnNumber; column++ ) {
+				 try{
+					 dataArray[row][column] = Double.parseDouble((String)getElement(column,row));
+				 } catch(NumberFormatException e) {
+					println("NumberFormatException row = "+row+" column = "+column+"  "+getElement(column,row));							 
+				 }
+			 }
+		 }
+		 row = 0; column = 0;
+		// for(int i:(0:dataArray.length-1)) println(Arrays.toString(dataArray[i]));
+		 dataRecord.clear();
+		 return(dataArray);
+		
+	}
+
+
+	public static List getDataRecord() {
+		return dataRecord;
+	}
+
+	public static Vector getColumn(int i) {
+		return (Vector)dataRecord.get(i);
+	}
+
+	public static Object[] getRow(int i) {
+		Object[] tmp = new Object[dataRecord.size()];
+		for(int j = 0; j<tmp.length; j++) {
+			tmp[j] = getColumn(j).get(i);
+		}
+		return tmp;
+	}
+
+	public static Object getElement(int column, int row) {
+		return getColumn(column).get(row);
+	}
+	
+

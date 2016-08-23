@@ -7,6 +7,7 @@ import static parameters.*;
 import static environment.*;
 import static modules_organs.*;
 import static modules_base.*;
+import static CSVReaderFinal.*;
 
 protected void init()// init() is an embedded method of GroIMP.
 {
@@ -45,10 +46,15 @@ private void step()
 		+dayOfYear+", PPFD "
 		+Math.round(PPFD)+" umol/m2/s, temp "
 		+0.001*Math.round(1000*tav)+" C"+" Qg = "+globalRadiationIntensity
+		+" Rain = "+rain
+		+" et0 = "+et0
 	);
 	
 	
 	if (oldLM==true) {lm.compute();} else {flm.compute();} // Condition to define which light model to use
+	if(dayOfYear == (startingDayOfYear) && year == (startingyear) || dayOfYear == 1) {
+	WeatherData = readData("WTH_Pira_"+year+".csv");	
+	}
 	develop();
 	renew();
 	
