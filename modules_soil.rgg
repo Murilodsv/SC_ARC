@@ -76,7 +76,13 @@ module SoilProfile() extends Null{
 	
 	int		row;
 	int		strip;
+	int		cn;
+	int		nLayers;
+	double	swcon;
 	double 	runoff;
+	double	watavl;
+	double  winf;		//Water available for infiltration - rainfall minus runoff plus  net irrigation (mm / d)
+	double  pinf;
 	
 	// Run-off calculations
 	void runoff(int cn, double watavl, boolean mulchEffect, double mulch){
@@ -121,12 +127,118 @@ module SoilProfile() extends Null{
 	
 	void infiltration(){
 		
+		
+		double drain;
+		double drcm;
+		double excs;
+		double hold;
+		double tmpexcs;
+		double[] drn 		= new double[nLayers];
+		double[] swtemp		= new double[nLayers];
+		double[] swdelts	= new double[nLayers];
+		
+		//double[] dlayr 	= new double[nLayers];
+		//double[] dul	= new double[nLayers];
+		//double[] sat	= new double[nLayers];
+		
+		for(int L = 0; L<=nLayers-1; L++){
+		
+			drn[L] 		= 0.0;
+			swdelts[L]	= 0.0;		
+		}
+		
+		excs 			= 0.0;
+		tmpexcs			= 0.0;
+		
+		for(int L = 0; L<=nLayers-1; L++){
+		
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			
+			swtemp[L]	= sl.SWC;			
+			hold = (sl.SAT - swtemp[L]) * sl.Thickness;
+			
+			if(pinf > 0.001 && pinf > hold){
+				
+				if(L==0){
+					drcm = 0.9 * swcon * (sl.SAT - sl.DUL) * sl.Thickness;
+				}else{
+					drcm = swcon * (sl.SAT - sl.DUL) * sl.Thickness;
+				}
+			
+				drn[L] = pinf - hold + drcm;
+				
+				if(sl.KSAT > 0.0 && drn[L] > sl.KSAT * 24.0){					
+					drn[L] 	= sl.KSAT * 24.0;
+					drcm	= drn[L] + hold - pinf;
+				}
+				
+				swtemp[L] = swtemp[L] + (pinf - drn[L])/sl.Thickness;
+				
+				if(swtemp[L] > sl.SAT){
+					
+					tmpexcs = (swtemp[L] - sl.SAT) * sl.Thickness;
+					swtemp[L] = sl.SAT;
+					
+					if(L==0 && tmpexcs > 0.0){
+						excs += tmpexcs;
+					}
+					
+					if(L > 0){
+						int Lup = L-1;
+						
+						while(tmpexcs > 0.0001 && Lup >=0){
+							
+							SoilLayer slup = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (Lup+1)));	
+							hold = Math.min((slup.SAT - swtemp[Lup])*slup.Thickness,tmpexcs);
+							swtemp[Lup] = swtemp[Lup] + hold / slup.Thickness;
+							drn[Lup] = Math.max(drn[Lup] - tmpexcs,0);
+							tmpexcs = tmpexcs - hold;
+							
+							if(Lup == 0 && tmpexcs > 0.0001){
+							excs = excs + tmpexcs;
+							}					
+						}				
+					}				
+				}
+				
+				pinf = drn[L];
+				
+			}else{
+			
+			swtemp[L] = swtemp[L] + pinf / sl.Thickness;
+			if(swtemp[L] >= sl.DUL + 0.003){
+				
+				if(L ==0){
+					drcm = 0.9 * (swtemp[L] - sl.DUL) * swcon * sl.Thickness;
+				}else{
+					drcm = (swtemp[L] - sl.DUL) * swcon * sl.Thickness;
+				}
+				
+				drn[L] = drcm;
+				
+				if(sl.KSAT > 0.0 && drn[L] > sl.KSAT*24.0){
+					drn[L] = sl.KSAT*24.0;
+					drcm = drn[L];				
+				}
+				
+				swtemp[L] = swtemp[L] - drcm / sl.Thickness;
+				pinf = drcm;
+			
+			}else{				
+				pinf 	= 0.0;
+				drn[L] 	= 0.0;			
+			}			
+			}
+			
+			swdelts[L] = swtemp[L] - sl.SWC;			
+		}
+		
+		drain = pinf * 10.0;		
 	}
 
 	void WaterBalance(){
 		
-		double winf;		//Water available for infiltration - rainfall minus runoff plus  net irrigation (mm / d)
-		double pinf;
+		
 		
 		// call runoff first of getting here
 		winf = watavl - runoff + irrig; //(mm)
@@ -141,7 +253,9 @@ module SoilProfile() extends Null{
 		
 		row 	= TileRow;
 		strip 	= TileStrip;
-	
+		cn		= cn_runoff;
+		swcon	=
+		nLayers	= Layer_Depth.length;
 	
 	}
 
