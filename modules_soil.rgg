@@ -78,14 +78,24 @@ module SoilProfile() extends Null{
 	int		strip;
 	int		cn;
 	int		nLayers;
+	int		tdlno;
 	double	swcon;
 	double 	runoff;
 	double	watavl;
 	double  winf;		//Water available for infiltration - rainfall minus runoff plus  net irrigation (mm / d)
 	double  pinf;
+	double drain;
+	double infilt;
+	double flood;
+	double excs; // check if here is the right place for it
+	boolean puddled;
+	boolean bunded;
+	
+	boolean mulchEffect;
+	double mulch;
 	
 	// Run-off calculations
-	void runoff(int cn, double watavl, boolean mulchEffect, double mulch){
+	void runoff(){
 		
 		//cn = curve number - measure of runoff potential based on soil type and current soil water content. 
 		//watavl = rain + irrigation;
@@ -114,23 +124,20 @@ module SoilProfile() extends Null{
 		
 		if(watavl > 0.001){
 			if(pb > 0){
-				runoff	= pb**2/(watavl + (1-iabs) * smx);
+				runoff =  pb**2/(watavl + (1-iabs) * smx);
 			}else{
-				runoff	= 0.0;
+				runoff =  0.0;
 			}		
 		}else{		
-			runoff = 0.0;
+			runoff =  0.0;
 		}		
 		
 	}
 	
-	
+	// Water infiltration calculations
 	void infiltration(){
 		
-		
-		double drain;
 		double drcm;
-		double excs;
 		double hold;
 		double tmpexcs;
 		double[] drn 		= new double[nLayers];
@@ -230,22 +237,175 @@ module SoilProfile() extends Null{
 			}			
 			}
 			
-			swdelts[L] = swtemp[L] - sl.SWC;			
+			swdelts[L] = swtemp[L] - sl.SWC;
+			infilt = infilt + swdelts[L] * sl.Thickness * 10.;			
 		}
 		
 		drain = pinf * 10.0;		
 	}
+	
+	// Saturated flow calculations
+	void SatFlow(){
+		
+		double drcm;
+		double hold;
+		double tmpexcs;
+		double swold;
+		double[] drn 		= new double[nLayers];
+		double[] drmx		= new double[nLayers];
+		double[] swtemp		= new double[nLayers];
+		double[] swdelts	= new double[nLayers];
+		
+		
+		//double[] dlayr 	= new double[nLayers];
+		//double[] dul	= new double[nLayers];
+		//double[] sat	= new double[nLayers];
+		
+				
+		for(int L = 0; L<=nLayers-1; L++){
+		
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			
+			swtemp[L]	= sl.SWC;
+			drn[L] 		= 0.0;
+			drmx[L]		= 0.0;
+			swdelts[L]	= 0.0;
+			
+			if(swtemp[L] >= (sl.DUL + 0.003)){
+				
+				drmx[L] = Math.max(0,(swtemp[L] - sl.DUL) * swcon * sl.Thickness);
+				
+			}
+			
+			if(L == 0){
+			
+				drn[L] = drmx[L];
+			}else{
+			
+				hold = 0.0;
+				if(swtemp[L] < sl.DUL){
+				hold = (sl.DUL - swtemp[L]) * sl.Thickness;
+				}
+				
+				drn[L] = Math.max(0,drn[L-1] + drmx[L] - hold);
+			}
+			
+			if(sl.KSAT > 0 && drn[L] > sl.KSAT*24.0){
+			drn[L] = sl.KSAT * 24.0;
+			}
+			
+			
+			
+		}//end of main loop
+	
+		for(int L = nLayers-1; L>=1; L--){
+			
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			swold = swtemp[L];
+			swtemp[L] = swtemp[L] + (drn[L-1] - drn[L]) / sl.Thickness;
+			if(swtemp[L] > sl.SAT){
+			drn[L-1] = Math.max(0,(sl.SAT - swold) * sl.Thickness + drn[L]);
+			swtemp[L] = sl.SAT;
+			}		
+		}
+		
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
+		swtemp[0] = swtemp[0] - drn[0] / sl.Thickness;
+		drain = drn[nLayers-1] * 10;
+		
+		//Calculating the dwc/dt
+		for(int L = 0; L<=nLayers-1; L++){
+		
+			SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			swdelts[L] = swtemp[L] - sl_dt.SWC;
+		
+		}
+	
+	}
 
 	void WaterBalance(){
 		
+		double swdeltu;
+		double swdeltt;
+		double swdeltl;
 		
+		// Daily rate calculations
 		
-		// call runoff first of getting here
-		winf = watavl - runoff + irrig; //(mm)
+		//check whether snow is happening
+		if(tmax <= 1 && snow > 0.001){		
+			// compute snow contribution to water income
+		}else{
+		watavl = rain;
+		}
+		
+		//check if all rate variables are set to zero here... <<<<<<<<
+		
+		//condition when the field is pudded
+		if(puddled){
+		//compute conditions for puddled fields...
+		
+		}else{
+			
+		//non-puddled, flooded or non-flooded field		
+		pinf 	= 0.;
+		winf	= 0.;
+		infilt	= 0.;
+		
+		// Bunded field (rice)?
+		if(bunded){		
+			runoff = 0.;
+			winf = Math.max(0, flood + irrig + rain); //(mm)					
+		}else{
+		// Upland field
+		// Not bunded, flooded conditions not possible (this is not Holland)
+		
+		//water first absorbed by mulch, if presents
+		if(mulchEffect){
+		//Ritchie mulch effect model
+		}
+		
+		// Compute runoff
+		runoff();		
+		winf = watavl - runoff + irrig; //(mm)	
+		
+		}
+		
+		// potential for infiltration
 		pinf = winf * 0.1;				//(cm)
 		
+		//call infiltration() method to calculate infiltration rates on days with irrigation or rainfall.
+		//call SatFlow() method on days with no irrigation or rain to calulate satirated flow.		
+		if(pinf > 0.0001){			
+			
+			// calculating the amount of water for intiltration (infilt, drain, drn, excs, swdelts)
+			infilt = 0.0;
+			infiltration();			
+			infilt = infilt + drain;
+			
+			//Excess water not infiltrated is added to overland runoff
+			//if bunded, excess water is accounted for in infilt variable
+			if(excs > 0 && bunded == false){
+			runoff = runoff + excs * 10.0;
+			}		
+		}else{			
+			SatFlow();					
+		}
 		
-	}
+		if(tdlno > 0){
+		//tiledrain computation...
+		}
+		
+		}
+		
+		///////////////////////////TO BE CONTINUE .............
+		
+		if(flood <= 0.0){}
+		
+		
+		
+		
+		
+	}//end of method
 	
 	
 	
@@ -254,9 +414,20 @@ module SoilProfile() extends Null{
 		row 	= TileRow;
 		strip 	= TileStrip;
 		cn		= cn_runoff;
-		swcon	=
+		swcon	= swcon_runoff;
 		nLayers	= Layer_Depth.length;
-	
+		tdlno	= 0;
+		pinf	= 0.;
+		winf	= 0.;
+		infilt	= 0.;
+		watavl	= 0.;
+		drain	= 0.;
+		flood	= 0.; // no flood <--- should be at parameters
+		
+		//Flag conditions
+		puddled			= false;
+		bunded			= false;
+		mulchEffect		= false;
 	}
 
 	

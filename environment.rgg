@@ -9,6 +9,7 @@ static double tmin;
 static double rain;
 static double et0;
 static double irrig;
+static double snow; // added as variable but not calculated
 
 static void calcTemp() {				// calculates average daily temperature parameterized for Piracicaba (should read input data) (Vianna, 2016)
 	double tmaxWeight = 0.5;

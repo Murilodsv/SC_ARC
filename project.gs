@@ -88,29 +88,29 @@
      <de.grogra.pf.ui.registry.FileObjectItem mimeType="image/png" name="tassel1" objDescribes="true" systemId="pfs:images/tassel1.png" type="de.grogra.imp.objects.FixedImageAdapter"/>
     </ref>
     <ref name="meta">
-     <de.grogra.pf.registry.NodeReference name="main" ref="36116204"/>
-     <de.grogra.pf.registry.NodeReference name="parameters" ref="36116205"/>
-     <de.grogra.pf.registry.NodeReference name="rewrites" ref="36116206"/>
-     <de.grogra.pf.registry.NodeReference name="updates" ref="36116207"/>
-     <de.grogra.pf.registry.NodeReference name="initiation" ref="36116208"/>
-     <de.grogra.pf.registry.NodeReference name="modules_base" ref="36116209"/>
-     <de.grogra.pf.registry.NodeReference name="modules_organs" ref="36116210"/>
-     <de.grogra.pf.registry.NodeReference name="modules_light" ref="36116211"/>
-     <de.grogra.pf.registry.NodeReference name="parameters0" ref="36116212"/>
-     <de.grogra.pf.registry.NodeReference name="parameters1" ref="36116213"/>
-     <de.grogra.pf.registry.NodeReference name="parameters2" ref="36116214"/>
-     <de.grogra.pf.registry.NodeReference name="parameters3" ref="36116215"/>
-     <de.grogra.pf.registry.NodeReference name="parameters4" ref="36116216"/>
-     <de.grogra.pf.registry.NodeReference name="environment" ref="36116217"/>
-     <de.grogra.pf.registry.NodeReference name="parameters5" ref="36116218"/>
-     <de.grogra.pf.registry.NodeReference name="parameters6" ref="36116219"/>
-     <de.grogra.pf.registry.NodeReference name="parameters7" ref="36116220"/>
-     <de.grogra.pf.registry.NodeReference name="parameters8" ref="36116221"/>
-     <de.grogra.pf.registry.NodeReference name="parameters9" ref="36116222"/>
-     <de.grogra.pf.registry.NodeReference name="parameters10" ref="36116223"/>
-     <de.grogra.pf.registry.NodeReference name="parameters11" ref="36116224"/>
-     <de.grogra.pf.registry.NodeReference name="modules_soil" ref="36116225"/>
-     <de.grogra.pf.registry.NodeReference name="CSVReaderFinal" ref="36116226"/>
+     <de.grogra.pf.registry.NodeReference name="main" ref="36116894"/>
+     <de.grogra.pf.registry.NodeReference name="parameters" ref="36116895"/>
+     <de.grogra.pf.registry.NodeReference name="rewrites" ref="36116896"/>
+     <de.grogra.pf.registry.NodeReference name="updates" ref="36116897"/>
+     <de.grogra.pf.registry.NodeReference name="initiation" ref="36116898"/>
+     <de.grogra.pf.registry.NodeReference name="modules_base" ref="36116899"/>
+     <de.grogra.pf.registry.NodeReference name="modules_organs" ref="36116900"/>
+     <de.grogra.pf.registry.NodeReference name="modules_light" ref="36116901"/>
+     <de.grogra.pf.registry.NodeReference name="parameters0" ref="36116902"/>
+     <de.grogra.pf.registry.NodeReference name="parameters1" ref="36116903"/>
+     <de.grogra.pf.registry.NodeReference name="parameters2" ref="36116904"/>
+     <de.grogra.pf.registry.NodeReference name="parameters3" ref="36116905"/>
+     <de.grogra.pf.registry.NodeReference name="parameters4" ref="36116906"/>
+     <de.grogra.pf.registry.NodeReference name="environment" ref="36116907"/>
+     <de.grogra.pf.registry.NodeReference name="parameters5" ref="36116908"/>
+     <de.grogra.pf.registry.NodeReference name="parameters6" ref="36116909"/>
+     <de.grogra.pf.registry.NodeReference name="parameters7" ref="36116910"/>
+     <de.grogra.pf.registry.NodeReference name="parameters8" ref="36116911"/>
+     <de.grogra.pf.registry.NodeReference name="parameters9" ref="36116912"/>
+     <de.grogra.pf.registry.NodeReference name="parameters10" ref="36116913"/>
+     <de.grogra.pf.registry.NodeReference name="parameters11" ref="36116914"/>
+     <de.grogra.pf.registry.NodeReference name="modules_soil" ref="36116915"/>
+     <de.grogra.pf.registry.NodeReference name="CSVReaderFinal" ref="36116916"/>
     </ref>
     <ref name="3d">
      <ref name="shaders">
