@@ -94,8 +94,19 @@ module SoilProfile() extends Null{
 	boolean mulchEffect;
 	double mulch;
 	
+	double[] sw_avail	= new double[nLayers];
+	double[] swdelts	= new double[nLayers];
+	
+	double[] sw_mm			= new double[nLayers];
+	double[] swdelts_mm		= new double[nLayers];
+	double[] swdeltx_mm		= new double[nLayers];
+	double[] swdeltl_mm		= new double[nLayers];
+	double[] swdeltu_mm		= new double[nLayers];
+	double[] swdeltt_mm		= new double[nLayers];
+	
+	
 	// Run-off calculations
-	void runoff(){
+	void Runoff(){
 		
 		//cn = curve number - measure of runoff potential based on soil type and current soil water content. 
 		//watavl = rain + irrigation;
@@ -135,14 +146,14 @@ module SoilProfile() extends Null{
 	}
 	
 	// Water infiltration calculations
-	void infiltration(){
+	void Infiltration(){
 		
 		double drcm;
 		double hold;
 		double tmpexcs;
 		double[] drn 		= new double[nLayers];
 		double[] swtemp		= new double[nLayers];
-		double[] swdelts	= new double[nLayers];
+		
 		
 		//double[] dlayr 	= new double[nLayers];
 		//double[] dul	= new double[nLayers];
@@ -254,7 +265,8 @@ module SoilProfile() extends Null{
 		double[] drn 		= new double[nLayers];
 		double[] drmx		= new double[nLayers];
 		double[] swtemp		= new double[nLayers];
-		double[] swdelts	= new double[nLayers];
+		
+		
 		
 		
 		//double[] dlayr 	= new double[nLayers];
@@ -318,8 +330,153 @@ module SoilProfile() extends Null{
 		
 			SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
 			swdelts[L] = swtemp[L] - sl_dt.SWC;
+			sw_avail[L]	= Math.max(0., sl_dt.SWC + swdelts[L]);			
 		
 		}
+	
+	}
+	
+	
+	void UpFlow(){
+	
+	int	ist;
+	int M;
+	double swold;
+	double thet1;
+	double thet2;
+	double dbar;
+	double grad;
+	double flowfix;
+	double[] upflow		= new double[nLayers];
+	double[] swdeltu	= new double[nLayers];
+	double[] swtemp		= new double[nLayers];
+	double[] sw_inf		= new double[nLayers];	
+	double[] esw		= new double[nLayers];
+	
+	for(int L = 0; L<=nLayers-1; L++){
+		
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		
+		upflow[L] = 0.0;
+		swdeltu[L] = 0.0;
+		swtemp[L] = sl.SWC;
+		sw_inf[L] = sw_avail[L]; // sw_avail has been calculated previously on SatFlow method
+		sw_avail[L] = Math.max(0., sw_avail[L] - sl.DUL);
+		esw[L] = sl.DUL - sl.LL;	
+	
+	}
+	
+	SoilLayer top_sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
+	
+	if(top_sl.Thickness >= 5.0){ist=0;}else{ist=1;}
+	
+	for(int L = ist; L<=nLayers-2; L++){
+		M = L + 1;
+		swold = swtemp[L];
+		
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		SoilLayer sl_M = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (M+1)));
+		
+		thet1 = Math.max(0,Math.min(swtemp[L] - sl.LL, esw[L]));
+		thet2 = Math.max(0,Math.min(swtemp[M] - sl_M.LL, esw[M]));
+		
+		dbar = 0.88 * Math.exp(35.4 * ((thet1*sl.Thickness + thet2*sl_M.Thickness)/(sl.Thickness + sl_M.Thickness))* 0.5);
+		dbar = Math.min(dbar,100.);
+		
+		grad = (thet2/esw[M] - thet1/esw[L]) * (esw[M] * sl_M.Thickness + esw[L] * sl.Thickness) / (sl_M.Thickness + sl.Thickness);
+		
+		upflow[L] = dbar * grad / ((sl.Thickness + sl_M.Thickness)*0.5);
+		
+		//upward flow from layer M to L
+		
+		if(upflow[L] > 0.){
+		
+			if(swtemp[L] <= sl.DUL){
+			
+				swtemp[L] = swtemp[L] + upflow[L] / sl.Thickness;
+				sw_inf[L] = sw_inf[L] + upflow[L] / sl.Thickness;
+				
+				if(swtemp[L] > sl.DUL || sw_inf[L] > sl.SAT){
+					
+					flowfix = Math.max(0., ((swtemp[L] - sl.DUL) * sl.Thickness));
+					flowfix = Math.max(flowfix, ((sw_inf[L] - sl.SAT) * sl.Thickness));
+					flowfix = Math.min(upflow[L], flowfix);
+					upflow[L] = upflow[L] - flowfix;
+					swtemp[L] = swold + upflow[L] / sl.Thickness;		
+				
+				}
+			
+			}else{				
+				upflow[L] = 0.;							
+			}
+			
+			if(upflow[L] / sl.Thickness > sw_avail[M]){
+			
+				upflow[L] = sw_avail[M] * sl_M.Thickness;
+				swtemp[L] = swold + upflow[L] / sl.Thickness;
+			
+			}
+			
+			swtemp[M] = swtemp[M] - upflow[L] / sl_M.Thickness;
+		
+		//downward flow from layer L to M
+		}else if(upflow[L] < 0.){
+			
+			if(swtemp[L] >= sl.LL){
+			
+				if(Math.abs(upflow[L] / sl.Thickness) > sw_avail[L]){
+				
+					upflow[L] = -sw_avail[L] * sl.Thickness;
+				
+				}
+				
+				swtemp[L] = swtemp[L] + upflow[L] / sl.Thickness;
+				swtemp[M] = swtemp[M] - upflow[L] / sl_M.Thickness;
+				sw_inf[M] = sw_inf[M] - upflow[L] / sl_M.Thickness;
+				
+				if(sw_inf[M] > sl_M.SAT){
+					
+					flowfix = Math.min(Math.abs(upflow[L]), (sw_inf[M] - sl_M.SAT) * sl_M.Thickness);
+					upflow[L] = upflow[L] + flowfix;
+					swtemp[L] = swold + upflow[L] / sl.Thickness;
+					swtemp[M] = swtemp[M] - flowfix / sl_M.Thickness;
+				
+				}
+			
+				// no downwar movement if swtemp < LL
+			}else{
+			
+				upflow[L] = 0.;
+			
+			}
+		
+		}
+		
+	
+	}//end of main loop
+	
+	
+	for(int L = 0; L<=nLayers-1; L++){		
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		swdeltu[L] = swtemp[L] - sl.SWC;	
+		}	
+	}
+	
+	
+	void DailyIntegration(){
+	
+		
+		for(int L = 0; L<=nLayers-1; L++){
+			
+			
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			sw_mm[L] = sl.SWC * sl.Thickness * 10.;
+		
+			
+			
+			
+		}
+		
 	
 	}
 
@@ -329,7 +486,11 @@ module SoilProfile() extends Null{
 		double swdeltt;
 		double swdeltl;
 		
+	
+		// -----------------------
 		// Daily rate calculations
+		// -----------------------
+		
 		
 		//check whether snow is happening
 		if(tmax <= 1 && snow > 0.001){		
@@ -365,7 +526,7 @@ module SoilProfile() extends Null{
 		}
 		
 		// Compute runoff
-		runoff();		
+		Runoff();		
 		winf = watavl - runoff + irrig; //(mm)	
 		
 		}
@@ -379,7 +540,7 @@ module SoilProfile() extends Null{
 			
 			// calculating the amount of water for intiltration (infilt, drain, drn, excs, swdelts)
 			infilt = 0.0;
-			infiltration();			
+			Infiltration();			
 			infilt = infilt + drain;
 			
 			//Excess water not infiltrated is added to overland runoff
@@ -397,9 +558,21 @@ module SoilProfile() extends Null{
 		
 		}
 		
-		///////////////////////////TO BE CONTINUE .............
 		
-		if(flood <= 0.0){}
+		if(flood <= 0.0){			
+			UpFlow();		
+		}
+		
+		// to be constructed to account for tillage effect on swc
+		//if(tillage){}
+		
+		
+		// -----------------------
+		// Daily integration
+		// -----------------------
+		
+		//perform integration of soil water fluxes
+		// substract soil evaporation from layer 1
 		
 		
 		

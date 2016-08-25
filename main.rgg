@@ -19,7 +19,7 @@ protected void init()// init() is an embedded method of GroIMP.
 	println("total focal area: "+0.01 * Math.round(100 * totalFocalArea)+" m2");
 	println("Starting day: "+startingDayOfYear+" of year "+startingyear);
 	println("Latitude: "+(latitude / Math.PI*180));
-	
+		
 	println();
 	
 	for (int s=0; s<=totalSpecies-1; s++) {

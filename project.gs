@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?><project xmlns="http://grogra.de/registry" graph="graph.xml">
- <import plugin="de.grogra.imp" version="1.5"/>
  <import plugin="de.grogra.imp3d" version="1.5"/>
+ <import plugin="de.grogra.rgg" version="1.5"/>
  <import plugin="de.grogra.math" version="1.5"/>
  <import plugin="de.grogra.pf" version="1.5"/>
- <import plugin="de.grogra.rgg" version="1.5"/>
+ <import plugin="de.grogra.imp" version="1.5"/>
  <import plugin="de.grogra.imp2d" version="1.5"/>
  <import plugin="de.grogra.vecmath" version="1.5"/>
  <registry>
@@ -88,29 +88,29 @@
      <de.grogra.pf.ui.registry.FileObjectItem mimeType="image/png" name="tassel1" objDescribes="true" systemId="pfs:images/tassel1.png" type="de.grogra.imp.objects.FixedImageAdapter"/>
     </ref>
     <ref name="meta">
-     <de.grogra.pf.registry.NodeReference name="main" ref="36116894"/>
-     <de.grogra.pf.registry.NodeReference name="parameters" ref="36116895"/>
-     <de.grogra.pf.registry.NodeReference name="rewrites" ref="36116896"/>
-     <de.grogra.pf.registry.NodeReference name="updates" ref="36116897"/>
-     <de.grogra.pf.registry.NodeReference name="initiation" ref="36116898"/>
-     <de.grogra.pf.registry.NodeReference name="modules_base" ref="36116899"/>
-     <de.grogra.pf.registry.NodeReference name="modules_organs" ref="36116900"/>
-     <de.grogra.pf.registry.NodeReference name="modules_light" ref="36116901"/>
-     <de.grogra.pf.registry.NodeReference name="parameters0" ref="36116902"/>
-     <de.grogra.pf.registry.NodeReference name="parameters1" ref="36116903"/>
-     <de.grogra.pf.registry.NodeReference name="parameters2" ref="36116904"/>
-     <de.grogra.pf.registry.NodeReference name="parameters3" ref="36116905"/>
-     <de.grogra.pf.registry.NodeReference name="parameters4" ref="36116906"/>
-     <de.grogra.pf.registry.NodeReference name="environment" ref="36116907"/>
-     <de.grogra.pf.registry.NodeReference name="parameters5" ref="36116908"/>
-     <de.grogra.pf.registry.NodeReference name="parameters6" ref="36116909"/>
-     <de.grogra.pf.registry.NodeReference name="parameters7" ref="36116910"/>
-     <de.grogra.pf.registry.NodeReference name="parameters8" ref="36116911"/>
-     <de.grogra.pf.registry.NodeReference name="parameters9" ref="36116912"/>
-     <de.grogra.pf.registry.NodeReference name="parameters10" ref="36116913"/>
-     <de.grogra.pf.registry.NodeReference name="parameters11" ref="36116914"/>
-     <de.grogra.pf.registry.NodeReference name="modules_soil" ref="36116915"/>
-     <de.grogra.pf.registry.NodeReference name="CSVReaderFinal" ref="36116916"/>
+     <de.grogra.pf.registry.NodeReference name="main" ref="36117814"/>
+     <de.grogra.pf.registry.NodeReference name="parameters" ref="36117815"/>
+     <de.grogra.pf.registry.NodeReference name="rewrites" ref="36117816"/>
+     <de.grogra.pf.registry.NodeReference name="updates" ref="36117817"/>
+     <de.grogra.pf.registry.NodeReference name="initiation" ref="36117818"/>
+     <de.grogra.pf.registry.NodeReference name="modules_base" ref="36117819"/>
+     <de.grogra.pf.registry.NodeReference name="modules_organs" ref="36117820"/>
+     <de.grogra.pf.registry.NodeReference name="modules_light" ref="36117821"/>
+     <de.grogra.pf.registry.NodeReference name="parameters0" ref="36117822"/>
+     <de.grogra.pf.registry.NodeReference name="parameters1" ref="36117823"/>
+     <de.grogra.pf.registry.NodeReference name="parameters2" ref="36117824"/>
+     <de.grogra.pf.registry.NodeReference name="parameters3" ref="36117825"/>
+     <de.grogra.pf.registry.NodeReference name="parameters4" ref="36117826"/>
+     <de.grogra.pf.registry.NodeReference name="environment" ref="36117827"/>
+     <de.grogra.pf.registry.NodeReference name="parameters5" ref="36117828"/>
+     <de.grogra.pf.registry.NodeReference name="parameters6" ref="36117829"/>
+     <de.grogra.pf.registry.NodeReference name="parameters7" ref="36117830"/>
+     <de.grogra.pf.registry.NodeReference name="parameters8" ref="36117831"/>
+     <de.grogra.pf.registry.NodeReference name="parameters9" ref="36117832"/>
+     <de.grogra.pf.registry.NodeReference name="parameters10" ref="36117833"/>
+     <de.grogra.pf.registry.NodeReference name="parameters11" ref="36117834"/>
+     <de.grogra.pf.registry.NodeReference name="modules_soil" ref="36117835"/>
+     <de.grogra.pf.registry.NodeReference name="CSVReaderFinal" ref="36117836"/>
     </ref>
     <ref name="3d">
      <ref name="shaders">
@@ -132,7 +132,7 @@
      <de.grogra.pf.ui.registry.MainWindow>
       <de.grogra.pf.ui.registry.Split location="0.55078536">
        <de.grogra.pf.ui.registry.Split orientation="0">
-        <de.grogra.pf.ui.registry.Split location="0.6330076" orientation="0">
+        <de.grogra.pf.ui.registry.Split location="0.6319218" orientation="0">
          <de.grogra.pf.ui.registry.Split orientation="0">
           <de.grogra.pf.registry.Link source="/ui/panels/rgg/toolbar"/>
           <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/3d/defaultview">
@@ -141,7 +141,7 @@
            <de.grogra.pf.registry.Option name="view" type="de.grogra.imp3d.View3D" value="graphDescriptor=[de.grogra.imp.ProjectGraphDescriptor]visibleLayers={true true true true true true true true true true true true true true true true}epsilon=1.0E-6 visualEpsilon=0.01 magnitude=1.0 visibleScales={true true true true true true true true true true true true true true true}camera=(minZ=0.1 maxZ=2000.0 projection=[de.grogra.imp3d.PerspectiveProjection aspect=1.0 fieldOfView=1.1689649]transformation=(-0.08511891830453681 -0.9963707993245544 0.0 0.02382424596847675 0.47039810774808205 -0.04018561978247108 0.8815388455362624 0.4101054262895305 -0.8783395641626806 0.07503563297546262 0.47211149510500205 -2.2648863912375674 0.0 0.0 0.0 1.0))navigator=null"/>
           </de.grogra.pf.ui.registry.PanelFactory>
          </de.grogra.pf.ui.registry.Split>
-         <de.grogra.pf.ui.registry.Split location="0.49136275">
+         <de.grogra.pf.ui.registry.Split location="0.49040306">
           <de.grogra.pf.ui.registry.Tab selectedIndex="1">
            <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
             <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Simulation rate (steps\/s)"/>
@@ -288,7 +288,7 @@
         </de.grogra.pf.ui.registry.Split>
         <de.grogra.pf.registry.Link source="/ui/panels/statusbar"/>
        </de.grogra.pf.ui.registry.Split>
-       <de.grogra.pf.ui.registry.Split location="0.7040923" orientation="0">
+       <de.grogra.pf.ui.registry.Split location="0.70304304" orientation="0">
         <de.grogra.pf.ui.registry.Tab selectedIndex="2">
          <de.grogra.pf.registry.Link source="/ui/panels/attributeeditor"/>
          <de.grogra.pf.registry.Link source="/ui/panels/table"/>
@@ -302,7 +302,7 @@
          <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/2d/graph">
           <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/2d/graph"/>
           <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Graph"/>
-          <de.grogra.pf.registry.Option name="view" type="de.grogra.imp2d.View2D" value="graphDescriptor=[de.grogra.imp2d.graphs.TopologyGraphDescriptor source=[de.grogra.imp.ProjectGraphDescriptor]]visibleLayers={true true true true true true true true true true true true true true true true}epsilon=1.0E-6 visualEpsilon=0.01 magnitude=1.0 visibleScales={true true true true true true true true true true true true true true true}transformation=(236.20686289152368 -0.0 -0.0 0.0 -236.20686289152368 -177.15514716864277 -0.0 -0.0 1.0)layout=[de.grogra.imp2d.layout.GeneralPurposeLayout fit=true transformationSteps=1 idealDistance=1.5 yIdealDistance=1.5 maxNbOfSteps=25000 fast=false startAgain=false]"/>
+          <de.grogra.pf.registry.Option name="view" type="de.grogra.imp2d.View2D" value="graphDescriptor=[de.grogra.imp2d.graphs.TopologyGraphDescriptor source=[de.grogra.imp.ProjectGraphDescriptor]]visibleLayers={true true true true true true true true true true true true true true true true}epsilon=1.0E-6 visualEpsilon=0.01 magnitude=1.0 visibleScales={true true true true true true true true true true true true true true true}transformation=(44.48051828688515 -0.0 -366.9642758668025 0.0 -44.48051828688515 -200.1623322909832 -0.0 -0.0 1.0)layout=[de.grogra.imp2d.layout.GeneralPurposeLayout fit=true transformationSteps=1 idealDistance=1.5 yIdealDistance=1.5 maxNbOfSteps=25000 fast=false startAgain=false]"/>
          </de.grogra.pf.ui.registry.PanelFactory>
         </de.grogra.pf.ui.registry.Tab>
         <de.grogra.pf.ui.registry.Split location="0.634434">
@@ -320,9 +320,25 @@
      </de.grogra.pf.ui.registry.MainWindow>
      <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
       <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
-       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Organ dimensions profile"/>
-       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Organ dimensions profile"/>
-       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Organ dimensions profile"/>
+       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Field yield Sugarcane"/>
+       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Field yield Sugarcane"/>
+       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Field yield Sugarcane"/>
+       <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="7"/>
+      </de.grogra.pf.ui.registry.PanelFactory>
+     </de.grogra.pf.ui.registry.FloatingWindow>
+     <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
+      <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
+       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Biomass partitioning (Profile Plant)"/>
+       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Biomass partitioning (Profile Plant)"/>
+       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Biomass partitioning (Profile Plant)"/>
+       <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="7"/>
+      </de.grogra.pf.ui.registry.PanelFactory>
+     </de.grogra.pf.ui.registry.FloatingWindow>
+     <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
+      <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
+       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Leaves Profile"/>
+       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Leaves Profile"/>
+       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Leaves Profile"/>
        <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="6"/>
       </de.grogra.pf.ui.registry.PanelFactory>
      </de.grogra.pf.ui.registry.FloatingWindow>
@@ -336,26 +352,10 @@
      </de.grogra.pf.ui.registry.FloatingWindow>
      <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
       <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
-       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Average Leaf Profile"/>
-       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Average Leaf Profile"/>
-       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Average Leaf Profile"/>
+       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Organ dimensions profile"/>
+       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Organ dimensions profile"/>
+       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Organ dimensions profile"/>
        <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="6"/>
-      </de.grogra.pf.ui.registry.PanelFactory>
-     </de.grogra.pf.ui.registry.FloatingWindow>
-     <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
-      <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
-       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Biomass partitioning (Profile Plant)"/>
-       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Biomass partitioning (Profile Plant)"/>
-       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Biomass partitioning (Profile Plant)"/>
-       <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="7"/>
-      </de.grogra.pf.ui.registry.PanelFactory>
-     </de.grogra.pf.ui.registry.FloatingWindow>
-     <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
-      <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
-       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Field yield Sugarcane"/>
-       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Field yield Sugarcane"/>
-       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Field yield Sugarcane"/>
-       <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="7"/>
       </de.grogra.pf.ui.registry.PanelFactory>
      </de.grogra.pf.ui.registry.FloatingWindow>
      <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
@@ -368,17 +368,20 @@
      </de.grogra.pf.ui.registry.FloatingWindow>
      <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
       <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
-       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Leaf Profile"/>
-       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Leaf Profile"/>
-       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Leaf Profile"/>
+       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Average Leaf Profile"/>
+       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Average Leaf Profile"/>
+       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Average Leaf Profile"/>
        <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="6"/>
       </de.grogra.pf.ui.registry.PanelFactory>
      </de.grogra.pf.ui.registry.FloatingWindow>
+     <de.grogra.pf.ui.registry.FloatingWindow height="300" width="500">
+      <de.grogra.pf.registry.Link source="/ui/panels/log"/>
+     </de.grogra.pf.ui.registry.FloatingWindow>
      <de.grogra.pf.ui.registry.FloatingWindow height="476" width="702">
       <de.grogra.pf.ui.registry.PanelFactory source="/ui/panels/chart">
-       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Leaves Profile"/>
-       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Leaves Profile"/>
-       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Leaves Profile"/>
+       <de.grogra.pf.registry.Option name="dataset" type="java.lang.String" value="/project/objects/datasets/Leaf Profile"/>
+       <de.grogra.pf.registry.Option name="panelId" type="java.lang.String" value="/ui/panels/chart?Leaf Profile"/>
+       <de.grogra.pf.registry.Option name="panelTitle" type="java.lang.String" value="Leaf Profile"/>
        <de.grogra.pf.registry.Option name="plot" type="java.lang.Integer" value="6"/>
       </de.grogra.pf.ui.registry.PanelFactory>
      </de.grogra.pf.ui.registry.FloatingWindow>

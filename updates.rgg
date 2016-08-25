@@ -32,9 +32,6 @@ static void renew()
 	}
 	
 	//Soil Water Balance
-	
-	
-	
 	sl:SoilLayer ::>
 	{
 		if(dayOfYear == (startingDayOfYear+1) && year == (startingyear)){sl.initialConditions();}
