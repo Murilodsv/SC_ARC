@@ -25,6 +25,7 @@ module SoilLayer
 	double RowDist;
 	double Depth;
 	double SWC;
+	double TSWC;
 	
 	void initialConditions(){
 	
@@ -90,12 +91,22 @@ module SoilProfile() extends Null{
 	double excs; // check if here is the right place for it
 	boolean puddled;
 	boolean bunded;
+	boolean initiate;
 	
 	boolean mulchEffect;
 	double mulch;
 	
+	double crain;
+	double tdrain;
+	double trunof;
+	double tswini;
+	double tsw;
+	
 	double[] sw_avail	= new double[nLayers];
 	double[] swdelts	= new double[nLayers];
+	double[] swdeltu	= new double[nLayers];
+	double[] swdeltx	= new double[nLayers];
+	double[] sw_mm_NEW	= new double[nLayers];
 	
 	double[] sw_mm			= new double[nLayers];
 	double[] swdelts_mm		= new double[nLayers];
@@ -104,6 +115,8 @@ module SoilProfile() extends Null{
 	double[] swdeltu_mm		= new double[nLayers];
 	double[] swdeltt_mm		= new double[nLayers];
 	
+	
+	double[] satfrac		= new double[nLayers];
 	
 	// Run-off calculations
 	void Runoff(){
@@ -273,6 +286,8 @@ module SoilProfile() extends Null{
 		//double[] dul	= new double[nLayers];
 		//double[] sat	= new double[nLayers];
 		
+		println("HELLOOO");
+		
 				
 		for(int L = 0; L<=nLayers-1; L++){
 		
@@ -348,7 +363,7 @@ module SoilProfile() extends Null{
 	double grad;
 	double flowfix;
 	double[] upflow		= new double[nLayers];
-	double[] swdeltu	= new double[nLayers];
+	
 	double[] swtemp		= new double[nLayers];
 	double[] sw_inf		= new double[nLayers];	
 	double[] esw		= new double[nLayers];
@@ -462,6 +477,46 @@ module SoilProfile() extends Null{
 		}	
 	}
 	
+	void wbsum(){		
+		
+		tsw = sum((* sl:SoilLayer, (sl.row == row && sl.strip == strip) *)[TSWC]);
+		crain += rain;
+		tdrain += drain;
+		trunof += runoff;
+		
+		
+		// sum of initial conditions
+		if(dayOfYear == (startingDayOfYear+1) && year == (startingyear)){
+		
+			crain 	= 0.;
+			tdrain	= 0.;
+			trunof	= 0.;
+			tswini	= 0.;
+			
+			tswini = sum((* sl:SoilLayer, (sl.row == row && sl.strip == strip) *)[SWC]);
+			tsw = tswini;		
+		
+		}	
+	
+	}
+	
+	void wtdept(){
+		
+		double tol = 0.95;
+		
+		
+	for(int L = nLayers-1; L>=0; L--){
+		
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		
+		satfrac[L] = (sl.SWC - sl.DUL) / (sl.SAT - sl.DUL);
+		satfrac[L] = Math.min(Math.max(0.0, satfrac[L]), 1.0);
+		
+
+	}
+	
+	}
+	
 	
 	void DailyIntegration(){
 	
@@ -470,12 +525,20 @@ module SoilProfile() extends Null{
 			
 			
 			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
-			sw_mm[L] = sl.SWC * sl.Thickness * 10.;
-		
+			sw_mm[L] 		= sl.SWC 		* sl.Thickness * 10.;
+			swdelts_mm[L]	= swdelts[L] 	* sl.Thickness * 10.; 
+			swdeltx_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
+			swdeltl_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
+			swdeltu_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
+			swdeltt_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
 			
 			
+			sw_mm_NEW[L] = sw_mm[L] + swdelts_mm[L] + swdeltu_mm[L] + swdeltl_mm[L] + swdeltx_mm[L] + swdeltt_mm[L];
+				
+			sl.SWC = sw_mm_NEW[L] / sl.Thickness / 10.;
+			sl.TSWC = sl.SWC * sl.Thickness;
 			
-		}
+		}	
 		
 	
 	}
@@ -492,12 +555,14 @@ module SoilProfile() extends Null{
 		// -----------------------
 		
 		
+		
 		//check whether snow is happening
 		if(tmax <= 1 && snow > 0.001){		
 			// compute snow contribution to water income
 		}else{
 		watavl = rain;
 		}
+		
 		
 		//check if all rate variables are set to zero here... <<<<<<<<
 		
@@ -525,31 +590,37 @@ module SoilProfile() extends Null{
 		//Ritchie mulch effect model
 		}
 		
+		
+		
 		// Compute runoff
 		Runoff();		
 		winf = watavl - runoff + irrig; //(mm)	
 		
 		}
 		
+		
+		
 		// potential for infiltration
 		pinf = winf * 0.1;				//(cm)
 		
 		//call infiltration() method to calculate infiltration rates on days with irrigation or rainfall.
 		//call SatFlow() method on days with no irrigation or rain to calulate satirated flow.		
-		if(pinf > 0.0001){			
+		if(pinf > 0.0001){	
 			
 			// calculating the amount of water for intiltration (infilt, drain, drn, excs, swdelts)
 			infilt = 0.0;
 			Infiltration();			
 			infilt = infilt + drain;
-			
+						
 			//Excess water not infiltrated is added to overland runoff
 			//if bunded, excess water is accounted for in infilt variable
 			if(excs > 0 && bunded == false){
 			runoff = runoff + excs * 10.0;
 			}		
-		}else{			
-			SatFlow();					
+		}else{
+			
+			SatFlow();
+			println("HELLOOO");
 		}
 		
 		if(tdlno > 0){
@@ -574,7 +645,7 @@ module SoilProfile() extends Null{
 		//perform integration of soil water fluxes
 		// substract soil evaporation from layer 1
 		
-		
+		DailyIntegration();
 		
 		
 		

@@ -34,8 +34,16 @@ static void renew()
 	//Soil Water Balance
 	sl:SoilLayer ::>
 	{
-		if(dayOfYear == (startingDayOfYear+1) && year == (startingyear)){sl.initialConditions();}
+		if(dayOfYear == (startingDayOfYear+1) && year == (startingyear)){sl.initialConditions();}		
 		
+	}
+	
+	sp:SoilProfile ::>
+	{
+		
+		sp.WaterBalance();
+		
+	
 	}
 	
 	
