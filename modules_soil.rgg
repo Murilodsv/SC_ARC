@@ -49,7 +49,7 @@ module SoilLayer
 		rank 	= nLayer;
 		row  	= TileRow;
 		strip 	= TileStrip;
-		Depth 	= Layer_Depth[nLayer-1];
+		Depth 	= Layer_Depth[nLayer-1] * 100.;
 		LL 		= Layer_LL[nLayer-1];
 		DUL 	= Layer_DUL[nLayer-1];
 		SAT		= Layer_SAT[nLayer-1];
@@ -57,7 +57,7 @@ module SoilLayer
 		BDEN	= Layer_BDEN[nLayer-1];
 		SLOC	= Layer_SLOC[nLayer-1];
 		
-		Thickness = (nLayer == 1 ? Layer_Depth[nLayer-1]:(Layer_Depth[nLayer-1] - Layer_Depth[nLayer-2]));
+		Thickness = (nLayer == 1 ? Layer_Depth[nLayer-1]:(Layer_Depth[nLayer-1] - Layer_Depth[nLayer-2])) * 100.; // (cm)
 		upper = Depth - Thickness;
 		bottom = Depth;
 		
@@ -70,7 +70,7 @@ module SoilLayer
 	}
 } 
 ==> 
-Translate(0,0,-Depth) Box(Thickness,PlantDist,RowDist).(setColor(0.51,0.33,0.16))
+Translate(0,0,-Depth/100.) Box(Thickness/100.,PlantDist,RowDist).(setColor(0.51,0.33,0.16))
 ;
 
 module SoilProfile() extends Null{
@@ -102,27 +102,27 @@ module SoilProfile() extends Null{
 	double tswini;
 	double tsw;
 	
-	double[] sw_avail	= new double[nLayers];
-	double[] swdelts	= new double[nLayers];
-	double[] swdeltu	= new double[nLayers];
-	double[] swdeltx	= new double[nLayers];
-	double[] sw_mm_NEW	= new double[nLayers];
+	double[] swdeltt	= new double[Layer_Depth.length];
+	double[] swdeltl	= new double[Layer_Depth.length];
 	
-	double[] sw_mm			= new double[nLayers];
-	double[] swdelts_mm		= new double[nLayers];
-	double[] swdeltx_mm		= new double[nLayers];
-	double[] swdeltl_mm		= new double[nLayers];
-	double[] swdeltu_mm		= new double[nLayers];
-	double[] swdeltt_mm		= new double[nLayers];
+	double[] sw_avail	= new double[Layer_Depth.length];
+	double[] swdelts	= new double[Layer_Depth.length];
+	double[] swdeltu	= new double[Layer_Depth.length];
+	double[] swdeltx	= new double[Layer_Depth.length];
+	double[] sw_mm_NEW	= new double[Layer_Depth.length];
+	
+	double[] sw_mm			= new double[Layer_Depth.length];
+	double[] swdelts_mm		= new double[Layer_Depth.length];
+	double[] swdeltx_mm		= new double[Layer_Depth.length];
+	double[] swdeltl_mm		= new double[Layer_Depth.length];
+	double[] swdeltu_mm		= new double[Layer_Depth.length];
+	double[] swdeltt_mm		= new double[Layer_Depth.length];
 	
 	
 	double[] satfrac		= new double[nLayers];
 	
 	// Run-off calculations
 	void Runoff(){
-		
-		//cn = curve number - measure of runoff potential based on soil type and current soil water content. 
-		//watavl = rain + irrigation;
 		
 		double swabi;			// A soil water abstraction index, a unitless indicator of the soil water condition at the time of a rainfall event.  This affects the intercept of the runoff axis when runoff starts to occur--later when drier and sooner when wetter.
 		double iabs;			// Initial abstraction ratio, modified for surface mulch layer effects.
@@ -132,19 +132,20 @@ module SoilProfile() extends Null{
 		
 		smx = 254.0 * (100.0/cn - 1.0);
 		
-		// Uses only two firsts layers to compute runoff
+		// Uses only two top layers to compute runoff
 		SoilLayer sl1 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == 1));
 		SoilLayer sl2 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == 2));
-		
+
 		swabi = Math.max(0, 0.15 * ((sl1.SAT - sl1.SWC)/(sl1.SAT - sl1.LL * 0.5) + (sl2.SAT - sl2.SWC)/(sl2.SAT - sl2.LL * 0.5)));
 		
 		if(mulchEffect){
 		iabs = swabi + (maxiabs - swabi) * mulch;
 		}else{
-		iabs = swabi;
+		iabs = Math.min(swabi,maxiabs);
 		}
 		
-		pb = watavl - iabs * smx;
+		pb = Math.max(0.,watavl - iabs * smx);
+		
 		
 		if(watavl > 0.001){
 			if(pb > 0){
@@ -166,11 +167,6 @@ module SoilProfile() extends Null{
 		double tmpexcs;
 		double[] drn 		= new double[nLayers];
 		double[] swtemp		= new double[nLayers];
-		
-		
-		//double[] dlayr 	= new double[nLayers];
-		//double[] dul	= new double[nLayers];
-		//double[] sat	= new double[nLayers];
 		
 		for(int L = 0; L<=nLayers-1; L++){
 		
@@ -277,28 +273,21 @@ module SoilProfile() extends Null{
 		double swold;
 		double[] drn 		= new double[nLayers];
 		double[] drmx		= new double[nLayers];
-		double[] swtemp		= new double[nLayers];
-		
-		
-		
-		
-		//double[] dlayr 	= new double[nLayers];
-		//double[] dul	= new double[nLayers];
-		//double[] sat	= new double[nLayers];
-		
-		println("HELLOOO");
-		
-				
+		double[] swtemp		= new double[nLayers];		
+						
 		for(int L = 0; L<=nLayers-1; L++){
 		
 			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
 			
-			swtemp[L]	= sl.SWC;
+			swtemp[L]	= sl.SWC;			
 			drn[L] 		= 0.0;
 			drmx[L]		= 0.0;
 			swdelts[L]	= 0.0;
 			
-			if(swtemp[L] >= (sl.DUL + 0.003)){
+			
+			
+			if(swtemp[L] >= (sl.DUL + 0.003)){				
+								
 				
 				drmx[L] = Math.max(0,(swtemp[L] - sl.DUL) * swcon * sl.Thickness);
 				
@@ -545,9 +534,7 @@ module SoilProfile() extends Null{
 
 	void WaterBalance(){
 		
-		double swdeltu;
-		double swdeltt;
-		double swdeltl;
+		
 		
 	
 		// -----------------------
@@ -576,6 +563,13 @@ module SoilProfile() extends Null{
 		pinf 	= 0.;
 		winf	= 0.;
 		infilt	= 0.;
+		drain	= 0.;
+		excs	= 0.;
+		
+		swdelts[0:nLayers-1] = 0.;
+		swdeltu[0:nLayers-1] = 0.;
+		swdeltt[0:nLayers-1] = 0.;
+		swdeltl[0:nLayers-1] = 0.;
 		
 		// Bunded field (rice)?
 		if(bunded){		
@@ -593,11 +587,11 @@ module SoilProfile() extends Null{
 		
 		
 		// Compute runoff
-		Runoff();		
+		Runoff();
+		
 		winf = watavl - runoff + irrig; //(mm)	
 		
-		}
-		
+		}		
 		
 		
 		// potential for infiltration
@@ -645,11 +639,9 @@ module SoilProfile() extends Null{
 		//perform integration of soil water fluxes
 		// substract soil evaporation from layer 1
 		
-		DailyIntegration();
+		DailyIntegration();		
 		
-		
-		
-	}//end of method
+	}
 	
 	
 	
@@ -673,6 +665,69 @@ module SoilProfile() extends Null{
 		bunded			= false;
 		mulchEffect		= false;
 	}
+	
+	
+//     VARIABLE DEFINITIONS: (updated 12 Feb 2004)
+//-----------------------------------------------------------------------
+// BUNDED      Logical variable indicating if field is currently bunded 
+// CN          Runoff Curve Number - measure of runoff potential based on 
+//               soil type and current soil water content. 
+// CONTROL     Composite variable containing variables related to control 
+//               and/or timing of simulation.    See Appendix A. 
+// CRAIN       Cumulative precipitation (mm)
+// DLAYR(L)    Thickness of soil layer L (cm)
+// DRAIN       Drainage rate from soil profile (mm/d)
+// DRN(L)      Drainage rate through soil layer L (cm/d)
+// DS(L)       Cumulative depth in soil layer L (cm)
+// DUL(L)      Volumetric soil water content at Drained Upper Limit in soil 
+//               layer L (cm3[water]/cm3[soil])
+// ES          Actual soil evaporation rate (mm/d)
+// EXCS        Excess water to be added to runoff (cm/d)
+// FLOOD       Current depth of flooding (mm)
+// FLOODWAT    Composite variable containing information related to bund 
+//               management. Structure of variable is defined in 
+//               ModuleDefs.for. 
+// UPFLOW(L)   Movement of water between unsaturated soil layers due to soil 
+//               evaporation: + = upward, -- = downward (cm/d)
+// INFILT      Infiltration rate (mm / d)
+// IRRAMT      Irrigation amount for today (mm / d)
+// ISWWAT      Water simulation control switch (Y or N) 
+// LL(L)       Volumetric soil water content in soil layer L at lower limit
+//              (cm3 [water] / cm3 [soil])
+// NLAYR       Actual number of soil layers 
+// PINF        Potential water available for infiltration (cm)
+// PUDDLED     Logical variable indicating whether lowland field has been 
+//               puddled 
+// PUDPERC     Potential percolation rate for puddled field (mm/d)
+// RAIN        Precipitation depth for current day (mm)
+// RUNOFF      Calculated runoff (mm/d)
+// SAT(L)      Volumetric soil water content in layer L at saturation
+//              (cm3 [water] / cm3 [soil])
+// SNOW        Snow accumulation (mm)
+// SW(L)       Volumetric soil water content in layer L
+//              (cm3 [water] / cm3 [soil])
+// SW_AVAIL(L) Soil water content in layer L available for evaporation, 
+//               plant extraction, or movement through soil
+//               (cm3 [water] / cm3 [soil])
+// SWCN(L)     Saturated hydraulic conductivity in layer L (cm/hr)
+// SWCON       Soil water conductivity constant; whole profile drainage rate 
+//               coefficient (1/d)
+// SWDELTS(L)  Change in soil water content due to drainage in layer L
+//              (cm3 [water] / cm3 [soil])
+// SWDELTU(L)  Change in soil water content due to evaporation and/or upward 
+//               flow in layer L (cm3 [water] / cm3 [soil])
+// SWDELTX(L)  Change in soil water content due to root water uptake in 
+//               layer L (cm3 [water] / cm3 [soil])
+// TDRAIN      Cumulative daily drainage from profile (mm)
+// TMAX        Maximum daily temperature (°C)
+// TRUNOF      Cumulative runoff (mm)
+// TSW         Total soil water in profile (cm)
+// TSWINI      Initial soil water content (cm)
+// WATAVL      Water available for infiltration or runoff (rainfall plus 
+//               irrigation) (mm/d)
+// WINF        Water available for infiltration - rainfall minus runoff plus 
+//               net irrigation (mm / d)
+// WTDEP       Depth to water table (cm)
 
 	
 	
