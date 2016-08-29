@@ -28,6 +28,8 @@ static void updateWeather(){
 	}
 }
 
+
+
 // light model
 static double rfrIncoming				= 1.2;				// red/far-red ratio of the incoming radiation
 static int depth						= 10;				// maximum number of reflections / transmissions of a ray

@@ -40,8 +40,7 @@ module SoilLayer
 	void satflow(){
 	}
 	
-	void upflow(){
-	}
+	
 	
 
 	// initiation of a soil layer
@@ -123,6 +122,11 @@ module SoilProfile() extends Null{
 	double[] swdeltl_mm		= new double[Layer_Depth.length];
 	double[] swdeltu_mm		= new double[Layer_Depth.length];
 	double[] swdeltt_mm		= new double[Layer_Depth.length];
+	
+	double[] es_lyr			= new double[Layer_Depth.length];
+	double[] upflow			= new double[Layer_Depth.length];
+	double aesoil;
+	double aeosoil;
 	
 	
 	double[] satfrac		= new double[nLayers];
@@ -370,8 +374,7 @@ module SoilProfile() extends Null{
 	double thet2;
 	double dbar;
 	double grad;
-	double flowfix;
-	double[] upflow		= new double[nLayers];
+	double flowfix;	
 	
 	double[] swtemp		= new double[nLayers];
 	double[] sw_inf		= new double[nLayers];	
@@ -522,7 +525,124 @@ module SoilProfile() extends Null{
 		satfrac[L] = Math.min(Math.max(0.0, satfrac[L]), 1.0);		
 
 	}	
-	}	
+	}
+	
+	void SoilEvaporation(){
+		
+		int profile_type;		
+		double sw_threshold;
+		double a_val;
+		double b_val;
+		double red_factor;
+		
+		double[] swad		= new double[nLayers];
+		double[] meandep	= new double[nLayers];
+		double[] swtemp		= new double[nLayers];
+		double[] es_coef	= new double[nLayers];
+		
+		profile_type = 3;
+		
+		for(int L = 0; L<=nLayers-1; L++){
+		
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			
+			// Air dry water content
+			swad[L] = 0.3 * sl.LL;
+			
+			// Mean depth for each soil layer
+			meandep[L] = sl.Depth - sl.Thickness / 2.; //(cm)
+			
+			if(swdelts[L] > 0.0){
+			
+				swtemp[L] = sl.SWC + 0.5 * swdelts[L];
+			
+			}else{
+			
+				swtemp[L] = sl.SWC + swdelts[L];
+			}
+			
+			if(meandep[L] < 100. && swtemp[L] > sl.DUL){
+			
+				profile_type = 1;
+			}		
+			
+			
+		}
+		
+		if(profile_type == 1){
+		
+			SoilLayer sl_top = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
+			sw_threshold = 0.275 * sl_top.DUL + 1.165 * sl_top.DUL * sl_top.DUL + (1.2 * sl_top.DUL ** 3.75) * meandep[0];
+			
+			if(swtemp[0] < sw_threshold){
+				profile_type = 2;			
+			}		
+		}
+		
+		for(int L = 0; L<=nLayers-1; L++){
+			
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			
+			switch(profile_type){
+			
+			case 3:
+			a_val =   0.5 + 0.24 * sl.DUL;
+			b_val = -2.04 + 0.20 * sl.DUL;
+			es_coef[L] = a_val * meandep[L] ** b_val;
+			
+			case 2:
+			
+			es_coef[L] = 0.011;
+			
+			case 1:
+			
+			a_val =  0.26;
+			b_val = -0.70;
+			es_coef[L] = a_val * meandep[L] ** b_val;
+		
+		}
+		
+		swdeltu[L] = -(swtemp[L] - swad[L]) * es_coef[L]; // (mm3/mm3)
+		
+		sw_avail[L] = sl.SWC + swdelts[L] - swad[L];
+		
+		if(-swdeltu[L] > sw_avail[L]){
+		
+			swdeltu[L] = -sw_avail[L];
+			
+		}
+		
+		// To limit evaporation only as water withdraw
+		swdeltu[L] = Math.min(0.,swdeltu[L]);
+		
+		es_lyr[L] = -swdeltu[L] * sl.Thickness * 10.0;	// (mm)		
+		aesoil = aesoil + es_lyr[L];					// profile sum (mm)		
+			
+		}
+		
+		// Limit total profile soil evaporation to potential soil evaporation
+		red_factor = 1.0;
+		
+		if(aesoil > aeosoil){
+			red_factor = aeosoil / aesoil;
+			es_lyr[0:nLayers-1] = es_lyr[0:nLayers-1] * red_factor;
+			swdeltu[0:nLayers-1] = swdeltu[0:nLayers-1] * red_factor;
+			aesoil = aeosoil;		
+		}
+		
+		upflow[0:nLayers-1] = 0.0;
+		upflow[nLayers-1] = es_lyr[nLayers-1] / 10.;
+		
+		for(int L = nLayers-2; L>=0; L--){
+		
+			upflow[L] = upflow[L+1] + es_lyr[L] / 10.;
+		
+		}		
+		
+	
+	
+	}
+	
 
 	void WaterBalance(){	
 		
@@ -650,7 +770,6 @@ module SoilProfile() extends Null{
 		wbsum();
 		
 	}
-	
 	
 	
 	void initiate(int TileRow, int TileStrip){
