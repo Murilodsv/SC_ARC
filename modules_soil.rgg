@@ -30,6 +30,7 @@ module SoilLayer
 	void initialConditions(){
 	
 		SWC = DUL;
+		TSWC = SWC * Thickness;
 	}
 	
 	
@@ -57,7 +58,12 @@ module SoilLayer
 		BDEN	= Layer_BDEN[nLayer-1];
 		SLOC	= Layer_SLOC[nLayer-1];
 		
-		Thickness = (nLayer == 1 ? Layer_Depth[nLayer-1]:(Layer_Depth[nLayer-1] - Layer_Depth[nLayer-2])) * 100.; // (cm)
+		if(nLayer == 1){
+			Thickness = Layer_Depth[nLayer-1]* 100.0;			
+		}else{
+			Thickness = (Layer_Depth[nLayer-1] - Layer_Depth[nLayer-2]) * 100.0;
+		}
+		Thickness = 0.001*Math.round(1000*Thickness);
 		upper = Depth - Thickness;
 		bottom = Depth;
 		
@@ -102,15 +108,15 @@ module SoilProfile() extends Null{
 	double tswini;
 	double tsw;
 	
-	double[] swdeltt	= new double[Layer_Depth.length];
-	double[] swdeltl	= new double[Layer_Depth.length];
+	String mesev = "S";
 	
-	double[] sw_avail	= new double[Layer_Depth.length];
-	double[] swdelts	= new double[Layer_Depth.length];
-	double[] swdeltu	= new double[Layer_Depth.length];
-	double[] swdeltx	= new double[Layer_Depth.length];
-	double[] sw_mm_NEW	= new double[Layer_Depth.length];
-	
+	double[] swdeltt		= new double[Layer_Depth.length];
+	double[] swdeltl		= new double[Layer_Depth.length];	
+	double[] sw_avail		= new double[Layer_Depth.length];
+	double[] swdelts		= new double[Layer_Depth.length];
+	double[] swdeltu		= new double[Layer_Depth.length];
+	double[] swdeltx		= new double[Layer_Depth.length];
+	double[] sw_mm_NEW		= new double[Layer_Depth.length];	
 	double[] sw_mm			= new double[Layer_Depth.length];
 	double[] swdelts_mm		= new double[Layer_Depth.length];
 	double[] swdeltx_mm		= new double[Layer_Depth.length];
@@ -144,7 +150,7 @@ module SoilProfile() extends Null{
 		iabs = Math.min(swabi,maxiabs);
 		}
 		
-		pb = Math.max(0.,watavl - iabs * smx);
+		pb = watavl - iabs * smx;
 		
 		
 		if(watavl > 0.001){
@@ -168,12 +174,6 @@ module SoilProfile() extends Null{
 		double[] drn 		= new double[nLayers];
 		double[] swtemp		= new double[nLayers];
 		
-		for(int L = 0; L<=nLayers-1; L++){
-		
-			drn[L] 		= 0.0;
-			swdelts[L]	= 0.0;		
-		}
-		
 		excs 			= 0.0;
 		tmpexcs			= 0.0;
 		
@@ -181,8 +181,9 @@ module SoilProfile() extends Null{
 		
 			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
 			
-			swtemp[L]	= sl.SWC;			
-			hold = (sl.SAT - swtemp[L]) * sl.Thickness;
+			swtemp[L]	= sl.SWC;
+			
+			hold = (sl.SAT - swtemp[L]) * sl.Thickness;			
 			
 			if(pinf > 0.001 && pinf > hold){
 				
@@ -194,7 +195,7 @@ module SoilProfile() extends Null{
 			
 				drn[L] = pinf - hold + drcm;
 				
-				if(sl.KSAT > 0.0 && drn[L] > sl.KSAT * 24.0){					
+				if(sl.KSAT > 0.0 && drn[L] > (sl.KSAT * 24.0)){					
 					drn[L] 	= sl.KSAT * 24.0;
 					drcm	= drn[L] + hold - pinf;
 				}
@@ -207,7 +208,7 @@ module SoilProfile() extends Null{
 					swtemp[L] = sl.SAT;
 					
 					if(L==0 && tmpexcs > 0.0){
-						excs += tmpexcs;
+						excs = excs + tmpexcs;
 					}
 					
 					if(L > 0){
@@ -215,7 +216,8 @@ module SoilProfile() extends Null{
 						
 						while(tmpexcs > 0.0001 && Lup >=0){
 							
-							SoilLayer slup = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (Lup+1)));	
+							SoilLayer slup = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (Lup+1)));
+				
 							hold = Math.min((slup.SAT - swtemp[Lup])*slup.Thickness,tmpexcs);
 							swtemp[Lup] = swtemp[Lup] + hold / slup.Thickness;
 							drn[Lup] = Math.max(drn[Lup] - tmpexcs,0);
@@ -233,7 +235,7 @@ module SoilProfile() extends Null{
 			}else{
 			
 			swtemp[L] = swtemp[L] + pinf / sl.Thickness;
-			if(swtemp[L] >= sl.DUL + 0.003){
+			if(swtemp[L] >= (sl.DUL + 0.003)){
 				
 				if(L ==0){
 					drcm = 0.9 * (swtemp[L] - sl.DUL) * swcon * sl.Thickness;
@@ -243,7 +245,7 @@ module SoilProfile() extends Null{
 				
 				drn[L] = drcm;
 				
-				if(sl.KSAT > 0.0 && drn[L] > sl.KSAT*24.0){
+				if(sl.KSAT > 0.0 && drn[L] > (sl.KSAT*24.0)){
 					drn[L] = sl.KSAT*24.0;
 					drcm = drn[L];				
 				}
@@ -257,37 +259,49 @@ module SoilProfile() extends Null{
 			}			
 			}
 			
-			swdelts[L] = swtemp[L] - sl.SWC;
-			infilt = infilt + swdelts[L] * sl.Thickness * 10.;			
+			swdelts[L] = swtemp[L] - sl.SWC;			
+			infilt = infilt + swdelts[L] * sl.Thickness * 10.;
+			
 		}
 		
-		drain = pinf * 10.0;		
+		drain = pinf * 10.0;
+		
+		// DLAYR(L)   Thickness of soil layer L (cm)
+		// DRAIN       Drainage rate from soil profile (mm/d)
+		// DRCM        Drainage rate from soil profile (cm/d)
+		// DRN(L)      Drainage rate through soil layer L (cm/d)
+		// DUL(L)      Volumetric soil water content at Drained Upper Limit in soil layer L (cm3[water]/cm3[soil])              
+		// EXCS       Excess water to be added to runoff (cm/d)
+		// HOLD        Amount of water a soil layer will hold above it's present level, used to calculate downward flow; also, temporary  variable/ intermediate calculation (cm)         
+		// NLAYR       Actual number of soil layers 
+		// PINF       Potential water available for infiltration (cm)
+		// SAT(L)      Volumetric soil water content in layer L at saturation  (cm3 [water] / cm3 [soil])
+		// SW(L)       Volumetric soil water content in layer L (cm3 [water] / cm3 [soil])
+		// SWCN(L)     Saturated hydraulic conductivity in layer L (cm/hr)
+		// SWCON       Soil water conductivity constant; whole profile drainage rate  coefficient (1/d)              
+		// SWDELTS(L) Change in soil water content due to drainage in layer L (cm3 [water] / cm3 [soil])             
+		// SWTEMP(L)   Soil water content in layer L (temporary value to be modified based on drainage, root uptake and upward flow through soil  layers). (cm3/cm3)
+			
 	}
 	
 	// Saturated flow calculations
 	void SatFlow(){
 		
-		double drcm;
+		//double drcm;
 		double hold;
 		double tmpexcs;
 		double swold;
 		double[] drn 		= new double[nLayers];
 		double[] drmx		= new double[nLayers];
-		double[] swtemp		= new double[nLayers];		
-						
+		double[] swtemp		= new double[nLayers];
+		
+				
 		for(int L = 0; L<=nLayers-1; L++){
 		
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
-			
-			swtemp[L]	= sl.SWC;			
-			drn[L] 		= 0.0;
-			drmx[L]		= 0.0;
-			swdelts[L]	= 0.0;
-			
-			
-			
-			if(swtemp[L] >= (sl.DUL + 0.003)){				
-								
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));			
+			swtemp[L]	= sl.SWC;
+						
+			if(swtemp[L] >= (sl.DUL + 0.003)){							
 				
 				drmx[L] = Math.max(0,(swtemp[L] - sl.DUL) * swcon * sl.Thickness);
 				
@@ -306,7 +320,7 @@ module SoilProfile() extends Null{
 				drn[L] = Math.max(0,drn[L-1] + drmx[L] - hold);
 			}
 			
-			if(sl.KSAT > 0 && drn[L] > sl.KSAT*24.0){
+			if(sl.KSAT > 0 && drn[L] > (sl.KSAT*24.0)){
 			drn[L] = sl.KSAT * 24.0;
 			}
 			
@@ -314,19 +328,25 @@ module SoilProfile() extends Null{
 			
 		}//end of main loop
 	
+		
+		//Compute volumetric water contents after drainage in a day.
+		//Prevent water content in any layer from exceeding saturation as water drains down in the profile.
+   
 		for(int L = nLayers-1; L>=1; L--){
 			
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer slb = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
 			swold = swtemp[L];
-			swtemp[L] = swtemp[L] + (drn[L-1] - drn[L]) / sl.Thickness;
-			if(swtemp[L] > sl.SAT){
-			drn[L-1] = Math.max(0,(sl.SAT - swold) * sl.Thickness + drn[L]);
-			swtemp[L] = sl.SAT;
-			}		
+			swtemp[L] = swtemp[L] + (drn[L-1] - drn[L]) / slb.Thickness;
+			
+			if(swtemp[L] > slb.SAT){
+			drn[L-1] = Math.max(0,(slb.SAT - swold) * slb.Thickness + drn[L]);
+			swtemp[L] = slb.SAT;
+			}
+			
 		}
 		
-		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
-		swtemp[0] = swtemp[0] - drn[0] / sl.Thickness;
+		SoilLayer sltop = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
+		swtemp[0] = swtemp[0] - drn[0] / sltop.Thickness;
 		drain = drn[nLayers-1] * 10;
 		
 		//Calculating the dwc/dt
@@ -334,7 +354,7 @@ module SoilProfile() extends Null{
 		
 			SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
 			swdelts[L] = swtemp[L] - sl_dt.SWC;
-			sw_avail[L]	= Math.max(0., sl_dt.SWC + swdelts[L]);			
+						
 		
 		}
 	
@@ -499,49 +519,17 @@ module SoilProfile() extends Null{
 		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
 		
 		satfrac[L] = (sl.SWC - sl.DUL) / (sl.SAT - sl.DUL);
-		satfrac[L] = Math.min(Math.max(0.0, satfrac[L]), 1.0);
-		
+		satfrac[L] = Math.min(Math.max(0.0, satfrac[L]), 1.0);		
 
-	}
-	
-	}
-	
-	
-	void DailyIntegration(){
-	
-		
-		for(int L = 0; L<=nLayers-1; L++){
-			
-			
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
-			sw_mm[L] 		= sl.SWC 		* sl.Thickness * 10.;
-			swdelts_mm[L]	= swdelts[L] 	* sl.Thickness * 10.; 
-			swdeltx_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
-			swdeltl_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
-			swdeltu_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
-			swdeltt_mm[L]	= swdelts[L] 	* sl.Thickness * 10.;
-			
-			
-			sw_mm_NEW[L] = sw_mm[L] + swdelts_mm[L] + swdeltu_mm[L] + swdeltl_mm[L] + swdeltx_mm[L] + swdeltt_mm[L];
-				
-			sl.SWC = sw_mm_NEW[L] / sl.Thickness / 10.;
-			sl.TSWC = sl.SWC * sl.Thickness;
-			
-		}	
-		
-	
-	}
+	}	
+	}	
 
-	void WaterBalance(){
-		
-		
+	void WaterBalance(){	
 		
 	
 		// -----------------------
 		// Daily rate calculations
-		// -----------------------
-		
-		
+		// -----------------------	
 		
 		//check whether snow is happening
 		if(tmax <= 1 && snow > 0.001){		
@@ -550,26 +538,21 @@ module SoilProfile() extends Null{
 		watavl = rain;
 		}
 		
-		
-		//check if all rate variables are set to zero here... <<<<<<<<
-		
-		//condition when the field is pudded
-		if(puddled){
-		//compute conditions for puddled fields...
-		
-		}else{
-			
-		//non-puddled, flooded or non-flooded field		
-		pinf 	= 0.;
-		winf	= 0.;
-		infilt	= 0.;
-		drain	= 0.;
-		excs	= 0.;
-		
+		// set process rates to zero
+		pinf 				 = 0.;
+		winf				 = 0.;
+		infilt				 = 0.;
+		drain				 = 0.;
+		excs				 = 0.;		
 		swdelts[0:nLayers-1] = 0.;
 		swdeltu[0:nLayers-1] = 0.;
 		swdeltt[0:nLayers-1] = 0.;
 		swdeltl[0:nLayers-1] = 0.;
+		
+		//condition when the field is pudded
+		if(puddled){
+		//compute conditions for puddled fields (To be constructed)		
+		}else{		
 		
 		// Bunded field (rice)?
 		if(bunded){		
@@ -581,19 +564,16 @@ module SoilProfile() extends Null{
 		
 		//water first absorbed by mulch, if presents
 		if(mulchEffect){
-		//Ritchie mulch effect model
-		}
-		
-		
+		//Ritchie mulch effect model (To be constructed)
+		}	
 		
 		// Compute runoff
 		Runoff();
-		
+						
 		winf = watavl - runoff + irrig; //(mm)	
 		
 		}		
-		
-		
+				
 		// potential for infiltration
 		pinf = winf * 0.1;				//(cm)
 		
@@ -610,11 +590,12 @@ module SoilProfile() extends Null{
 			//if bunded, excess water is accounted for in infilt variable
 			if(excs > 0 && bunded == false){
 			runoff = runoff + excs * 10.0;
-			}		
+			}
+			
 		}else{
 			
 			SatFlow();
-			println("HELLOOO");
+			
 		}
 		
 		if(tdlno > 0){
@@ -624,7 +605,15 @@ module SoilProfile() extends Null{
 		}
 		
 		
-		if(flood <= 0.0){			
+		// Should be used only when evaporation method is not the default (Sulieman-Ritchie 2006)
+		if(flood <= 0.0 && mesev != "S"){
+			
+			for(int L = 0; L<=nLayers-1; L++){
+				
+				SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+				sw_avail[L]	= Math.max(0., sl_dt.SWC + swdelts[L]);
+			}
+			
 			UpFlow();		
 		}
 		
@@ -639,7 +628,26 @@ module SoilProfile() extends Null{
 		//perform integration of soil water fluxes
 		// substract soil evaporation from layer 1
 		
-		DailyIntegration();		
+		for(int L = 0; L<=nLayers-1; L++){
+			
+			
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			sw_mm[L] 		= sl.SWC 		* sl.Thickness * 10.;
+			swdelts_mm[L]	= swdelts[L] 	* sl.Thickness * 10.; 
+			swdeltx_mm[L]	= swdeltx[L] 	* sl.Thickness * 10.;
+			swdeltl_mm[L]	= swdeltl[L] 	* sl.Thickness * 10.;
+			swdeltu_mm[L]	= swdeltu[L] 	* sl.Thickness * 10.;
+			swdeltt_mm[L]	= swdeltt[L] 	* sl.Thickness * 10.;			
+						
+			sw_mm_NEW[L] = sw_mm[L] + swdelts_mm[L] + swdeltu_mm[L] + swdeltl_mm[L] + swdeltx_mm[L] + swdeltt_mm[L];
+				
+			sl.SWC = sw_mm_NEW[L] / sl.Thickness / 10.;
+			sl.TSWC = sl.SWC * sl.Thickness;
+			
+		}
+		
+		// Perform daily summation of water balance variables.
+		wbsum();
 		
 	}
 	
@@ -650,7 +658,7 @@ module SoilProfile() extends Null{
 		row 	= TileRow;
 		strip 	= TileStrip;
 		cn		= cn_runoff;
-		swcon	= swcon_runoff;
+		swcon	= swcon_drain;
 		nLayers	= Layer_Depth.length;
 		tdlno	= 0;
 		pinf	= 0.;

@@ -35,12 +35,12 @@ static int Y_times				= 10;			// Number of cloned plots on Y axis
 // Soil Profile Settings
 static boolean UseSoil			= true;
 static int cn_runoff			= 80;
-static double swcon_runoff		= 0.5;
+static double swcon_drain		= 0.5;
 static double[] Layer_Depth		= {0.10, 0.20, 0.40, 0.60, 0.80, 1.00};
 static double[] Layer_LL		= {0.20, 0.20, 0.20, 0.20, 0.20, 0.20};
 static double[] Layer_DUL		= {0.30, 0.30, 0.30, 0.30, 0.30, 0.30};
 static double[] Layer_SAT		= {0.40, 0.40, 0.40, 0.40, 0.40, 0.40};
-static double[] Layer_KSAT		= {0.10, 0.20, 0.30, 0.40, 0.50, 1.00};
+static double[] Layer_KSAT		= {0.50, 0.20, 0.20, 0.20, 0.20, 0.20};
 static double[] Layer_BDEN		= {0.10, 0.20, 0.30, 0.40, 0.50, 1.00};
 static double[] Layer_SLOC		= {0.10, 0.20, 0.30, 0.40, 0.50, 1.00};
 static boolean	irrigation		= false;

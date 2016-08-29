@@ -230,7 +230,7 @@ static void initiate()
 												
 											for(int nLayer=1; nLayer<=Layer_Depth.length; nLayer++)
 												(
-											[sl:SoilLayer {sl.initiate(nLayer,row,strip);}]
+											[sl:SoilLayer {sl.initiate(nLayer,row,strip);sl.initialConditions();}]
 												)
 											]
 											)

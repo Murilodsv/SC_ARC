@@ -19,7 +19,7 @@ static void calcTemp() {				// calculates average daily temperature parameterize
 }
 
 static void updateWeather(){
-
+	
 	rain	= WeatherData[dayOfYear-1][4];
 	et0		= WeatherData[dayOfYear-1][7];
 	
