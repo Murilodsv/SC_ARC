@@ -94,6 +94,7 @@ module SoilProfile() extends Null{
 	double infilt;
 	double flood;
 	double excs; // check if here is the right place for it
+	
 	boolean puddled;
 	boolean bunded;
 	boolean initiate;
@@ -123,10 +124,25 @@ module SoilProfile() extends Null{
 	double[] swdeltu_mm		= new double[Layer_Depth.length];
 	double[] swdeltt_mm		= new double[Layer_Depth.length];
 	
+	
 	double[] es_lyr			= new double[Layer_Depth.length];
 	double[] upflow			= new double[Layer_Depth.length];
+	
 	double aesoil;
 	double aeosoil;
+	double eop;
+	double ep;
+	
+	double[] rlv	= new double[Layer_Depth.length]; // Should be modified by plant module.
+	int[] tss		= new int[Layer_Depth.length]; // number of days soil layer L has been saturated
+	double[] rwu		= new double[nLayers];
+	double rwumx; //Root water uptake,maximum      mm2/m (Crop state) 0.07 for sugacane?
+	double trwu;
+	double trwup;
+	double wtdep; // should calculated by wdept for root water uptake
+	double pormin; //Minimum pore space required for supplying oxygen to roots for optimal growth and function (cm3/cm3) (from Plant module)
+	
+	double rootDepth;
 	
 	
 	double[] satfrac		= new double[nLayers];
@@ -526,6 +542,154 @@ module SoilProfile() extends Null{
 
 	}	
 	}
+	
+	
+	void RootWatUpPotential(){
+		
+		double swcon1 = 1.32e-3;
+		double swcon3 = 7.01;
+		double denomi;
+		double swexf;
+		
+		double[] swcon2		= new double[nLayers];
+		
+		
+		trwup = 0.;
+		for(int L = 0; L<=nLayers-1; L++){
+			
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		
+			swcon2[L] = 120. - 250. *  sl.LL;
+			if(sl.LL > 0.3){ swcon2[L] = 45.;}
+			rwu[L] = 0.;			
+			
+			if(rlv[L] <= 0.00001 || sl.SWC <= sl.LL){
+				rwu[L] = 0.;			
+			}else{
+			
+				if(rlv[L] > Math.exp(swcon3)){
+					denomi = swcon3 - Math.log(swcon3);
+				}else{
+					denomi = swcon3 - Math.log(rlv[L]);
+				}
+				
+				rwu[L] = swcon1 * Math.exp(Math.min((swcon2[L] * (sl.SWC - sl.LL)),40.)) / denomi;
+				
+				if((sl.SAT - sl.SWC) >= pormin || pormin < 1.e-6){
+				tss[L] = 0;
+				}else{			
+				tss[L]++;
+				}
+				
+				if(tss[L] > 2){
+				
+					swexf = Math.max(0.,(sl.SAT - sl.SWC) / pormin);
+				}else{
+				swexf = 1.0;
+				}
+				
+				swexf = Math.min(swexf, 1.);
+				rwu[L] = Math.min(rwu[L], rwumx * swexf);
+				rwu[L] = Math.min(rwu[L], rwumx);		
+			
+			}
+			
+			rwu[L] = rwu[L] * sl.Thickness * rlv[L];
+			trwup = trwup + rwu[L];	
+			
+		}
+		
+			// DLAYR(L)  Soil thickness in layer L (cm)
+			// LL(L)     Volumetric soil water content in soil layer L at lower limit
+			//             (cm3/cm3)
+			// NL        Maximum number of soil layers = 20 
+			// NLAYR     Actual number of soil layers 
+			// PORMIN    Minimum pore space required for supplying oxygen to roots for 
+			//             optimal growth and function (cm3/cm3)
+			// RLV(L)    Root length density for soil layer L ((cm root / cm3 soil))
+			// RWU(L)    Root water uptake from soil layer L (cm/d)
+			// RWUMX     Maximum water uptake per unit root length, constrained by soil 
+			//             water (cm3[water] / cm [root])
+			// SAT(L)    Volumetric soil water content in layer L at saturation
+			//             (cm3 [water] / cm3 [soil])
+			// SATFAC    Root length weighted soil water excess stress factor ( 0 = no 
+			//             stress; 1 = saturated stress ) 
+			// SUMEX     Sum of water excess factor times depth times root length 
+			//             density 
+			// SUMRL     Sum of root length density (integrated over depth) 
+			// SW(L)     Volumetric soil water content in layer L
+			//             (cm3 [water] / cm3 [soil])
+			// SWCON1    Constant used in determining root water uptake 
+			// SWCON2(L) Variable used in determining root water uptake, dependant on 
+			//             lower limit in layer L 
+			// SWCON3    Constant used in determining root water uptake 
+			// SWEXF     Excess water stress factor for layer with deepest roots (0-1) 
+			// TRWUP     Total potential daily root water uptake (cm/d)
+			// TSS(L)    Number of days soil layer L has been saturated (d)
+
+		
+	
+	}
+	
+	
+	void RootWatUp(){
+		
+		double wuf;
+		double[] swtemp		= new double[nLayers];
+		
+		for(int L = 0; L<=nLayers-1; L++){
+		
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			
+			swdeltx[L] 	= 0.;
+			swtemp[L]	= sl.SWC;
+			sw_avail[L]	= Math.max(0., sw_avail[L] - sl.LL);	
+		
+		}	
+		
+		
+		if(ep > 0.){
+			if((0.1 * ep) <= trwup){
+				wuf = 0.1 * ep / trwup;
+			}else{
+				wuf = 1.0;
+			}
+			
+			trwu = 0.;
+			for(int L = 0; L<=nLayers-1; L++){
+			
+				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+				
+				if(swtemp[L] > sl.LL){
+					rwu[L] = rwu[L] * wuf;
+					if((rwu[L] / sl.Thickness) > sw_avail[L]){
+					rwu[L] = sw_avail[L] * sl.Thickness;
+					}
+					swtemp[L] = swtemp[L] - rwu[L] / sl.Thickness;
+					trwu = trwu + rwu[L];
+				}			
+			}
+			
+			ep = trwu * 10.;
+					
+		}else{
+		
+			trwu 				= 0.;
+			rwu[0:nLayers-1] 	= 0.;
+		
+		}
+		
+		for(int L = 0; L<=nLayers-1; L++){
+		
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			swdeltx[L] = swtemp[L] - sl.SWC;	
+		
+		}
+	
+	}
+	
+	
+	
 	
 	void SoilEvaporation(){
 		
