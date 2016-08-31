@@ -36,6 +36,7 @@ static int Y_times				= 10;			// Number of cloned plots on Y axis
 static boolean UseSoil			= true;
 static int cn_runoff			= 80;
 static double swcon_drain		= 0.5;
+static double albedo			= 0.14;
 static double[] Layer_Depth		= {0.10, 0.20, 0.40, 0.60, 0.80, 1.00};
 static double[] Layer_LL		= {0.20, 0.20, 0.20, 0.20, 0.20, 0.20};
 static double[] Layer_DUL		= {0.30, 0.30, 0.30, 0.30, 0.30, 0.30};
@@ -47,6 +48,7 @@ static boolean	irrigation		= false;
 
 // time and environmental settings
 const float latitude 			= -22.708 * Math.PI/180;	// the latitude of location of the scene
+static double altitude			= 540.;
 static int startingDayOfYear	= 197;				// overall starting simulation day of year
 static int startingyear			= 2014;				//
 
@@ -178,6 +180,7 @@ static double[] srThresh		= new double[totalSpecies];		// threshold sink/source 
 static double[] srThresh2		= new double[totalSpecies];		// threshold sink/source ratio for branch abortion
 
 static double[] tb				= new double[totalSpecies];		// base temperature for thermal time calculation
+static double[] eoratio			= new double[totalSpecies];		// Ratio of increase in potential evapotranspiration with increase in LAI (up to LAI=6.0) for use with FAO-56 Penman reference potential evapotranspiration.
 
 // derived parameters
 static int nrSpecies;										// number of plant species in the scene

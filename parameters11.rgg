@@ -77,4 +77,5 @@ import static parameters.*;
 	srThresh2[sugarcane] = 0.1;			     // threshold sink/source ratio for branch abortion
 	
 	tb[sugarcane] = 10;						 // base temperature for thermal time calculation
+	eoratio[sugarcane] = 1.15;
 }

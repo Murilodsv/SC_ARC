@@ -9,6 +9,9 @@ import de.grogra.ray.physics.Spectrum3d;
 // module that contains field-wide variables
 module FieldBase
 {
+	double lai_total;											// leaf area index of all species on the field
+	double eoratio_total;										// total eoratio to account for evapotranspiration PM
+	double[] lai_eoratio = new double[totalSpecies];			// eoratio and lai for each specie to account for eoratio_total later on
 	double[] leafArea = new double[totalSpecies];				// leaf area
 	double[] lai = new double[totalSpecies];					// leaf area index
 	double[] nrShoots = new double[totalSpecies];				// shoots per m2 (branches + main stem)
@@ -78,12 +81,17 @@ module FieldBase
 			if (spPresence[s] == true) {
 				leafArea[s] = sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[leafArea]);
 				lai[s] = leafArea[s] / focalArea[s];
+				lai_eoratio[s] = lai[s] * eoratio[s];
 				laidata.getRow(time).set(s,lai[s]);
 				nrShoots[s] = sum((* pb:PlantBase, (pb.border == false && pb.species == s) *)[nrBranches] +1) / focalArea[s];
 				nrTillersm2[s] = count((* pb:PlantBase, (pb.border == false && pb.species == s && pb.emerged) *)) / focalArea[s];
 				tillering.getRow(time).set(s,nrTillersm2[s]);				
 			}
 		}
+		
+		lai_total 		= sum(lai[0:totalSpecies-1]);
+		eoratio_total 	= sum(lai_eoratio[0:totalSpecies-1]) / lai_total; 		
+		
 	}
 	
 	

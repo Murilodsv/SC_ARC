@@ -130,8 +130,8 @@ module SoilProfile() extends Null{
 	
 	double aesoil;
 	double aeosoil;
-	double eop;
-	double ep;
+	//double eop;
+	//double ep;
 	
 	double[] rlv	= new double[Layer_Depth.length]; // Should be modified by plant module.
 	int[] tss		= new int[Layer_Depth.length]; // number of days soil layer L has been saturated

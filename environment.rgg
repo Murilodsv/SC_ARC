@@ -1,15 +1,24 @@
 import java.io.*;
 import static parameters.*;
+import static initiation.*;
+import static modules_base.*;
+import static modules_organs.*;
 
 
-// temperature
+// weather
 static double tav;
 static double tmax;
 static double tmin;
 static double rain;
-static double et0;
+static double srad;
+static double rh;
+static double wind;
+static double tdew;
+static double CO2 = 400.;
+
+static double et0;		// inputed reference evapotranspiration mm/d
 static double irrig;
-static double snow; // added as variable but not calculated
+static double snow; // added as state variable but not calculated
 
 static void calcTemp() {				// calculates average daily temperature parameterized for Piracicaba (should read input data) (Vianna, 2016)
 	double tmaxWeight = 0.5;
@@ -21,7 +30,12 @@ static void calcTemp() {				// calculates average daily temperature parameterize
 static void updateWeather(){
 	
 	rain	= WeatherData[dayOfYear-1][4];
-	et0		= WeatherData[dayOfYear-1][7];
+	srad	= WeatherData[dayOfYear-1][5];
+	rh		= WeatherData[dayOfYear-1][6];
+	wind	= WeatherData[dayOfYear-1][7] * 86.4; // wind speed converted to km/d
+	et0		= WeatherData[dayOfYear-1][8];
+	
+	tdew	= calc_tdew();
 	
 	if(irrigation){
 	irrig	= WeatherData[dayOfYear-1][7];
@@ -187,3 +201,266 @@ static float[][] getRadiation(int dayOfYear, float latitude, int n) {
 	 println("Qgdirect = "+betaAzimSdr[2][n]* (1-FractionDiffuseLightDaily));
 	return betaAzimSdr;
 }
+
+static double eo; 		//Potential evapotranspiration rate (mm/d)
+static double eos;		//Potential soil evaporation (mm/d)
+static double eop;		//Potential plant transpiration, mm/day 
+static double es;		//Actual soil evaporation rate   mm/d
+static double ep;		//Actual plant transpiration mm/day	
+
+// Calculates FAO-56 Penman-Monteith potential evapotranspiration, exactly grass reference, and uses eoratio to mimic the kc reponse over lai evolution.
+static void petpen(){	
+	
+	double eair;
+	double esat;	
+	double lhvap;
+	double psycon;
+	double radb;
+	double rnet;
+	double rnetmg;
+	double s;
+	double tk4;
+	double vpd;
+	double dair;
+	double rt;
+	double et0;
+	double kc;	
+	double vapr;
+	double ra;
+	double wind_m;
+	double Qcs;
+	
+	double alb		= 0.23;
+	double g		= 0.;
+	double windht	= 2.;
+	double shair 	= 0.001005;
+	double patm		= 101300.0;
+	double sbzcon	= 4.903e-9;
+	double k		= 0.41;
+	double refht	= 0.12;
+	double d		= (2./3.) * refht;	
+	double Zom		= 0.123 * refht;
+	double Zoh		= 0.1 * Zom;	
+	double rl		= 100.;
+	double rs		= (rl/(0.5 * 2.88)) / 86400; //Assuming half leaf Area (2.88) is contributing [converted (s m^-1 to d/m)] 
+
+	FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
+	
+	//compute air properties
+	lhvap 	= (2501.0 - 2.373 * tav) * 1000.;
+	psycon	= shair * patm / (0.622 * lhvap) * 1000000.;
+	
+	esat = (vpsat(tmax) + vpsat(tmin)) / 2.;
+	eair = vpsat(tdew);
+	
+	vpd = Math.max(0., esat - eair);
+	s 	= (vpslope(tmax) + vpslope(tmin)) / 2.;
+	rt	= 8.314 * (tav + 273.);
+	dair = 0.028966 * (patm - 0.387 * eair)/rt;
+	
+	wind_m = wind * 1000.;
+	
+	ra = (Math.log((windht-d)/Zom)*Math.log((windht-d)/Zoh)) / ((k**2)*wind_m);
+	
+	tk4 = ((tmax+273.)**4 + (tmin+273.)**4) / 2.;
+	Qcs = (0.75 * 2.e-5 * altitude) * Qo;
+	
+	radb = sbzcon * tk4 * (0.34 - 0.14 * Math.sqrt(eair/1000.)) * (1.35 * (srad / Qcs) - 0.35);
+	rnet = (1 - alb) * srad - radb;
+	
+	rnetmg = (rnet - g);
+	
+	et0 = ((s * rnetmg + (dair * shair * vpd) / ra) / (s+psycon * (1+rs/ra)));
+	et0 = et0 / (lhvap / 1000000.);
+	
+	kc = 1. + (fb.eoratio_total - 1.) * Math.min(6.,fb.lai_total) / 6.;
+	eo = et0 * kc;
+	eo = Math.max(0.0001, eo);
+}
+
+
+// Priestly-Taylor potential evapotranspiration
+static void petpt(){
+
+	double eeq;
+	double slang;
+	double td;
+	double alb;
+	
+	//Can't use tav unless coefficients in EEQ equation are recalibrated.  Keep td calc as it was developed.         
+	
+	FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
+		
+	td = 0.6 * tmax + 0.4 * tmin;
+		
+	if(fb.lai_total <= 0.){	
+		alb = albedo;	
+	}else{	
+		alb = 0.23 - (0.23 - albedo) * Math.exp(-0.75 * fb.lai_total);	
+	}
+		
+	slang = srad * 23.923;
+	eeq = slang*(2.0e-4 - 1.83e-4 * alb) * (td + 29.);
+	eo  = eeq * 1.1;
+	
+	if(tmax > 35.){
+		eo = eeq * ((tmax - 35.) * 0.05 + 1.1);	
+	}else if(tmax < 5.){
+		eo = eeq * 0.01 * Math.exp(0.18 * (tmax + 20.));	
+	}
+	
+	eo = Math.max(0.0001, eo);
+
+}
+
+
+// Calculates soil potential evaporation from total eo and lai.
+static void pse(){
+
+	FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
+
+	if(fb.lai_total <= 1.){
+	eos = eo * (1. - 0.39 * fb.lai_total);	
+	}else{
+	eos = eo / 1.1 * Math.exp(-0.4 * fb.lai_total);
+	}
+	
+	//there is a coefficient to adjust for each crop ksevp (Light extinction coefficient used for computation of soil evaporation)
+	
+	
+	eos = Math.max(0.0, eos);
+
+}
+
+// Calculates potential transpiration rate, EOP (mm/d).
+static void trans(){
+	
+	int P_type = 1; //1 - C4 species, 2 - C3, 3 - CAM. Using 1 just whil figure out how to fraction among different plant species at the same field (intercropping)
+	double trat;
+	double fdint;
+	double eop_reduc;
+	double eop_max;
+	double ktrans = 0.75; // should be calculated for each crop
+	
+	FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
+	
+	eop = 0.;
+	trat = tratio(P_type);
+	
+	fdint = 1. - Math.exp(-(ktrans) * fb.lai_total);
+	eop = eo * fdint;
+	eop_reduc = eop * (1. - trat);
+	eop = eop * trat;
+	
+	eop_max = eo - eop_reduc - es; //Should add evaporation from mulch and flood in "es"
+	eop = Math.min(eop, eop_max);
+	
+	eop = Math.max(0., eop);
+
+}
+
+static double tratio(int P_type){
+	
+	double delta;
+	double gamma;
+	double lhv;
+	double ra;
+	double rb;
+	double rl;
+	double rlc;
+	double rlf;
+	double rlfc;
+	double xden;
+	double xnum;
+	
+	double uavg;
+	
+	
+	rlf = 0.;	
+	rlfc = 0.;
+	
+	FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
+	
+	if(fb.lai_total < 0.01){
+	
+		return 1.0;
+		
+	}else{
+	
+	
+	uavg = wind / 86.4;
+	rb = 10.;
+	
+	switch(P_type){
+	
+		case 1:
+		
+		rlf = (1.0/(0.0328 - 5.49e-5*330.0 + 2.96e-8 * 330.0**2)) + rb;
+		rlfc = (1.0/(0.0328 - 5.49e-5* CO2  + 2.96e-8 * CO2  **2)) + rb;
+		
+		case 2:
+		
+		rlf = 9.72 + 0.0757 * 330.0 + 10.0;
+		rlfc = 9.72 + 0.0757 *  CO2  + 10.0;
+		
+		case 3:
+		
+		// to be constructed
+		
+		default:
+		
+		println("WARNING: no species type was found. Please choose among C3, C4 or CAM");
+	
+	}
+	
+	//Use FAO-56 assumption LAI = 2.88 reference for canopy resistances
+	rl = rlf / (0.5 * 2.88);
+	rlc = rlfc / (0.5 * 2.88);
+	
+	//Replace boundary layer resistance function with this eqn
+	ra = 208. / uavg;
+	
+	delta 	= vpslope(tav)/100.;
+	lhv		= 2500.9 - 2.345 * tav;
+	gamma	= 1013.0 * 1.005 / (lhv * 0.622);
+	
+	xnum = delta + gamma * (1. + rl/ra);
+	xden = delta + gamma * (1. + rlc/ra);
+	
+	return	xnum / xden;
+	}
+
+}
+
+
+// Calculates saturated vapor pressure of air (Tetens, 1930).
+static double vpsat(double t){
+	
+	return 610.78 * Math.exp(17.269 * t / (t + 237.30));	
+
+}
+
+//Calculates slope of saturated vapor pressure versus temperature curve using Classius-Clapeyron equation (see Brutsaert, 1982 p. 41)
+static double vpslope(double t){
+
+	return 18. * (2501.0 - 2.373 * t) * vpsat(t) / (8.314 * (t + 273.0)**2); 
+
+}
+
+//Calculates dew point temperature
+static double calc_tdew(){
+
+	double a = 0.61078;
+	double b = 17.269;
+	double c = 237.30;
+	double td;
+	double ea;
+	double es;
+	
+	es = a * Math.exp(b * tmin / (tmin + c));
+	ea = rh/100. * es;
+	td = (c * Math.log(ea/a)) / (b - Math.log(ea/a));
+	return td;
+
+}
+
