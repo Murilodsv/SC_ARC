@@ -291,6 +291,7 @@ static void petpen(){
 	kc = 1. + (fb.eoratio_total - 1.) * Math.min(6.,fb.lai_total) / 6.;
 	eo = et0 * kc;
 	eo = Math.max(0.0001, eo);
+
 }
 
 
@@ -325,6 +326,7 @@ static void petpt(double alb_soil){
 	}
 	
 	eo = Math.max(0.0001, eo);
+	
 
 }
 
@@ -354,9 +356,9 @@ static void pse(){
 	}
 	
 	//there is a coefficient to adjust for each crop ksevp (Light extinction coefficient used for computation of soil evaporation)
-	
-	
+		
 	eos = Math.max(0.0, eos);
+	
 
 }
 
@@ -387,7 +389,7 @@ static void trans(){
 
 }
 
-static double tratio(int P_type){
+static double tratio(int Ptype){
 	
 	double delta;
 	double gamma;
@@ -402,7 +404,6 @@ static double tratio(int P_type){
 	double xnum;
 	
 	double uavg;
-	
 	
 	rlf = 0.;	
 	rlfc = 0.;
@@ -419,17 +420,21 @@ static double tratio(int P_type){
 	uavg = wind / 86.4;
 	rb = 10.;
 	
-	switch(P_type){
+	switch(Ptype){
 	
 		case 1:
 		
 		rlf = (1.0/(0.0328 - 5.49e-5*330.0 + 2.96e-8 * 330.0**2)) + rb;
 		rlfc = (1.0/(0.0328 - 5.49e-5* CO2  + 2.96e-8 * CO2  **2)) + rb;
+		break;
 		
 		case 2:
 		
 		rlf = 9.72 + 0.0757 * 330.0 + 10.0;
 		rlfc = 9.72 + 0.0757 *  CO2  + 10.0;
+		
+		
+		break;
 		
 		case 3:
 		
@@ -438,9 +443,9 @@ static double tratio(int P_type){
 		default:
 		
 		println("WARNING: no species type was found. Please choose among C3, C4 or CAM");
-	
+		break;
 	}
-	
+		
 	//Use FAO-56 assumption LAI = 2.88 reference for canopy resistances
 	rl = rlf / (0.5 * 2.88);
 	rlc = rlfc / (0.5 * 2.88);

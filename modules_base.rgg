@@ -89,7 +89,8 @@ module FieldBase
 			}
 		}
 		
-		lai_total 		= sum(lai[0:totalSpecies-1]);
+		lai_total = 2;
+		//lai_total 		= sum(lai[0:totalSpecies-1]);
 		eoratio_total 	= sum(lai_eoratio[0:totalSpecies-1]) / lai_total; 		
 		
 	}
