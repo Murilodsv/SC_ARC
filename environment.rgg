@@ -3,6 +3,8 @@ import static parameters.*;
 import static initiation.*;
 import static modules_base.*;
 import static modules_organs.*;
+import static modules_soil.*;
+
 
 
 // weather
@@ -28,6 +30,14 @@ static void calcTemp() {				// calculates average daily temperature parameterize
 }
 
 static void updateWeather(){
+	
+	if(UseTemp){
+	tmax	= WeatherData[dayOfYear-1][2];
+	tmin	= WeatherData[dayOfYear-1][3];
+	tav		= (tmax + tmin) / 2.;
+	}else{
+	calcTemp();
+	}
 	
 	rain	= WeatherData[dayOfYear-1][4];
 	srad	= WeatherData[dayOfYear-1][5];
@@ -202,11 +212,16 @@ static float[][] getRadiation(int dayOfYear, float latitude, int n) {
 	return betaAzimSdr;
 }
 
+
+
 static double eo; 		//Potential evapotranspiration rate (mm/d)
 static double eos;		//Potential soil evaporation (mm/d)
 static double eop;		//Potential plant transpiration, mm/day 
 static double es;		//Actual soil evaporation rate   mm/d
 static double ep;		//Actual plant transpiration mm/day	
+
+static double esm;		//Actual mulch evaporation (to be constructed)
+static double esf;		//Actual flood evaporation (to be constructed)
 
 // Calculates FAO-56 Penman-Monteith potential evapotranspiration, exactly grass reference, and uses eoratio to mimic the kc reponse over lai evolution.
 static void petpen(){	
@@ -280,7 +295,7 @@ static void petpen(){
 
 
 // Priestly-Taylor potential evapotranspiration
-static void petpt(){
+static void petpt(double alb_soil){
 
 	double eeq;
 	double slang;
@@ -294,9 +309,9 @@ static void petpt(){
 	td = 0.6 * tmax + 0.4 * tmin;
 		
 	if(fb.lai_total <= 0.){	
-		alb = albedo;	
+		alb = alb_soil;	
 	}else{	
-		alb = 0.23 - (0.23 - albedo) * Math.exp(-0.75 * fb.lai_total);	
+		alb = 0.23 - (0.23 - alb_soil) * Math.exp(-0.75 * fb.lai_total);	
 	}
 		
 	slang = srad * 23.923;
@@ -309,6 +324,19 @@ static void petpt(){
 		eo = eeq * 0.01 * Math.exp(0.18 * (tmax + 20.));	
 	}
 	
+	eo = Math.max(0.0001, eo);
+
+}
+
+// Use inputed et0 to compute potential evapotranspiration (eo)
+static void petinp(){
+
+	double kc;
+	
+	FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
+	
+	kc = 1. + (fb.eoratio_total - 1.) * Math.min(6.,fb.lai_total) / 6.;
+	eo = et0 * kc;
 	eo = Math.max(0.0001, eo);
 
 }

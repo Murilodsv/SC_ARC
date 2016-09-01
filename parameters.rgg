@@ -54,6 +54,8 @@ static int startingyear			= 2014;				//
 
 // Read File
 static double [][] WeatherData;
+static boolean UseTemp			= false;			// Switcher to use input daily air temperature (true) or to calculate it (false)
+static int petMethod			= 2;				// Potential evapotranspiration method (1 = PM FAO-56 ; 2 = Priestly-Taylor ; 3 = Use input Et0 data times kc; 
 
 // general field parameters                 
 static int[] sequence			= {sugarcane};		// sequence of species in adjacent strips (nr of values determines nr of strips)

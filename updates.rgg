@@ -26,28 +26,10 @@ static void renew()
 			{dayOfYear++;}
 		
 		updateIncomingLight();
-		calcTemp();
 		updateWeather();
 		
-	}
-	
-	/*
-	//Soil Water Balance (To be used to set the initial swc conditions)
-	sl:SoilLayer ::>
-	{
-		if(dayOfYear == (startingDayOfYear+1) && year == (startingyear)){sl.initialConditions();}		
 		
 	}
-	*/
-	
-	sp:SoilProfile ::>
-	{
-		
-		sp.WaterBalance();
-		
-	
-	}
-	
 	
 	// update light sources
 	dr:DirectLight ::>
@@ -57,6 +39,16 @@ static void renew()
 	df:DiffuseLight ::>
 	{
 		df.update();
+	}
+	
+	
+	//Soil Water Balance and Soil-Plant-Atmosphere rates
+	sp:SoilProfile ::>
+	{
+		
+		sp.WaterBalance_rate();
+		sp.spa();
+	
 	}
 	
 	
@@ -139,6 +131,13 @@ static void renew()
 	}
 	
 	
+	//Soil Water Balance and Soil-Plant-Atmosphere integration
+	sp:SoilProfile ::>
+	{
+		
+		sp.WaterBalance_inte();
+	
+	}
 	
 	
 	// update plant-level variables using info from individual organs

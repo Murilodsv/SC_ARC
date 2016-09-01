@@ -107,6 +107,7 @@ module SoilProfile() extends Null{
 	double trunof;
 	double tswini;
 	double tsw;
+	double alb_soil;			// albedo for energy balance calculations
 	
 	String mesev = "S";
 	
@@ -128,14 +129,13 @@ module SoilProfile() extends Null{
 	double[] es_lyr			= new double[Layer_Depth.length];
 	double[] upflow			= new double[Layer_Depth.length];
 	
-	double aesoil;
-	double aeosoil;
+	
 	//double eop;
 	//double ep;
 	
 	double[] rlv	= new double[Layer_Depth.length]; // Should be modified by plant module.
 	int[] tss		= new int[Layer_Depth.length]; // number of days soil layer L has been saturated
-	double[] rwu		= new double[nLayers];
+	double[] rwu		= new double[Layer_Depth.length];
 	double rwumx; //Root water uptake,maximum      mm2/m (Crop state) 0.07 for sugacane?
 	double trwu;
 	double trwup;
@@ -625,9 +625,7 @@ module SoilProfile() extends Null{
 			// SWCON3    Constant used in determining root water uptake 
 			// SWEXF     Excess water stress factor for layer with deepest roots (0-1) 
 			// TRWUP     Total potential daily root water uptake (cm/d)
-			// TSS(L)    Number of days soil layer L has been saturated (d)
-
-		
+			// TSS(L)    Number of days soil layer L has been saturated (d)	
 	
 	}
 	
@@ -689,8 +687,6 @@ module SoilProfile() extends Null{
 	}
 	
 	
-	
-	
 	void SoilEvaporation(){
 		
 		int profile_type;		
@@ -703,6 +699,12 @@ module SoilProfile() extends Null{
 		double[] meandep	= new double[nLayers];
 		double[] swtemp		= new double[nLayers];
 		double[] es_coef	= new double[nLayers];
+		
+		//    ProfileType:
+		//    1 = Wet: SW > DUL in at least one layer in top 100 cm and SW > SW_threshold in top layer      
+		//    2 = Intermediate: wet, but SW < SW_threshold in top layer 
+		//    3 = Dry: SW < DUL in all layers in top 100 cm
+
 		
 		profile_type = 3;
 		
@@ -780,18 +782,18 @@ module SoilProfile() extends Null{
 		swdeltu[L] = Math.min(0.,swdeltu[L]);
 		
 		es_lyr[L] = -swdeltu[L] * sl.Thickness * 10.0;	// (mm)		
-		aesoil = aesoil + es_lyr[L];					// profile sum (mm)		
+		es = es + es_lyr[L];					// profile sum (mm)		
 			
 		}
 		
 		// Limit total profile soil evaporation to potential soil evaporation
 		red_factor = 1.0;
 		
-		if(aesoil > aeosoil){
-			red_factor = aeosoil / aesoil;
+		if(es > eos){
+			red_factor = eos / es;
 			es_lyr[0:nLayers-1] = es_lyr[0:nLayers-1] * red_factor;
 			swdeltu[0:nLayers-1] = swdeltu[0:nLayers-1] * red_factor;
-			aesoil = aeosoil;		
+			es = eos;		
 		}
 		
 		upflow[0:nLayers-1] = 0.0;
@@ -807,13 +809,9 @@ module SoilProfile() extends Null{
 	
 	}
 	
-
-	void WaterBalance(){	
+	// Soil Water balance - Daily rate calculations
+	void WaterBalance_rate(){	
 		
-	
-		// -----------------------
-		// Daily rate calculations
-		// -----------------------	
 		
 		//check whether snow is happening
 		if(tmax <= 1 && snow > 0.001){		
@@ -881,6 +879,7 @@ module SoilProfile() extends Null{
 			SatFlow();
 			
 		}
+	
 		
 		if(tdlno > 0){
 		//tiledrain computation...
@@ -905,6 +904,12 @@ module SoilProfile() extends Null{
 		//if(tillage){}
 		
 		
+		
+	}
+	
+	// Soil Water balance - Daily integration
+	void WaterBalance_inte(){
+	
 		// -----------------------
 		// Daily integration
 		// -----------------------
@@ -932,8 +937,104 @@ module SoilProfile() extends Null{
 		
 		// Perform daily summation of water balance variables.
 		wbsum();
-		
+	
+	
 	}
+	
+	
+//Soil-Plant-Atmosphere energy balance components
+ void spa(){
+	
+
+ 	 swdeltx[0:nLayers-1] = 0.;
+ 
+ 	 // Calculate the availability of soil water
+ 	 for(int L = 0; L<=nLayers-1; L++){
+ 	 
+ 	 	 SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+ 	 	 
+ 	 	 sw_avail[L] = Math.max(0., sl.SWC + swdelts[L] + swdeltu[L]); 	 	 
+ 	 
+ 	 }
+ 	 
+ 	 FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
+ 	 
+ 	 if(fb.lai_total > 0.){
+ 	 	 
+ 	 	 // Potential Root Water Uptake
+ 	 	 RootWatUpPotential();
+ 	 }else{
+ 	 	 
+ 	 	 rwu[0:nLayers-1] 	= 0.;
+ 	 	 trwup				= 0.;
+ 	 }
+ 	 
+ 	 println("hello");
+ 	 
+ 	 // Potential Evapotranspiration 	 
+ 	 if(flood > 0.){
+ 	 
+ 	 	 alb_soil = 0.05;
+ 	 }else{
+ 	 
+ 	 	 alb_soil = albedo;
+ 	 }
+ 	 
+ 	 switch(petMethod){
+ 	 
+ 	 	 case 1:
+ 	 	 
+ 	 	 petpen();
+ 	 	 
+ 	 	 case 2:
+ 	 	 
+ 	 	 petpt(alb_soil);
+ 	 	 
+ 	 	 case 3: 	 
+ 	 	 
+ 	 	 petinp();
+ 	 }
+ 	 
+ 	 // Potential Soil evaporation
+ 	 pse();
+ 	 
+ 	 es = 0.;
+ 	 esm = 0.;
+ 	 esf = 0.;
+ 	 upflow[0:nLayers-1] = 0.;
+ 	 es_lyr[0:nLayers-1] = 0.;	
+ 	 
+ 	 //Actual soil evaporation (There's a room to compute flood(esf) and mulch(esm) surface evaporation as well) 	 
+ 	 SoilEvaporation();
+ 	 
+ 	 es = es + esm + esf;
+ 	 
+ 	 //Potential Transpiration
+ 	 if(fb.lai_total > 0.){ 	 
+ 	 	 trans();	 
+ 	 }else{ 	 	 
+ 	 	 eop = 0.; 	 	 
+ 	 }
+ 	 
+ 	 //Actual transpiration
+ 	 if(fb.lai_total > 0. && eop > 0.){
+ 	 	 ep = Math.min(eop, trwup * 10.);
+ 	 }else{
+ 	 	 ep = 0.;
+ 	 }
+ 	 
+ 	 //Actual Root Water Extraction
+ 	 for(int L = 0; L<=nLayers-1; L++){
+ 	 
+ 	 	 SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+ 	 	 
+ 	 	 sw_avail[L] = Math.max(0., sw_avail[L] - 0.1 * es_lyr[L] / sl.Thickness); 	 	 
+ 	 
+ 	 }
+ 	 
+ 	 RootWatUp();	 
+ 	 
+}
 	
 	
 	void initiate(int TileRow, int TileStrip){
