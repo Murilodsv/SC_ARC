@@ -6,62 +6,56 @@ import static modules_light.*;
 import de.grogra.ray.physics.Spectrum;
 import de.grogra.ray.physics.Spectrum3d;
 
-// soil profile associated to an individual plant
+// soil layers associated to a soil profile
 module SoilLayer
 {
-	int    row;
-	int	   strip;
-	int    rank;
-	double upper;
-	double bottom;
-	double LL;
-	double DUL;
-	double SAT;
-	double KSAT;
-	double BDEN;
-	double SLOC;
-	double Thickness;
-	double PlantDist;
-	double RowDist;
-	double Depth;
-	double SWC;
-	double TSWC;
+	int    row;					// row number
+	int	   strip;				// strip number
+	int    nL;					// soil layer number
+	double upper;				// upper layer depth (cm)
+	double bottom;				// bottom layer depth (cm)
+	double LL;					// volumetric soil water content in soil layer nL at lower limit	(cm3 [water] / cm3 [soil])
+	double DUL;					// volumetric soil water content in soil layer nL at field capacity	(cm3 [water] / cm3 [soil])
+	double SAT;					// volumetric soil water content in soil layer nL at staturation	(cm3 [water] / cm3 [soil])
+	double KSAT;				// Saturated hydraulic conductivity in layer nL (cm/hr)
+	double BDEN;				// Bulk density, soil layer L (g [soil] / cm3 [soil])
+	double SLOC;				// Soil organic matter 
+	double Thickness;			// Thickness of soil layer L (cm)
+	double PlantDist;			// Distance between plant along a row (m)
+	double RowDist;				// Row distance	(m)
+	double Depth;				// Layer depth (cm)
+	double SWC;					// Volumetric soil water content in layer nL (cm3 [water] / cm3 [soil])
+	double TSWC;				// Total soil water in nL (cm)
 	
-	double 	rlv = 1.1;	// Root lenght Volume
-	int 	tss;	// number of days soil layer L has been saturated
-	double 	rwu;	// Root water Uptake
+	double 	rld = 0.12;			// Root length density for soil layer nL (cm[root] / cm3[soil])
+	int 	tss;				// number of days soil layer nL has been saturated
+	double 	rwu;				// Root water uptake from soil layer nL (cm/d)
 	
-	double swdelts;
-	double swdeltu;
-	double swdeltx;	
-	double swdeltt;
-	double swdeltl;	
-	double sw_avail;
-	double sw_mm;	
-	double es_lyr;
-	double upflow;	
-	double satfrac;
+	double swdelts;				// Change in soil water content due to drainage in layer nL							(cm3 [water] / cm3 [soil])
+	double swdeltu;				// Change in soil water content due to evaporation and/or upward flow in layer nL 	(cm3 [water] / cm3 [soil])
+	double swdeltx;				// Change in soil water content due to root water uptake in layer nL				(cm3 [water] / cm3 [soil])
+	double swdeltt;				// Change in soil water content due to tiledrain in layer nL (To be developed)		(cm3 [water] / cm3 [soil])
+	double swdeltl;				// Change in soil water content due to tillage in layer nL (To be developed)		(cm3 [water] / cm3 [soil])
+	double sw_avail;			// Soil water content in layer L available for evaporation, plant extraction, , or movement through soil (cm3 [water] / cm3 [soil])
+	double sw_mm;				// Total soil water in nL (mm)
+	double es_lyr;				// Evaporation + upward flow of nL (mm)
+	double upflow;				// Upflow of nL (cm/d)
+	double satfrac;				// Saturation fraction (0-1) of nL
 	
+	
+	// Initial water conditions for simulation
 	void initialConditions(){
-	
+		
+		// considering init = field capacity
 		SWC = DUL;
 		TSWC = SWC * Thickness;
 	}
-	
-	
-	void infil(){
-	}
-	
-	void satflow(){
-	}
-	
-	
-	
+		
 
 	// initiation of a soil layer
 	void initiate(int nLayer, int TileRow, int TileStrip)
 	{
-		rank 	= nLayer;
+		nL 	= nLayer;
 		row  	= TileRow;
 		strip 	= TileStrip;
 		Depth 	= Layer_Depth[nLayer-1] * 100.;
@@ -84,8 +78,7 @@ module SoilLayer
 		PlantDist = 0.25;
 		RowDist = 1.4;
 		
-		if(nLayer == 1) {Depth = Depth + 0.001;}
-		
+		if(nLayer == 1) {Depth = Depth + 0.001;}		
 		
 	}
 } 
@@ -93,39 +86,34 @@ module SoilLayer
 Translate(0,0,-Depth/100.) Box(Thickness/100.,PlantDist,RowDist).(setColor(0.51,0.33,0.16))
 ;
 
+// Soil profile associated to each tile at the scene
 module SoilProfile() extends Null{
 	
-	int		row;
-	int		strip;
-	int		cn;
-	int		nLayers;
-	int		tdlno;
-	double	swcon;
-	double 	runoff;
-	double	watavl;
-	double  winf;		//Water available for infiltration - rainfall minus runoff plus  net irrigation (mm / d)
-	double  pinf;
-	double drain;
-	double infilt;
-	double flood;
-	double excs; // check if here is the right place for it
+	int		row;					// row number
+	int		strip;					// strip number
+	int		cn;						// Curve Number (Used for runoff calculations)
+	int		nLayers;				// Number of layers
+	double	swcon;					// Soil water conductivity constant; whole profile drainage rate coefficient (1/d) 
+	double 	runoff;					// Calculated runoff (mm/d)
+	double	watavl;					// Water available for infiltration or runoff (rainfall plus irrigation) (mm/d)
+	double  winf;					// Water available for infiltration - rainfall minus runoff plus  net irrigation (mm / d)
+	double  pinf;					// Potential water available for infiltration (cm)
+	double drain;					// Drainage rate from soil profile (mm/d)
+	double infilt;					// Infiltration rate (mm / d)
+	double flood;					// Current depth of flooding (mm) (To be developed)
+	double excs; 					// Excess water to be added to runoff (cm/d)	
+	boolean puddled;				// Flag variable indicating whether lowland field has been puddled 
+	boolean bunded;					// Flag variable indicating if field is currently bunded 
+	boolean mulchEffect;			// Flag variable whether to use or not mulch effect calulations (To be developed)
+	double mulch;					// Amount of mulch on field (t ha-1)	
+	double crain;					// Cumulative precipitation (mm)
+	double tdrain;					// Total daily drainage from soil (mm)
+	double trunof;					// Total daily runoff from soil (mm)
+	double tswini;					// Total initial soil water content (cm)
+	double tsw;						// Total soil water content (cm)
+	double alb_soil;				// albedo for energy balance calculations
 	
-	boolean puddled;
-	boolean bunded;
-	boolean initiate;
-	
-	boolean mulchEffect;
-	double mulch;
-	
-	double crain;
-	double tdrain;
-	double trunof;
-	double tswini;
-	double tsw;
-	double alb_soil;			// albedo for energy balance calculations
-	
-	String mesev = "S";
-	
+	String mesev = "S";	
 	
 	double[] sw_mm_NEW		= new double[Layer_Depth.length];	
 	double[] swdelts_mm		= new double[Layer_Depth.length];
@@ -134,16 +122,13 @@ module SoilProfile() extends Null{
 	double[] swdeltu_mm		= new double[Layer_Depth.length];
 	double[] swdeltt_mm		= new double[Layer_Depth.length];
 
-	double rwumx; //Root water uptake,maximum      mm2/m (Crop state) 0.07 for sugacane?
+	double rwumx = 0.07; //Root water uptake,maximum      mm2/m (Crop state) 0.07 for sugacane?
 	double trwu;
 	double trwup;
 	double wtdep; // should calculated by wdept for root water uptake
-	double pormin; //Minimum pore space required for supplying oxygen to roots for optimal growth and function (cm3/cm3) (from Plant module)
+	double pormin = 0.02; //Minimum pore space required for supplying oxygen to roots for optimal growth and function (cm3/cm3) (from Plant module)
 	
-	double rootDepth;
-	
-	
-	
+	double rootDepth;	
 	
 	// Run-off calculations
 	void Runoff(){
@@ -157,8 +142,8 @@ module SoilProfile() extends Null{
 		smx = 254.0 * (100.0/cn - 1.0);
 		
 		// Uses only two top layers to compute runoff
-		SoilLayer sl1 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == 1));
-		SoilLayer sl2 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == 2));
+		SoilLayer sl1 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == 1));
+		SoilLayer sl2 = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == 2));
 
 		swabi = Math.max(0, 0.15 * ((sl1.SAT - sl1.SWC)/(sl1.SAT - sl1.LL * 0.5) + (sl2.SAT - sl2.SWC)/(sl2.SAT - sl2.LL * 0.5)));
 		
@@ -186,18 +171,18 @@ module SoilProfile() extends Null{
 	// Water infiltration calculations
 	void Infiltration(){
 		
-		double drcm;
-		double hold;
-		double tmpexcs;
-		double[] drn 		= new double[nLayers];
-		double[] swtemp		= new double[nLayers];
+		double drcm;		// Drainage rate from soil profile (cm/d)
+		double hold;		// Amount of water a soil layer will hold above it's present level, used to calculate downward flow; also, temporary  variable/ intermediate calculation (cm)
+		double tmpexcs;		// 
+		double[] drn 		= new double[nLayers]; //Drainage rate through soil layer L (cm/d) 
+		double[] swtemp		= new double[nLayers]; //Soil water content in layer L (temporary value to be modified based on drainage, root uptake and upward flow through soil  layers). (cm3/cm3)
 		
 		excs 			= 0.0;
 		tmpexcs			= 0.0;
 		
 		for(int L = 0; L<=nLayers-1; L++){
 		
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			
 			swtemp[L]	= sl.SWC;
 			
@@ -234,7 +219,7 @@ module SoilProfile() extends Null{
 						
 						while(tmpexcs > 0.0001 && Lup >=0){
 							
-							SoilLayer slup = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (Lup+1)));
+							SoilLayer slup = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (Lup+1)));
 				
 							hold = Math.min((slup.SAT - swtemp[Lup])*slup.Thickness,tmpexcs);
 							swtemp[Lup] = swtemp[Lup] + hold / slup.Thickness;
@@ -283,29 +268,12 @@ module SoilProfile() extends Null{
 		}
 		
 		drain = pinf * 10.0;
-		
-		// DLAYR(L)   Thickness of soil layer L (cm)
-		// DRAIN       Drainage rate from soil profile (mm/d)
-		// DRCM        Drainage rate from soil profile (cm/d)
-		// DRN(L)      Drainage rate through soil layer L (cm/d)
-		// DUL(L)      Volumetric soil water content at Drained Upper Limit in soil layer L (cm3[water]/cm3[soil])              
-		// EXCS       Excess water to be added to runoff (cm/d)
-		// HOLD        Amount of water a soil layer will hold above it's present level, used to calculate downward flow; also, temporary  variable/ intermediate calculation (cm)         
-		// NLAYR       Actual number of soil layers 
-		// PINF       Potential water available for infiltration (cm)
-		// SAT(L)      Volumetric soil water content in layer L at saturation  (cm3 [water] / cm3 [soil])
-		// SW(L)       Volumetric soil water content in layer L (cm3 [water] / cm3 [soil])
-		// SWCN(L)     Saturated hydraulic conductivity in layer L (cm/hr)
-		// SWCON       Soil water conductivity constant; whole profile drainage rate  coefficient (1/d)              
-		// SWDELTS(L) Change in soil water content due to drainage in layer L (cm3 [water] / cm3 [soil])             
-		// SWTEMP(L)   Soil water content in layer L (temporary value to be modified based on drainage, root uptake and upward flow through soil  layers). (cm3/cm3)
 			
 	}
 	
 	// Saturated flow calculations
 	void SatFlow(){
 		
-		//double drcm;
 		double hold;
 		double tmpexcs;
 		double swold;
@@ -316,7 +284,7 @@ module SoilProfile() extends Null{
 				
 		for(int L = 0; L<=nLayers-1; L++){
 		
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));			
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));			
 			swtemp[L]	= sl.SWC;
 						
 			if(swtemp[L] >= (sl.DUL + 0.003)){							
@@ -341,18 +309,13 @@ module SoilProfile() extends Null{
 			if(sl.KSAT > 0 && drn[L] > (sl.KSAT*24.0)){
 			drn[L] = sl.KSAT * 24.0;
 			}
-			
-			
-			
-		}//end of main loop
-	
-		
+					
+		}		
 		//Compute volumetric water contents after drainage in a day.
-		//Prevent water content in any layer from exceeding saturation as water drains down in the profile.
-   
+		//Prevent water content in any layer from exceeding saturation as water drains down in the profile.   
 		for(int L = nLayers-1; L>=1; L--){
 			
-			SoilLayer slb = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer slb = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			swold = swtemp[L];
 			swtemp[L] = swtemp[L] + (drn[L-1] - drn[L]) / slb.Thickness;
 			
@@ -363,21 +326,21 @@ module SoilProfile() extends Null{
 			
 		}
 		
-		SoilLayer sltop = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
+		SoilLayer sltop = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (1)));
 		swtemp[0] = swtemp[0] - drn[0] / sltop.Thickness;
 		drain = drn[nLayers-1] * 10;
 		
 		//Calculating the dwc/dt
 		for(int L = 0; L<=nLayers-1; L++){
 		
-			SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			sl_dt.swdelts = swtemp[L] - sl_dt.SWC;						
 		
 		}
 	
 	}
 	
-	
+	//Upflow calculations (Not debugged yet, been performed on soil evaporation method)
 	void UpFlow(){
 	
 	int	ist;
@@ -395,7 +358,7 @@ module SoilProfile() extends Null{
 	
 	for(int L = 0; L<=nLayers-1; L++){
 		
-		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 		
 		sl.upflow = 0.0;
 		sl.swdeltu = 0.0;
@@ -406,7 +369,7 @@ module SoilProfile() extends Null{
 	
 	}
 	
-	SoilLayer top_sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
+	SoilLayer top_sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (1)));
 	
 	if(top_sl.Thickness >= 5.0){ist=0;}else{ist=1;}
 	
@@ -414,8 +377,8 @@ module SoilProfile() extends Null{
 		M = L + 1;
 		swold = swtemp[L];
 		
-		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
-		SoilLayer sl_M = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (M+1)));
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
+		SoilLayer sl_M = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (M+1)));
 		
 		thet1 = Math.max(0,Math.min(swtemp[L] - sl.LL, esw[L]));
 		thet2 = Math.max(0,Math.min(swtemp[M] - sl_M.LL, esw[M]));
@@ -493,11 +456,10 @@ module SoilProfile() extends Null{
 		}
 		
 	
-	}//end of main loop
-	
+	}	
 	
 	for(int L = 0; L<=nLayers-1; L++){		
-		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 		sl.swdeltu = swtemp[L] - sl.SWC;	
 		}	
 	}
@@ -525,14 +487,14 @@ module SoilProfile() extends Null{
 	
 	}
 	
+	// Calculate soil water table depth
 	void wtdept(){
 		
-		double tol = 0.95;
-		
+		double tol = 0.95;		
 		
 	for(int L = nLayers-1; L>=0; L--){
 		
-		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 		
 		sl.satfrac = (sl.SWC - sl.DUL) / (sl.SAT - sl.DUL);
 		sl.satfrac = Math.min(Math.max(0.0, sl.satfrac), 1.0);		
@@ -540,7 +502,7 @@ module SoilProfile() extends Null{
 	}	
 	}
 	
-	
+	// Calculates root water uptake rate for each soil layer and total rate.
 	void RootWatUpPotential(){
 		
 		double swcon1 = 1.32e-3;
@@ -554,26 +516,24 @@ module SoilProfile() extends Null{
 		trwup = 0.;
 		for(int L = 0; L<=nLayers-1; L++){
 			
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 		
 			swcon2[L] = 120. - 250. *  sl.LL;
 			if(sl.LL > 0.3){ swcon2[L] = 45.;}
 			
 			sl.rwu = 0.;			
 			
-			if(sl.rlv <= 0.00001 || sl.SWC <= sl.LL){
+			if(sl.rld <= 0.00001 || sl.SWC <= sl.LL){
 				sl.rwu = 0.;			
 			}else{
 				
-				if(sl.rlv > Math.exp(swcon3)){
+				if(sl.rld > Math.exp(swcon3)){
 					denomi = swcon3 - Math.log(swcon3);
 				}else{
-					denomi = swcon3 - Math.log(sl.rlv);
-				}
+					denomi = swcon3 - Math.log(sl.rld);
+				}				
 				
 				sl.rwu = swcon1 * Math.exp(Math.min((swcon2[L] * (sl.SWC - sl.LL)),40.)) / denomi;
-				
-				
 				
 				if((sl.SAT - sl.SWC) >= pormin || pormin < 1.e-6){
 				sl.tss = 0;
@@ -586,67 +546,37 @@ module SoilProfile() extends Null{
 					swexf = Math.max(0.,(sl.SAT - sl.SWC) / pormin);
 				}else{
 				swexf = 1.0;
-				}
+				}				
 				
 				swexf = Math.min(swexf, 1.);
-				sl.rwu = Math.min(sl.rwu, rwumx * swexf);
-				sl.rwu = Math.min(sl.rwu, rwumx);		
+				
+				sl.rwu = Math.min(sl.rwu, rwumx * swexf);				
+				
+			}			
 			
-			}
-			
-			
-			sl.rwu = sl.rwu * sl.Thickness * sl.rlv;
+			sl.rwu = sl.rwu * sl.Thickness * sl.rld;
 			trwup = trwup + sl.rwu;	
 			
 		}
-		
-			// DLAYR(L)  Soil thickness in layer L (cm)
-			// LL(L)     Volumetric soil water content in soil layer L at lower limit
-			//             (cm3/cm3)
-			// NL        Maximum number of soil layers = 20 
-			// NLAYR     Actual number of soil layers 
-			// PORMIN    Minimum pore space required for supplying oxygen to roots for 
-			//             optimal growth and function (cm3/cm3)
-			// RLV(L)    Root length density for soil layer L ((cm root / cm3 soil))
-			// RWU(L)    Root water uptake from soil layer L (cm/d)
-			// RWUMX     Maximum water uptake per unit root length, constrained by soil 
-			//             water (cm3[water] / cm [root])
-			// SAT(L)    Volumetric soil water content in layer L at saturation
-			//             (cm3 [water] / cm3 [soil])
-			// SATFAC    Root length weighted soil water excess stress factor ( 0 = no 
-			//             stress; 1 = saturated stress ) 
-			// SUMEX     Sum of water excess factor times depth times root length 
-			//             density 
-			// SUMRL     Sum of root length density (integrated over depth) 
-			// SW(L)     Volumetric soil water content in layer L
-			//             (cm3 [water] / cm3 [soil])
-			// SWCON1    Constant used in determining root water uptake 
-			// SWCON2(L) Variable used in determining root water uptake, dependant on 
-			//             lower limit in layer L 
-			// SWCON3    Constant used in determining root water uptake 
-			// SWEXF     Excess water stress factor for layer with deepest roots (0-1) 
-			// TRWUP     Total potential daily root water uptake (cm/d)
-			// TSS(L)    Number of days soil layer L has been saturated (d)	
 	
 	}
 	
-	
+	// Calculates root extraction for each soil layer.
 	void RootWatUp(){
 		
-		double wuf;
+		double wuf;				// Root water uptake reduction factor (to update rwu to meet transpiration demand)
 		double[] swtemp		= new double[nLayers];
 		
 		for(int L = 0; L<=nLayers-1; L++){
 		
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			
 			sl.swdeltx 	= 0.;
 			swtemp[L]	= sl.SWC;
-			sl.sw_avail	= Math.max(0., sl.sw_avail - sl.LL);	
-		
-		}	
-		
-		
+			sl.sw_avail	= Math.max(0., sl.sw_avail - sl.LL);
+			
+		}		
+				
 		if(ep > 0.){
 			if((0.1 * ep) <= trwup){
 				wuf = 0.1 * ep / trwup;
@@ -658,14 +588,16 @@ module SoilProfile() extends Null{
 			
 			for(int L = 0; L<=nLayers-1; L++){
 			
-				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 				
 				if(swtemp[L] > sl.LL){
+					
 					sl.rwu = sl.rwu * wuf;
 					
 					if((sl.rwu / sl.Thickness) > sl.sw_avail){
 					sl.rwu = sl.sw_avail * sl.Thickness;
 					}
+					
 					swtemp[L] = swtemp[L] - sl.rwu / sl.Thickness;
 					trwu = trwu + sl.rwu;
 				}			
@@ -675,23 +607,24 @@ module SoilProfile() extends Null{
 					
 		}else{
 			
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank >= 0));
+			SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >= 0));
 			
 			trwu 				= 0.;
-			sl.rwu			 	= 0.;
+			sl_all.rwu			 	= 0.;
 		
 		}
 		
 		for(int L = 0; L<=nLayers-1; L++){
 		
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			sl.swdeltx = swtemp[L] - sl.SWC;	
 		
-		}
+		}	
+		
+	}	
 	
-	}
-	
-	
+	// Calculates actual soil evaporation (ES, mm/d) and upflow movement
+	// Based on Ritchie et al. (2009) - Application of a functional model for simulation of soil evaporation and water redistribution.
 	void SoilEvaporation(){
 		
 		int profile_type;		
@@ -705,17 +638,20 @@ module SoilProfile() extends Null{
 		double[] swtemp		= new double[nLayers];
 		double[] es_coef	= new double[nLayers];
 		
+		//-----------------------------------------------------------------------------------------------
 		//    ProfileType:
 		//    1 = Wet: SW > DUL in at least one layer in top 100 cm and SW > SW_threshold in top layer      
 		//    2 = Intermediate: wet, but SW < SW_threshold in top layer 
 		//    3 = Dry: SW < DUL in all layers in top 100 cm
-
+		//------------------------------------------------------------------------------------------------
+		
+		es = 0.;
 		
 		profile_type = 3;
 		
 		for(int L = 0; L<=nLayers-1; L++){
 		
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			
 			// Air dry water content
 			swad[L] = 0.3 * sl.LL;
@@ -735,14 +671,13 @@ module SoilProfile() extends Null{
 			if(meandep[L] < 100. && swtemp[L] > sl.DUL){
 			
 				profile_type = 1;
-			}		
-			
-			
+			}			
 		}
 		
 		if(profile_type == 1){
 		
-			SoilLayer sl_top = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (1)));
+			SoilLayer sl_top = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (1)));
+			
 			sw_threshold = 0.275 * sl_top.DUL + 1.165 * sl_top.DUL * sl_top.DUL + (1.2 * sl_top.DUL ** 3.75) * meandep[0];
 			
 			if(swtemp[0] < sw_threshold){
@@ -752,7 +687,7 @@ module SoilProfile() extends Null{
 		
 		for(int L = 0; L<=nLayers-1; L++){
 			
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			
 			switch(profile_type){
 			
@@ -780,13 +715,14 @@ module SoilProfile() extends Null{
 		
 		sl.sw_avail = sl.SWC + sl.swdelts - swad[L];
 		
+		//Limit to available water
 		if(-sl.swdeltu > sl.sw_avail){
 		
 			sl.swdeltu = -sl.sw_avail;
 			
 		}
 		
-		// To limit transpiration only as water uptake
+		// To limit evaporation only as an outgoing of water
 		sl.swdeltu = Math.min(0.,sl.swdeltu);
 		
 		sl.es_lyr = -sl.swdeltu * sl.Thickness * 10.0;	// (mm)		
@@ -796,7 +732,8 @@ module SoilProfile() extends Null{
 		
 		// Limit total profile soil evaporation to potential soil evaporation
 		red_factor = 1.0;
-		SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank >=0));
+		SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >=0));
+		SoilLayer sl_bot = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (nLayers)));
 		
 		if(es > eos){			
 			
@@ -807,12 +744,12 @@ module SoilProfile() extends Null{
 		}
 		
 		sl_all.upflow = 0.0;
-		sl_all.upflow = sl_all.es_lyr / 10.;
+		sl_bot.upflow = sl_bot.es_lyr / 10.;
 		
 		for(int L = nLayers-2; L>=0; L--){
 			
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
-			SoilLayer slup = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+2)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
+			SoilLayer slup = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+2)));
 			
 			sl.upflow = slup.upflow + sl.es_lyr / 10.;
 		
@@ -822,11 +759,11 @@ module SoilProfile() extends Null{
 	// Soil Water balance - Daily rate calculations
 	void WaterBalance_rate(){	
 		
-		SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank >= 0));
+		SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >= 0));
 		
 		//check whether snow is happening
 		if(tmax <= 1 && snow > 0.001){		
-			// compute snow contribution to water income
+			// compute snow contribution to water income (To be developed)
 		}else{
 		watavl = rain;
 		}
@@ -890,11 +827,6 @@ module SoilProfile() extends Null{
 			SatFlow();
 			
 		}
-	
-		
-		if(tdlno > 0){
-		//tiledrain computation...
-		}
 		
 		}
 		
@@ -904,7 +836,7 @@ module SoilProfile() extends Null{
 			
 			for(int L = 0; L<=nLayers-1; L++){
 				
-				SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+				SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 				sl_dt.sw_avail	= Math.max(0., sl_dt.SWC + sl_dt.swdelts);
 			}
 			
@@ -912,10 +844,7 @@ module SoilProfile() extends Null{
 		}
 		
 		// to be constructed to account for tillage effect on swc
-		//if(tillage){}
-		
-		
-		
+		//if(tillage){}		
 	}
 	
 	// Soil Water balance - Daily integration
@@ -931,7 +860,7 @@ module SoilProfile() extends Null{
 		for(int L = 0; L<=nLayers-1; L++){
 			
 			
-			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 			sl.sw_mm 		= sl.SWC 		* sl.Thickness * 10.;
 			swdelts_mm[L]	= sl.swdelts 	* sl.Thickness * 10.; 
 			swdeltx_mm[L]	= sl.swdeltx 	* sl.Thickness * 10.;
@@ -947,29 +876,27 @@ module SoilProfile() extends Null{
 		}
 		
 		// Perform daily summation of water balance variables.
-		wbsum();
-	
-	
+		wbsum();	
 	}
 	
 	
 //Soil-Plant-Atmosphere energy balance components
  void spa(){
 	
- 	 SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank >= 0));
+ 	 SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >= 0));
  	 sl_all.swdeltx = 0.;
  
  	 // Calculate the availability of soil water
  	 for(int L = 0; L<=nLayers-1; L++){
  	 
- 	 	 SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+ 	 	 SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
  	 	 
  	 	 sl.sw_avail = Math.max(0., sl.SWC + sl.swdelts + sl.swdeltu); 	 	 
  	 
  	 }
  	 
- 	 FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.);
- 	 
+ 	 //Check LAI of all field (make more sense since the approaches used here are for homogeneus canopies)
+ 	 FieldBase fb = selectWhere((*f:FieldBase*), f.lai_total >= 0.); 	 
  	 
  	 if(fb.lai_total > 0.){
  	 	 
@@ -979,10 +906,8 @@ module SoilProfile() extends Null{
  	 	 
  	 	 sl_all.rwu			= 0.;
  	 	 trwup				= 0.;
- 	 }
- 	 
- 	 println("TRWUP = "+trwup);
- 	 
+ 	 } 	 
+  	 
  	 
  	 // Potential Evapotranspiration 	 
  	 if(flood > 0.){
@@ -993,18 +918,22 @@ module SoilProfile() extends Null{
  	 	 alb_soil = albedo;
  	 }
  	 
+ 	 // Methods
  	 switch(petMethod){
- 	 
+ 	 	 
+ 	 	 // FAO-56 (PM)
  	 	 case 1:
  	 	 
  	 	 petpen();
  	 	 break;
  	 	 
+ 	 	 // Pristley-Taylor
  	 	 case 2:
  	 	 
  	 	 petpt(alb_soil);
  	 	 break;
  	 	 
+ 	 	 // Use input et0 data times eoratio(kc)  
  	 	 case 3: 	 
  	 	 
  	 	 petinp();
@@ -1019,13 +948,6 @@ module SoilProfile() extends Null{
  	 esf = 0.;
  	 sl_all.upflow = 0.;
  	 sl_all.es_lyr = 0.;
- 	 
- 	 /*
- 	 println("EO = "+eo);
- 	 println("EOP = "+eop);
- 	 println("EOS = "+eos);
- 	 println(eop + eos);
- 	 */
  	 
  	 //Actual soil evaporation (There's a room to compute flood(esf) and mulch(esm) surface evaporation as well) 	 
  	 SoilEvaporation();
@@ -1046,17 +968,16 @@ module SoilProfile() extends Null{
  	 	 ep = 0.;
  	 }
  	 
- 	 //Actual Root Water Extraction
+ 	 //Actual Root Water Extraction and Transpiration constraints
  	 for(int L = 0; L<=nLayers-1; L++){
  	 
- 	 	 SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.rank == (L+1)));
+ 	 	 SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
  	 	 
- 	 	 sl.sw_avail = Math.max(0., sl.sw_avail - 0.1 * sl.es_lyr / sl.Thickness); 	 	 
+ 	 	 //Water available for uptake
+ 	 	 sl.sw_avail = Math.max(0., sl.SWC + sl.swdeltu + sl.swdelts); 	 	
  	 
- 	 }
- 	 
- 	 RootWatUp();
- 	 
+ 	 } 	 
+ 	 RootWatUp(); 	 
 }
 	
 	
@@ -1067,7 +988,6 @@ module SoilProfile() extends Null{
 		cn		= cn_runoff;
 		swcon	= swcon_drain;
 		nLayers	= Layer_Depth.length;
-		tdlno	= 0;
 		pinf	= 0.;
 		winf	= 0.;
 		infilt	= 0.;
@@ -1079,71 +999,6 @@ module SoilProfile() extends Null{
 		puddled			= false;
 		bunded			= false;
 		mulchEffect		= false;
-	}
-	
-	
-//     VARIABLE DEFINITIONS: (updated 12 Feb 2004)
-//-----------------------------------------------------------------------
-// BUNDED      Logical variable indicating if field is currently bunded 
-// CN          Runoff Curve Number - measure of runoff potential based on 
-//               soil type and current soil water content. 
-// CONTROL     Composite variable containing variables related to control 
-//               and/or timing of simulation.    See Appendix A. 
-// CRAIN       Cumulative precipitation (mm)
-// DLAYR(L)    Thickness of soil layer L (cm)
-// DRAIN       Drainage rate from soil profile (mm/d)
-// DRN(L)      Drainage rate through soil layer L (cm/d)
-// DS(L)       Cumulative depth in soil layer L (cm)
-// DUL(L)      Volumetric soil water content at Drained Upper Limit in soil 
-//               layer L (cm3[water]/cm3[soil])
-// ES          Actual soil evaporation rate (mm/d)
-// EXCS        Excess water to be added to runoff (cm/d)
-// FLOOD       Current depth of flooding (mm)
-// FLOODWAT    Composite variable containing information related to bund 
-//               management. Structure of variable is defined in 
-//               ModuleDefs.for. 
-// UPFLOW(L)   Movement of water between unsaturated soil layers due to soil 
-//               evaporation: + = upward, -- = downward (cm/d)
-// INFILT      Infiltration rate (mm / d)
-// IRRAMT      Irrigation amount for today (mm / d)
-// ISWWAT      Water simulation control switch (Y or N) 
-// LL(L)       Volumetric soil water content in soil layer L at lower limit
-//              (cm3 [water] / cm3 [soil])
-// NLAYR       Actual number of soil layers 
-// PINF        Potential water available for infiltration (cm)
-// PUDDLED     Logical variable indicating whether lowland field has been 
-//               puddled 
-// PUDPERC     Potential percolation rate for puddled field (mm/d)
-// RAIN        Precipitation depth for current day (mm)
-// RUNOFF      Calculated runoff (mm/d)
-// SAT(L)      Volumetric soil water content in layer L at saturation
-//              (cm3 [water] / cm3 [soil])
-// SNOW        Snow accumulation (mm)
-// SW(L)       Volumetric soil water content in layer L
-//              (cm3 [water] / cm3 [soil])
-// SW_AVAIL(L) Soil water content in layer L available for evaporation, 
-//               plant extraction, or movement through soil
-//               (cm3 [water] / cm3 [soil])
-// SWCN(L)     Saturated hydraulic conductivity in layer L (cm/hr)
-// SWCON       Soil water conductivity constant; whole profile drainage rate 
-//               coefficient (1/d)
-// SWDELTS(L)  Change in soil water content due to drainage in layer L
-//              (cm3 [water] / cm3 [soil])
-// SWDELTU(L)  Change in soil water content due to evaporation and/or upward 
-//               flow in layer L (cm3 [water] / cm3 [soil])
-// SWDELTX(L)  Change in soil water content due to root water uptake in 
-//               layer L (cm3 [water] / cm3 [soil])
-// TDRAIN      Cumulative daily drainage from profile (mm)
-// TMAX        Maximum daily temperature (°C)
-// TRUNOF      Cumulative runoff (mm)
-// TSW         Total soil water in profile (cm)
-// TSWINI      Initial soil water content (cm)
-// WATAVL      Water available for infiltration or runoff (rainfall plus 
-//               irrigation) (mm/d)
-// WINF        Water available for infiltration - rainfall minus runoff plus 
-//               net irrigation (mm / d)
-// WTDEP       Depth to water table (cm)
-
-	
+	}	
 	
 }
