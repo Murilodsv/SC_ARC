@@ -225,10 +225,17 @@ module Seed extends Null
 
 // root module
 module RootSystem extends GrowingOrgan
-{
+{	
+	double rootDepth;
+	double slr = 1360; // Specific Root Length (cm g-1)
+	int row;
+	int strip;
+	
 	// root initiation
 	void initiate(PlantBase pb)
 	{
+		row	= pb.row;
+		strip = pb.strip;
 		species = pb.species;
 		plantNumber = pb.plantNumber;
 		border = pb.border;
@@ -236,6 +243,15 @@ module RootSystem extends GrowingOrgan
 		wmax = wmaxRoot[species];
 		te = teRoot[species];
 		tm = te / 2;
+		rootDepth = pb.PlantDepth;
+	}
+	
+	//Root growth and dimensions
+	void calcDimensions(){
+		
+		rootDepth += (age-agePrevious) * 0.0003;
+		
+	
 	}
 }
 ==> Translate(0,0,-0.001-biomass/200000) Box(biomass/200000,biomass/200000,biomass/200000).(setShader(WHITE));
