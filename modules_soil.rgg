@@ -54,6 +54,32 @@ module SoilLayer
 		SWC = DUL;
 		TSWC = SWC * Thickness;
 	}
+	
+	void rwf_weibull(){
+		
+		double alfa = 0.3;
+		double beta = 2;
+		double dep;
+		
+		if(count((* r:RootSystem, (r.row == row && r.strip == strip) *)) > 0){
+		
+		RootSystem rs = selectWhere((*r:RootSystem*), (r.row == row && r.strip == strip));		
+		
+		dep = Math.min(1.,Depth / rs.rootMax);
+		
+		}else{
+			
+		dep = 0;
+		
+		}
+		
+		
+		
+		
+		//(alfa/beta*((dep)/beta)**(alfa-1))*Math.exp(((-dep)/beta)**alfa)
+	
+	
+	}
 		
 
 	// initiation of a soil layer
@@ -129,11 +155,11 @@ module SoilProfile() extends Null{
 	double[] swdeltu_mm		= new double[Layer_Depth.length];
 	double[] swdeltt_mm		= new double[Layer_Depth.length];
 
-	double rwumx = 0.07; //Root water uptake,maximum      mm2/m (Crop state) 0.07 for sugacane?
-	double trwu;
-	double trwup;
-	double wtdep; // should calculated by wdept for root water uptake
-	double pormin = 0.02; //Minimum pore space required for supplying oxygen to roots for optimal growth and function (cm3/cm3) (from Plant module)
+	double rwumx = 0.07; 		//Root water uptake,maximum      mm2/m (Crop state) 0.07 for sugacane?
+	double trwu;				// Total root water uptake
+	double trwup;				// Total potential root water uptake 
+	double wtdep; 				// should calculated by wdept for root water uptake
+	double pormin = 0.02; 		//Minimum pore space required for supplying oxygen to roots for optimal growth and function (cm3/cm3) (from Plant module)
 	
 	
 	
@@ -533,8 +559,8 @@ module SoilProfile() extends Null{
 	// Calculates root water uptake rate for each soil layer and total rate.
 	void RootWatUpPotential(){
 		
-		double swcon1 = 1.32e-3;
-		double swcon3 = 7.01;
+		double swcon1 = 2.67e-3;	// 1.32e-3;
+		double swcon3 = 6.68; 		//7.01;
 		double denomi;
 		double swexf;
 		
@@ -548,6 +574,8 @@ module SoilProfile() extends Null{
 		
 			swcon2[L] = 120. - 250. *  sl.LL;
 			if(sl.LL > 0.3){ swcon2[L] = 45.;}
+			
+			swcon2[L] = 68.; //following the Ritchie's 1998 work, the above approach is very restrictive.
 			
 			sl.rwu = 0.;			
 			

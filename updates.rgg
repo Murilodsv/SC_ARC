@@ -80,6 +80,7 @@ static void renew()
 		pb.calcAge();
 		pb.calcSubstrates();
 		pb.calcSinkStrength();
+		pb.WaterStress(); //Check if here is the right place
 	}
 
 	// calculate organ growth

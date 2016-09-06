@@ -2,6 +2,7 @@ import static parameters.*;
 import static environment.*;
 import static modules_organs.*;
 import static modules_light.*;
+import static modules_soil.*;
 
 import de.grogra.ray.physics.Spectrum;
 import de.grogra.ray.physics.Spectrum3d;
@@ -266,6 +267,9 @@ module PlantBase extends Null
 	boolean emerged;			// Flag for emerged shoots
 	double PlantDepth;			// Depth of planting
 	
+	double swdf1;				// Water stress factor for elongation
+	double swdf2;				// Water stress factor for assimilation
+	
 	// assigns border based on location in the plot
 	void assignBorder(int row, int pos, int strip) {
 		if (strip == 1) {
@@ -285,6 +289,29 @@ module PlantBase extends Null
 		}
 	}
 	
+	// Calculate water stress factor based on source/demand (trwup/eop)
+	void WaterStress(){
+	
+		double f1 = 0.5;
+		double f2 = 1.;
+		
+		SoilProfile sp = selectWhere((*s:SoilProfile*), (s.row == row && s.strip == strip));
+		
+		swdf1 = Math.min(1., f1 * sp.trwup/(eop*0.1));
+		swdf2 = Math.min(1., f2 * sp.trwup/(eop*0.1));
+		
+		//println("TRWUP = "+sp.trwup);
+		//println("EOP   = "+(eop*0.1));
+		
+		if(UseSoil == false){
+		
+			swdf1 = 1.;
+			swdf2 = 1.;
+			
+		}
+		
+	
+	}
 	
 	
 	
@@ -319,6 +346,9 @@ module PlantBase extends Null
 		this.weed = weed;
 		emerged = false;
 		PlantDepth = PlantingDepth[species];
+		
+		swdf1 = 1.;
+		swdf2 = 1.;
 	}
 	
 	// calculate plant age

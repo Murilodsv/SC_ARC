@@ -420,7 +420,7 @@ module Internode extends VisibleOrgan
 	double width;						// internode width
 	double increment;					// length increment per time step
 	double lbRatio;						// stem ratio length / biomass (m/mg)
-		
+	
 	double FHexose;
 	double FSucrose;
 	double FStructural;
@@ -495,13 +495,12 @@ module Internode extends VisibleOrgan
 	}
 	
 	// Plant extension factor m/day
-	double dPER(){
-		
-		double swdf 	= 1.; 
+	double dPER(double swdf1){
+		 
 		double tbPER 	= 16.0;
 		double dPERdt	= 0.375;
 		
-		return swdf * dPERdt * Math.max(0, tav - tbPER) * 24/1000; // Same as CANEGRO (should include hour temp Parton Logan 1981)
+		return swdf1 * dPERdt * Math.max(0, tav - tbPER) * 24/1000; // Same as CANEGRO (should include hour temp Parton Logan 1981)
 		
 	}	
 	
@@ -513,7 +512,7 @@ module Internode extends VisibleOrgan
 		//length += increment;
 		
 		if(position > 0 && rank > nrShortInternodes[species]) {									  	
-		length += dPER() * PERcoef  * (0.6491 * Math.exp(-0.5*position)); // the last term was added to account as partitioning factor among internodes (Singels & Inmnan-Bamber 2011)
+		length += dPER(pb.swdf1) * PERcoef  * (0.6491 * Math.exp(-0.5*position)); // the last term was added to account as partitioning factor among internodes (Singels & Inmnan-Bamber 2011)
 		}		
 		
 		StructuralMass += FStructural * growth;
