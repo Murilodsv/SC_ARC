@@ -22,13 +22,13 @@ module SoilLayer
 	double BDEN;				// Bulk density, soil layer L (g [soil] / cm3 [soil])
 	double SLOC;				// Soil organic matter 
 	double Thickness;			// Thickness of soil layer L (cm)
-	double PlantDist;			// Distance between plant along a row (m)
-	double RowDist;				// Row distance	(m)
+	double PlantDist;			// Distance between plant along a row (cm)
+	double RowDist;				// Row distance	(cm)
 	double Depth;				// Layer depth (cm)
 	double SWC;					// Volumetric soil water content in layer nL (cm3 [water] / cm3 [soil])
 	double TSWC;				// Total soil water in nL (cm)
 	
-	double 	rld = 0.02;			// Root length density for soil layer nL (cm[root] / cm3[soil])
+	double 	rld;			// Root length density for soil layer nL (cm[root] / cm3[soil])
 	int 	tss;				// number of days soil layer nL has been saturated
 	double 	rwu;				// Root water uptake from soil layer nL (cm/d)
 	double  rwf;				// Root weighting factor (0-1) inhospitable-hospitable soil to roots (Ritchie 1998)
@@ -79,17 +79,18 @@ module SoilLayer
 		upper = Depth - Thickness;
 		bottom = Depth;
 		
-		PlantDist = 0.25;
-		RowDist = 1.4;
+		PlantDist = 25.;
+		RowDist = 140.;
 		
 		if(nLayer == 1) {Depth = Depth + 0.001;}
 		
 		rwf = 1 / (1 + (Depth/D50)**C);
+		rld = 0.02;
 		
 	}
 } 
 ==> 
-Translate(0,0,-Depth/100.) Box(Thickness/100.,PlantDist,RowDist).(setColor(0.51,0.33,0.16))
+Translate(0,0,-Depth/100.) Box(Thickness/100.,PlantDist/100.,RowDist/100.).(setColor(0.51,0.33,0.16))
 ;
 
 // Soil profile associated to each tile at the scene
@@ -134,10 +135,9 @@ module SoilProfile() extends Null{
 	double wtdep; // should calculated by wdept for root water uptake
 	double pormin = 0.02; //Minimum pore space required for supplying oxygen to roots for optimal growth and function (cm3/cm3) (from Plant module)
 	
-	double rootDepth;
 	
 	
-	void root(){
+	void RootDevelop(){
 		
 		if(count((* r:RootSystem, (r.row == row && r.strip == strip) *)) > 0){
 		
@@ -147,7 +147,8 @@ module SoilProfile() extends Null{
 	
 		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 		
-		sl.rld += rs.growth * (1000) * rs.slr * (sl.rwf/sum((* s:SoilLayer, (s.row == row && s.strip == strip) *)[rwf])) / sl.Thickness;
+		sl.rld += (rs.growth * 1.e-3) * rs.slr * (sl.rwf/sum((* s:SoilLayer, (s.row == row && s.strip == strip) *)[rwf])) / (sl.Thickness * sl.PlantDist * sl.RowDist);
+				
 		sl.rld = Math.min(0.5, sl.rld);
 	
 	}
@@ -594,6 +595,8 @@ module SoilProfile() extends Null{
 		double wuf;				// Root water uptake reduction factor (to update rwu to meet transpiration demand)
 		double[] swtemp		= new double[nLayers];
 		
+		
+		
 		for(int L = 0; L<=nLayers-1; L++){
 		
 			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
@@ -602,7 +605,14 @@ module SoilProfile() extends Null{
 			swtemp[L]	= sl.SWC;
 			sl.sw_avail	= Math.max(0., sl.sw_avail - sl.LL);
 			
-		}		
+		}
+		
+		trwu = 0.;
+		
+		//Checking if root system exist
+		if(count((* r:RootSystem, (r.row == row && r.strip == strip) *)) > 0){
+			
+		RootSystem rs = selectWhere((*r:RootSystem*), (r.row == row && r.strip == strip));		
 				
 		if(ep > 0.){
 			if((0.1 * ep) <= trwup){
@@ -610,8 +620,6 @@ module SoilProfile() extends Null{
 			}else{
 				wuf = 1.0;
 			}
-			
-			trwu = 0.;
 			
 			for(int L = 0; L<=nLayers-1; L++){
 			
@@ -623,6 +631,13 @@ module SoilProfile() extends Null{
 					
 					if((sl.rwu / sl.Thickness) > sl.sw_avail){
 					sl.rwu = sl.sw_avail * sl.Thickness;
+					}
+					
+					//Checking rootDepth
+					if(rs.rootDepth > sl.Depth){
+					sl.rwu = sl.rwu;
+					}else{
+					sl.rwu = sl.rwu * (Math.max(0., rs.rootDepth - sl.upper)/ sl.Thickness);
 					}
 					
 					swtemp[L] = swtemp[L] - sl.rwu / sl.Thickness;
@@ -639,6 +654,7 @@ module SoilProfile() extends Null{
 			trwu 				= 0.;
 			sl_all.rwu			 	= 0.;
 		
+		}
 		}
 		
 		for(int L = 0; L<=nLayers-1; L++){

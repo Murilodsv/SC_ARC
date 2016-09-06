@@ -116,6 +116,11 @@ static void renew()
 		
 	}
 	
+	// Calculate root depth
+	r:RootSystem ::>
+	{
+		r.calcDimensions();
+	}	
 		
 	// Update live_rank (used only for sugarcane)
 	(*l:Leaf < <+ n:StemNode > i:Internode (-->)* a:Apex, (a.shouldProduceVegetative() == true && l.age > 0 && l.species == 11) *) ::>
@@ -136,7 +141,7 @@ static void renew()
 	{
 		
 		sp.WaterBalance_inte();
-		sp.root();
+		sp.RootDevelop();
 	
 	}
 	

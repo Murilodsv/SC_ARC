@@ -226,8 +226,10 @@ module Seed extends Null
 // root module
 module RootSystem extends GrowingOrgan
 {	
-	double rootDepth;
-	double slr = 1360; // Specific Root Length (cm g-1)
+	double rootDepth;			// Root depth (cm)
+	double rootMax = 100.;		// Max root depth (cm) (effective root)
+	double depthRate = 0.03;	// Rate of deepening of the root front (cm °C-1 d-1) Laclau and Laclau (2009) (0.03)
+	double slr = 1360; 			// Specific Root Length (cm g-1)
 	int row;
 	int strip;
 	
@@ -243,14 +245,13 @@ module RootSystem extends GrowingOrgan
 		wmax = wmaxRoot[species];
 		te = teRoot[species];
 		tm = te / 2;
-		rootDepth = pb.PlantDepth;
+		rootDepth = pb.PlantDepth * 100.;
 	}
 	
 	//Root growth and dimensions
-	void calcDimensions(){
-		
-		rootDepth += (age-agePrevious) * 0.0003;
-		
+	void calcDimensions(){		
+		rootDepth += (age-agePrevious) * depthRate;
+		rootDepth = Math.min(rootDepth, rootMax);	
 	
 	}
 }
