@@ -499,8 +499,9 @@ module Internode extends VisibleOrgan
 		 
 		double tbPER 	= 16.0;
 		double dPERdt	= 0.375;
+		double maxStres = 0.3;
 		
-		return swdf1 * dPERdt * Math.max(0, tav - tbPER) * 24/1000; // Same as CANEGRO (should include hour temp Parton Logan 1981)
+		return Math.max(swdf1,maxStres) * dPERdt * Math.max(0, tav - tbPER) * 24/1000; // Same as CANEGRO (should include hour temp Parton Logan 1981)
 		
 	}	
 	

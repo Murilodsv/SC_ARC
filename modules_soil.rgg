@@ -32,8 +32,8 @@ module SoilLayer
 	int 	tss;				// number of days soil layer nL has been saturated
 	double 	rwu;				// Root water uptake from soil layer nL (cm/d)
 	double  rwf;				// Root weighting factor (0-1) inhospitable-hospitable soil to roots (Ritchie 1998)
-	double	D50	= 50;
-	double	C	= 3;
+	int		rwf_me = 2;			// Root weighting factor method (1 = distribution based on d50 and c parameters curve; 2 = weibull distribution values)
+	
 	
 	double swdelts;				// Change in soil water content due to drainage in layer nL							(cm3 [water] / cm3 [soil])
 	double swdeltu;				// Change in soil water content due to evaporation and/or upward flow in layer nL 	(cm3 [water] / cm3 [soil])
@@ -54,33 +54,37 @@ module SoilLayer
 		SWC = DUL;
 		TSWC = SWC * Thickness;
 	}
+		
+	double rwf(int rwf_m){
 	
-	void rwf_weibull(){
+	switch(rwf_m){
+			
+		case 1:		
+		
+		double	D50	= 50;
+		double	C	= 3;
+		
+		return 1 / (1 + (Depth/D50)**C);
+		
+		break;
+		case 2:
 		
 		double alfa = 0.3;
 		double beta = 2;
+		double teta = 0;
 		double dep;
 		
-		if(count((* r:RootSystem, (r.row == row && r.strip == strip) *)) > 0){
+		dep = Math.min(1.,Depth / 100.);		
 		
-		RootSystem rs = selectWhere((*r:RootSystem*), (r.row == row && r.strip == strip));		
+		return (beta/alfa) * ((dep - teta)/alfa)**(beta - 1) * Math.exp(-(((dep-teta)/alfa)**beta));
 		
-		dep = Math.min(1.,Depth / rs.rootMax);
-		
-		}else{
-			
-		dep = 0;
-		
-		}
-		
-		
-		
-		
-		//(alfa/beta*((dep)/beta)**(alfa-1))*Math.exp(((-dep)/beta)**alfa)
+		break;
 	
 	
 	}
 		
+	
+	}
 
 	// initiation of a soil layer
 	void initiate(int nLayer, int TileRow, int TileStrip)
@@ -108,9 +112,9 @@ module SoilLayer
 		PlantDist = 25.;
 		RowDist = 140.;
 		
-		if(nLayer == 1) {Depth = Depth + 0.001;}
+		if(nLayer == 1) {Depth = Depth + 0.001;}		
 		
-		rwf = 1 / (1 + (Depth/D50)**C);
+		rwf = rwf(rwf_me);		
 		rld = 0.02;
 		
 	}
@@ -174,7 +178,7 @@ module SoilProfile() extends Null{
 		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
 		
 		sl.rld += (rs.growth * 1.e-3) * rs.slr * (sl.rwf/sum((* s:SoilLayer, (s.row == row && s.strip == strip) *)[rwf])) / (sl.Thickness * sl.PlantDist * sl.RowDist);
-				
+		
 		sl.rld = Math.min(0.5, sl.rld);
 	
 	}
