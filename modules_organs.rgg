@@ -438,6 +438,7 @@ module Internode extends VisibleOrgan
 	int position;
 	int live_rank;										// live rank
 	double PERcoef = 0.16;						// Same as CANEGRO
+	double df;
 
 	
 	
@@ -454,6 +455,18 @@ module Internode extends VisibleOrgan
 		} else {
 			return 1;
 		}
+	}
+	
+	double storeSugar(){	
+		
+		PlantBase pb = selectWhere((* p:PlantBase *), p.plantNumber == plantNumber);
+		Leaf lf = selectWhere((* l:Leaf *), (l.plantNumber == plantNumber && l.rank == rank));
+		
+		
+		
+		
+		
+		
 	}
 	
 	// Water content fitted based on Lingle & Thomson 2012 data

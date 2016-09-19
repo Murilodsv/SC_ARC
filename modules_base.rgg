@@ -303,15 +303,107 @@ module PlantBase extends Null
 		//println("TRWUP = "+sp.trwup);
 		//println("EOP   = "+(eop*0.1));
 		
-		if(UseSoil == false){
-		
+		if(UseSoil == false){		
 			swdf1 = 1.;
-			swdf2 = 1.;
-			
+			swdf2 = 1.;			
+		}	
+	}
+	
+	
+	void SucroseDist(double tdf, double tds){
+		
+		long n_int;
+		double plmax;
+		double pfmax 	= 0.364;
+		double qtf		= -0.0788;
+		double qwf		= -0.0997;
+		double tf = (tav - 16.) / (31. - 16.);	
+		double tl = (tav - 10.) / (31. - 10.);
+		double dgrowth;		
+		
+		double dl;
+		double dh;
+		double dsuc;
+		double ddf;
+		double ddl;
+		double dds;
+		double pf;
+		double pl;
+		double w;
+		double s = 2.23;
+		
+		double H;
+		double a = 1.96;
+		double b = 0.53;		
+		
+		plmax = biomLeaf / biomass;
+		dgrowth = sum((* v:VisibleOrgan, (v.plantNumber == plantNumber) *)[growth]); // in this growth the sucrose is pooled with internode mass
+		
+		if(UseSoil == false){
+			w = 1.;
+		}else{
+			w = ep / eop;
 		}
+		
+		pf = pfmax + (qwf * (1 - w) + qtf * (1 - tf));
+		pl = plmax;
+		
+		ddf = dgrowth * pf;
+		ddl = dgrowth * pl;
+		
+		tdf += ddf;
+		dl = biomLeaf;
+		
+		dds = dgrowth - (ddf + ddl);
+		
+		tds += dds;		
+		H = Math.max(0.07,Math.min(0.55, a * ((tdf + dl)/biomass) - b));
+		
+		dh = H * ds;
+		dsuc = tds - dh;
+		
+		
+		n_int = count((* i:Internode, (i.plantNumber == plantNumber && i.live_rank > 0)*));
+		
+		for(int L = 0; L<=30; L++){
+			
+			if(L <= n_int){
+			
+			Internode it = selectWhere((*i:Internode*), (i.plantNumber == plantNumber && i.live_rank == (L)));
+			
+			it.df = weibul(it.live_rank);
+		
+			}
+		
+		}
+		
+		for(int L = 0; L<=30; L++){
+			
+			if(L <= n_int){
+			
+			Internode it = selectWhere((*i:Internode*), (i.plantNumber == plantNumber && i.live_rank == (L)));
+			
+			it.df = tdf * (it.df/sum((* s:SoilLayer, (s.row == row && s.strip == strip) *)[rwf]));
+		
+			}
+		
+		}
+		
+
+		
+	}
+	
+	double weibul(int live_rank){
+	
+		double alfa = 1.8;
+		double beta = 8;
+		double teta = 0;				
+		
+		return (beta/alfa) * ((live_rank - teta)/alfa)**(beta - 1) * Math.exp(-(((live_rank-teta)/alfa)**beta));
 		
 	
 	}
+	
 	
 	
 	
@@ -365,6 +457,7 @@ module PlantBase extends Null
 		double mCO2 = 44.01;	// CO2 molar mass  (gr/mol)
 		double rm = 0.015;		// maintenance respiration  (gr CO2 / gr plant biomass / day)
 		double fCO2 = 0.6;		// conversion factor grom gr CO2 to gr biomass
+		
 		substrates = Math.max(0,(mCO2 * assimilated * 1e-3/*mmol to mol*/ - rm * biomass) * fCO2 + reservePool);
 		
 		if (count((* g:GrowingOrgan, (g.plantNumber == plantNumber) *)) > 0) {
