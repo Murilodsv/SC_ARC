@@ -439,6 +439,11 @@ module Internode extends VisibleOrgan
 	int live_rank;										// live rank
 	double PERcoef = 0.16;						// Same as CANEGRO
 	double df;
+	double ds;
+	double weibul;
+	double sucpot;
+	double dhexo;
+	double dsucr;
 
 	
 	
@@ -460,11 +465,7 @@ module Internode extends VisibleOrgan
 	double storeSugar(){	
 		
 		PlantBase pb = selectWhere((* p:PlantBase *), p.plantNumber == plantNumber);
-		Leaf lf = selectWhere((* l:Leaf *), (l.plantNumber == plantNumber && l.rank == rank));
-		
-		
-		
-		
+		Leaf lf = selectWhere((* l:Leaf *), (l.plantNumber == plantNumber && l.rank == rank));	
 		
 		
 	}
@@ -592,7 +593,9 @@ module Internode extends VisibleOrgan
 		StructuralMass =0;
 		SugarMass = 0;
 		SucroseMass = 0;
-		HexoseMass = 0;		
+		HexoseMass = 0;
+		df = 0.;
+		ds = 0.;
 		lbRatio = lengthBiomassRatio[species] / 1000;
 		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
 		if(a.species == 11) {sucStart =  SucroseStart[species];}

@@ -136,6 +136,12 @@ static void renew()
 		i.live_rank++;
 	}
 	
+	//sucrose distribution
+	pb:PlantBase, (pb.species == 11 && pb.biomassAbove > 0. && (pb.nInternodes - (5+4)) > (9)) ::>
+	{
+		pb.SucroseDist();
+	}
+	
 	
 	//Soil Water Balance and Soil-Plant-Atmosphere integration
 	sp:SoilProfile ::>
@@ -157,6 +163,7 @@ static void renew()
 		pb.updateBranches();
 		pb.updateRfr();
 		if (writePlantTable == true) {pb.updateTable();}
+		
 	}
 	
 	

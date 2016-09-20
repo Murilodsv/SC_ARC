@@ -270,6 +270,10 @@ module PlantBase extends Null
 	double swdf1;				// Water stress factor for elongation
 	double swdf2;				// Water stress factor for assimilation
 	
+	double tdf;
+	double tds;
+	double[] weibulF	= new double[30];
+	
 	// assigns border based on location in the plot
 	void assignBorder(int row, int pos, int strip) {
 		if (strip == 1) {
@@ -295,22 +299,20 @@ module PlantBase extends Null
 		double f1 = 0.5;
 		double f2 = 1.;
 		
+		if(UseSoil){
 		SoilProfile sp = selectWhere((*s:SoilProfile*), (s.row == row && s.strip == strip));
 		
 		swdf1 = Math.min(1., f1 * sp.trwup/(eop*0.1));
 		swdf2 = Math.min(1., f2 * sp.trwup/(eop*0.1));
-		
-		//println("TRWUP = "+sp.trwup);
-		//println("EOP   = "+(eop*0.1));
-		
-		if(UseSoil == false){		
+		}else{
+				
 			swdf1 = 1.;
 			swdf2 = 1.;			
 		}	
 	}
 	
-	
-	void SucroseDist(double tdf, double tds){
+	// Sugar partitioning based on Singels & Inman-Bamber 2011
+	void SucroseDist(){
 		
 		long n_int;
 		double plmax;
@@ -332,9 +334,12 @@ module PlantBase extends Null
 		double w;
 		double s = 2.23;
 		
+		double g = 0.242;
+		double m = 0.004;
+		
 		double H;
 		double a = 1.96;
-		double b = 0.53;		
+		double b = 0.53;			
 		
 		plmax = biomLeaf / biomass;
 		dgrowth = sum((* v:VisibleOrgan, (v.plantNumber == plantNumber) *)[growth]); // in this growth the sucrose is pooled with internode mass
@@ -356,40 +361,45 @@ module PlantBase extends Null
 		
 		dds = dgrowth - (ddf + ddl);
 		
+		println("dds = "+dds);
+		println("ddf = "+ddf);
+		println("ddl = "+ddl);
+		println("dgrowth = "+dgrowth);
+		
 		tds += dds;		
 		H = Math.max(0.07,Math.min(0.55, a * ((tdf + dl)/biomass) - b));
 		
-		dh = H * ds;
+		dh = H * tds;
 		dsuc = tds - dh;
 		
-		
-		n_int = count((* i:Internode, (i.plantNumber == plantNumber && i.live_rank > 0)*));
-		
-		for(int L = 0; L<=30; L++){
-			
-			if(L <= n_int){
-			
-			Internode it = selectWhere((*i:Internode*), (i.plantNumber == plantNumber && i.live_rank == (L)));
-			
-			it.df = weibul(it.live_rank);
-		
-			}
-		
-		}
+		n_int = count((* i:Internode, (i.biomass > 0 && i.plantNumber == plantNumber && i.live_rank > 0)*));
 		
 		for(int L = 0; L<=30; L++){
 			
-			if(L <= n_int){
+			if(L < n_int){
 			
-			Internode it = selectWhere((*i:Internode*), (i.plantNumber == plantNumber && i.live_rank == (L)));
+			Internode it = selectWhere((*i:Internode*), (i.plantNumber == plantNumber && i.live_rank == (L+5)));
+			it.df = it.df + ddf * (weibulF[L]/sum(weibulF[0:29]));			
+			it.sucpot = s * it.df - it.ds;			
 			
-			it.df = tdf * (it.df/sum((* s:SoilLayer, (s.row == row && s.strip == strip) *)[rwf]));
-		
-			}
-		
+			}		
 		}
 		
-
+		
+		for(int L = 0; L<=30; L++){
+			
+			if(L < n_int){
+			
+			Internode it = selectWhere((*i:Internode*), (i.plantNumber == plantNumber && i.live_rank == (L+5)));			
+			it.ds += dds * (it.sucpot / sum((* i:Internode, (i.plantNumber == plantNumber) *)[sucpot]));
+			
+			it.dhexo = g * (ddf * (it.df/sum((* i:Internode, (i.plantNumber == plantNumber) *)[weibul]))) + m * it.df;
+			it.dhexo = Math.min((0.82*it.ds),Math.max((0.05*it.ds), it.dhexo));
+			it.dsucr = it.ds - it.dhexo;
+			
+			}		
+		}
+		
 		
 	}
 	
@@ -397,15 +407,17 @@ module PlantBase extends Null
 	
 		double alfa = 1.8;
 		double beta = 8;
-		double teta = 0;				
+		double teta = 0;
 		
-		return (beta/alfa) * ((live_rank - teta)/alfa)**(beta - 1) * Math.exp(-(((live_rank-teta)/alfa)**beta));
+		if(live_rank ==0){
+		return 0;
 		
+		}else{
+		
+		return (beta/alfa) * ((live_rank - teta)/alfa)**(beta - 1) * Math.exp(-(((live_rank-teta)/alfa)**beta));	
+		}
 	
-	}
-	
-	
-	
+	}	
 	
 	// (re)calculates border in case of random arrangement, and in case of weeds (which are always randomly placed)
 	void calcBorderRandom() {
@@ -441,6 +453,15 @@ module PlantBase extends Null
 		
 		swdf1 = 1.;
 		swdf2 = 1.;
+		
+		tdf = 0;
+		tds = 0;
+		
+		for(int L = 0; L<=29; L++){			
+			
+			weibulF[L] = weibul(L+1);		
+		
+		}
 	}
 	
 	// calculate plant age
