@@ -113,7 +113,7 @@ static void renew()
 	i:Internode ::>
 	{
 	
-		i.BiomassPartitioning();
+		i.BiomassPartitioning_New();
 		
 	}
 	

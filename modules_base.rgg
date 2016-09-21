@@ -451,6 +451,7 @@ module PlantBase extends Null
 		emerged = false;
 		PlantDepth = PlantingDepth[species];
 		
+		
 		swdf1 = 1.;
 		swdf2 = 1.;
 		
@@ -477,7 +478,7 @@ module PlantBase extends Null
 		assimilated = sum((* v:VisibleOrgan, (v.plantNumber == plantNumber) *)[assimilated]);
 		double mCO2 = 44.01;	// CO2 molar mass  (gr/mol)
 		double rm = 0.015;		// maintenance respiration  (gr CO2 / gr plant biomass / day)
-		double fCO2 = 0.6;		// conversion factor grom gr CO2 to gr biomass
+		double fCO2 = 0.6;		// conversion factor grom gr CO2 to gr biomass 
 		
 		substrates = Math.max(0,(mCO2 * assimilated * 1e-3/*mmol to mol*/ - rm * biomass) * fCO2 + reservePool);
 		

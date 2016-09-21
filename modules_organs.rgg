@@ -119,7 +119,10 @@ module VisibleOrgan extends GrowingOrgan
 	double rfr;						// red/far-red ratio
 	double phi;						// phytochrome status
 	double photosynthesisRate;		// rate of photosynthesis  (umol CO2 / m2 / s)
-	double assimilated;				// assimilates acquired (mol CO2 / day)
+	double assimilated;				// assimilates acquired (mol CO2 / day)	
+	double Jmax;	// maximum photosynthesis rate at top of canopy
+	double ce;		// initial light use efficiency (initial slope of light response curve)	
+	
 	
 	// calculate light absorption
  	void calcLight()
@@ -161,14 +164,14 @@ module VisibleOrgan extends GrowingOrgan
 	// calculate photosynthesis and assimilation
 	void calcPhotosynthesis()
 	{
-		double Amax0 = amax[species];	// maximum photosynthesis rate at top of canopy
+		double Amax0 = Jmax;	// maximum photosynthesis rate at top of canopy
 		double Amax;						// maximum photosynthesis rate in any leaf (Anten, 1997)
 		if (fabs > 0) {
 			Amax = Amax0 * fabs**0.4;
 		} else {
 			Amax = Amax0;
 		}
-		double epsilon = eff[species];		// initial light use efficiency (initial slope of light response curve)
+		double epsilon = ce;		// initial light use efficiency (initial slope of light response curve)
 		double Rd = 0.05*Amax0;			// dark respiration (photorespiration? -murilo)
 		photosynthesisRate = Amax * (1 - Math.exp(-epsilon * (absm2 / Amax)));// - Rd;		Rd taken out to get to gross photosynthesis
 		assimilated = photosynthesisRate * area * dayLength*60*60;// [mmol] May overestimate photosynthesis, what area is used? abaxial and adaxial?
@@ -444,9 +447,12 @@ module Internode extends VisibleOrgan
 	double sucpot;
 	double dhexo;
 	double dsucr;
-
-	
-	
+	double StrucMass;
+	double TSugaMass;
+	double HexosMass;
+	double SucroMass;
+	double phloemLoading;
+		
 	double getModifier()
 	{
 		Leaf lf = first((* this +> l:Leaf *));
@@ -481,6 +487,56 @@ module Internode extends VisibleOrgan
 		position = Math.max(0,live_rank - (MaxGreenLeafNumber[species] - MaxDewlapNumber[species]));
 				
 			return (1.-(max + ((min - max) / ((1 + (position/c)**b)**m))));		
+	}
+	
+	void BiomassPartitioning_New(){
+	
+		double sif;
+		double df 		= 0.06;		//Culm densification factor g cm-3 dd-1
+		double maxsif 	= 0.12;
+		double gr = 0.242;
+		double rm = 0.004;
+		double leafSubs;
+		
+		double mCO2 = 44.01;	// CO2 molar mass  (gr/mol)
+		double rmp = 0.015;		// maintenance respiration  (gr CO2 / gr plant biomass / day)
+		double fCO2 = 0.6;		// conversion factor grom gr CO2 to gr biomass
+		double phloemRes = 1.;
+		
+		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
+		
+		sif = Math.min(maxsif, df * (age / 1000.));
+		
+		StrucMass += sif * (dPER(pb.swdf1) * PERcoef  * (0.6491 * Math.exp(-0.5*position))) * ((width/2.) * Math.PI**2);
+		
+		if(StrucMass / (biomass / 1000.) > 0.9) {
+		StrucMass = 0.9 * (biomass / 1000.);
+		}
+		
+		TSugaMass = (biomass / 1000.) - StrucMass;
+		HexosMass = ((growth/1000.) * gr) + ((biomass / 1000.) * rm);
+		
+		if((HexosMass/TSugaMass) < 0.05){
+			HexosMass = 0.05 * TSugaMass;
+		}else if((HexosMass/TSugaMass) > 0.82){
+			HexosMass = 0.82 * TSugaMass;		
+		}
+		
+		Leaf lf = selectWhere((* l:Leaf *), (l.plantNumber == plantNumber && l.rank == rank));				
+		leafSubs = Math.max(0,(mCO2 * lf.assimilated * 1e-3/*mmol to mol*/ - rmp * lf.biomass) * fCO2 * phloemRes);
+		
+		if(leafSubs >= SucroMass){
+		SucroMass = TSugaMass - HexosMass;
+		phloemLoading += leafSubs - SucroMass;
+		
+		lf.Jmax = lf.Jmax * 0.95;
+		lf.ce	= lf.ce * 0.95;
+		
+		}else{		
+			SucroMass = leafSubs;
+			HexosMass = TSugaMass - SucroMass;			
+		}
+	
 	}
 	
 	// Partitioning among Structural and non-structural tissues
@@ -598,6 +654,11 @@ module Internode extends VisibleOrgan
 		ds = 0.;
 		lbRatio = lengthBiomassRatio[species] / 1000;
 		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
+		
+		Jmax = amax[species];	// maximum photosynthesis rate at top of canopy
+		ce = eff[species];		// initial light use efficiency (initial slope of light response curve)
+		phloemLoading = 0.;
+		
 		if(a.species == 11) {sucStart =  SucroseStart[species];}
 		if(a.species == 11) {
 			// added to account for phyllochron change "broken stick"	
@@ -683,6 +744,9 @@ module Leaf extends VisibleOrgan
 		petdiameter = 0;
 		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
 		petlength = Math.min((pb.PlantDepth / nrShortInternodes[species]) * rank, pb.PlantDepth);
+		
+		Jmax = amax[species];	// maximum photosynthesis rate at top of canopy
+		ce = eff[species];		// initial light use efficiency (initial slope of light response curve)
 		
 		if(a.species == 11) {
 			// added to account for phyllochron change "broken stick"	
