@@ -78,7 +78,8 @@ static void develop()
 	}
 	;
 	
-	// start sucrose accumulation
+	/*
+	// create sucrose as on organ that sinks
 	i:Internode, (i.startsucrose == true && count((* s:Sucrose, (s.rank == i.rank) *)) < 1) ==>
 	i [su:Sucrose]
 	{
@@ -86,9 +87,14 @@ static void develop()
 			
 	}
 	;
+	*/
 	
 	//shed a leaf
-	l:Leaf, (l.shouldFall() == true) ==>> ; 
+	l:Leaf, (l.shouldFall() == true) ==>> {
+	
+		Internode it = selectWhere((*i:Internode*), (i.plantNumber == l.plantNumber && i.rank == l.rank));
+		it.gotLeaf = false;
+	}; 
 
 	// branch abortion
 	bb:BranchBase, (bb.shouldFall() == true) ==>> ;

@@ -304,6 +304,7 @@ const DatasetRef lightTransectY =  new DatasetRef("Light Transect Y");
 const DatasetRef combiLight = new DatasetRef("Tile and sensor light");
 
 const DatasetRef organLength = new DatasetRef("Organ dimensions profile");
+const DatasetRef InternodeComp = new DatasetRef("Internode composition profile");
 const DatasetRef LeavesProfile = new DatasetRef("Leaf Profile");
 const DatasetRef FieldLeafProfile = new DatasetRef("Average Leaf Profile");
 const DatasetRef sucroIntern = new DatasetRef("Sucrose content profile");

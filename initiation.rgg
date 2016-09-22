@@ -129,6 +129,11 @@ static void initDatasets()
 		leafInitApp.(setColumnKey(0,"init (dd)"), setColumnKey(1,"app (dd)"));
 		organLength.clear(); chart(organLength,SCATTER_PLOT);
 		organLength.(setColumnKey(0,"blade (m)"), setColumnKey(1,"internode (m)"), setColumnKey(2,"internode width (dm)"), setColumnKey(3,"blade width (dm)"), setColumnKey(4,"Leaf Sheath (m)"));
+		
+		InternodeComp.clear(); chart(InternodeComp,SCATTER_PLOT);
+		InternodeComp.(setColumnKey(0,"Dry weight (g)"), setColumnKey(1," Struc (g)"), setColumnKey(2,"Sugars (g)"), setColumnKey(3,"Hexose (g)"), setColumnKey(4,"Sucrose (g)"));
+		
+		
 		LeavesProfile.clear(); chart(LeavesProfile,SCATTER_PLOT);
 		LeavesProfile.(setColumnKey(0,"blade length (cm)"), setColumnKey(1,"blade width (dm)"), setColumnKey(2,"Leaf Sheath Length (cm)"), setColumnKey(3,"Leaf Sheath diameter (dm)"), setColumnKey(4,"Leaf angle"));
 		FieldLeafProfile.clear(); chart(FieldLeafProfile,SCATTER_PLOT);

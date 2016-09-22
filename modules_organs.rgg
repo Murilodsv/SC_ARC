@@ -452,6 +452,7 @@ module Internode extends VisibleOrgan
 	double HexosMass;
 	double SucroMass;
 	double phloemLoading;
+	boolean gotLeaf;
 		
 	double getModifier()
 	{
@@ -492,10 +493,16 @@ module Internode extends VisibleOrgan
 	void BiomassPartitioning_New(){
 	
 		double sif;
-		double df 		= 0.06;		//Culm densification factor g cm-3 dd-1
+		double fmax		= 0.08;		//Max culm densification g fibre / cm-3 (Derived from Lingle & Thomson 2012 results)
+		double fc		= 1.35;		//Culm densification factor (Derived from Lingle & Thomson 2012 results)
+		double fb		= 3.09;
+		double fm		= 2.;
+		
 		double maxsif 	= 0.12;
 		double gr = 0.242;
-		double rm = 0.004;
+		double rm;
+		double respQ10	= 1.68;
+		double respcon	= 0.00339;
 		double leafSubs;
 		
 		double mCO2 = 44.01;	// CO2 molar mass  (gr/mol)
@@ -503,40 +510,81 @@ module Internode extends VisibleOrgan
 		double fCO2 = 0.6;		// conversion factor grom gr CO2 to gr biomass
 		double phloemRes = 1.;
 		
+		
 		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
 		
-		sif = Math.min(maxsif, df * (age / 1000.));
+		sif = fmax + ((fmax-0) / ((1+((age/1000.)/fc)**fb)**fm));
 		
-		StrucMass += sif * (dPER(pb.swdf1) * PERcoef  * (0.6491 * Math.exp(-0.5*position))) * ((width/2.) * Math.PI**2);
+		println(live_rank+" sif = "+sif);
 		
-		if(StrucMass / (biomass / 1000.) > 0.9) {
-		StrucMass = 0.9 * (biomass / 1000.);
+		StrucMass = sif * (length * 100.) * Math.PI * ((width*100/2.)**2) * 1000.;
+		
+		// Maximun constraining for structural mass
+		if((StrucMass / biomass) > 0.9) {
+		StrucMass = 0.9 * biomass;		
 		}
+				
+		TSugaMass = (biomass) - StrucMass;
 		
-		TSugaMass = (biomass / 1000.) - StrucMass;
-		HexosMass = ((growth/1000.) * gr) + ((biomass / 1000.) * rm);
+		// Maintenance respiration as function of temperature Liu & Bull (2001)
+		rm = respQ10**((tav-10.)/10.) * respcon;
 		
+		HexosMass = (growth * gr) + (biomass * rm); 
+		
+		// Constraints described by Singels & Inman-Bamber (2011)
 		if((HexosMass/TSugaMass) < 0.05){
 			HexosMass = 0.05 * TSugaMass;
 		}else if((HexosMass/TSugaMass) > 0.82){
-			HexosMass = 0.82 * TSugaMass;		
+			HexosMass = 0.82 * TSugaMass;
 		}
 		
+		SucroMass = TSugaMass - HexosMass;		
+		
+		if(gotLeaf && biomass>0){
+			
 		Leaf lf = selectWhere((* l:Leaf *), (l.plantNumber == plantNumber && l.rank == rank));				
 		leafSubs = Math.max(0,(mCO2 * lf.assimilated * 1e-3/*mmol to mol*/ - rmp * lf.biomass) * fCO2 * phloemRes);
 		
 		if(leafSubs >= SucroMass){
+		
 		SucroMass = TSugaMass - HexosMass;
-		phloemLoading += leafSubs - SucroMass;
+		phloemLoading = leafSubs - SucroMass;
 		
-		lf.Jmax = lf.Jmax * 0.95;
-		lf.ce	= lf.ce * 0.95;
+		// increase and/or decrease on photos of 5% per day (McCormick 2006)		
+		lf.Jmax = Math.max(25.,lf.Jmax * 0.95);
+		lf.ce	= Math.max(0.01,lf.ce * 0.95);
 		
-		}else{		
+		}else{
+			
 			SucroMass = leafSubs;
-			HexosMass = TSugaMass - SucroMass;			
+			HexosMass = TSugaMass - SucroMass;
+			
+			lf.Jmax = Math.min(45.,lf.Jmax * 1.05);
+			lf.ce	= Math.min(0.06,lf.ce * 1.05);
+			
 		}
-	
+		
+		}else{
+			/*
+			if(pb.reservePool >= SucroMass){
+			
+				SucroMass = TSugaMass - HexosMass;
+				pb.reservePool = pb.reservePool - SucroMass;
+			
+			}else{
+			
+				SucroMass = pb.reservePool;
+			
+			}*/		
+		
+		}
+		
+		InternodeComp.getRow(Math.max(0,live_rank-5)).set(0,biomass/1000.);
+		InternodeComp.getRow(Math.max(0,live_rank-5)).set(1,StrucMass/1000.);
+		InternodeComp.getRow(Math.max(0,live_rank-5)).set(2,TSugaMass/1000.);
+		InternodeComp.getRow(Math.max(0,live_rank-5)).set(3,HexosMass/1000.);
+		InternodeComp.getRow(Math.max(0,live_rank-5)).set(4,SucroMass/1000.);
+		
 	}
 	
 	// Partitioning among Structural and non-structural tissues
@@ -573,7 +621,8 @@ module Internode extends VisibleOrgan
 		
 		return Math.max(swdf1,maxStres) * dPERdt * Math.max(0, tav - tbPER) * 24/1000; // Same as CANEGRO (should include hour temp Parton Logan 1981)
 		
-	}	
+	}
+	
 	
 	// calculate dimensions
 	void calcDimensions()
@@ -652,6 +701,7 @@ module Internode extends VisibleOrgan
 		HexoseMass = 0;
 		df = 0.;
 		ds = 0.;
+		gotLeaf = true;
 		lbRatio = lengthBiomassRatio[species] / 1000;
 		wmax = cpn>nrShortInternodes[species] ? wmaxInt[species] : 0;
 		
@@ -682,7 +732,7 @@ module Internode extends VisibleOrgan
 	)
 ;
 
-// module for sucrose accumulation
+// module for sucrose accumulation as an organ
 module Sucrose extends GrowingOrgan
 {
 	
