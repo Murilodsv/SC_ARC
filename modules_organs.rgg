@@ -513,9 +513,7 @@ module Internode extends VisibleOrgan
 		
 		PlantBase pb = selectWhere((*p:PlantBase*), p.plantNumber == plantNumber);
 		
-		sif = fmax + ((fmax-0) / ((1+((age/1000.)/fc)**fb)**fm));
-		
-		println(live_rank+" sif = "+sif);
+		sif = fmax + (-fmax / ((1+((age/1000.)/fc)**fb)**fm));
 		
 		StrucMass = sif * (length * 100.) * Math.PI * ((width*100/2.)**2) * 1000.;
 		
@@ -548,13 +546,15 @@ module Internode extends VisibleOrgan
 		if(leafSubs >= SucroMass){
 		
 		SucroMass = TSugaMass - HexosMass;
-		phloemLoading = leafSubs - SucroMass;
+		phloemLoading = leafSubs - SucroMass;		
 		
 		// increase and/or decrease on photos of 5% per day (McCormick 2006)		
 		lf.Jmax = Math.max(25.,lf.Jmax * 0.95);
 		lf.ce	= Math.max(0.01,lf.ce * 0.95);
 		
 		}else{
+			
+			println((live_rank)+" SucroMassNoLeaf = "+SucroMass);
 			
 			SucroMass = leafSubs;
 			HexosMass = TSugaMass - SucroMass;
@@ -712,7 +712,8 @@ module Internode extends VisibleOrgan
 		if(a.species == 11) {sucStart =  SucroseStart[species];}
 		if(a.species == 11) {
 			// added to account for phyllochron change "broken stick"	
-			te = (Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species])) * plastochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species]))) * plastochron2[species]);
+			//te = (Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species])) * plastochron[species]) + ((MaxGreenLeafNumber[species] - Math.max(0,Math.min((plas_change[species] - a.rank),MaxGreenLeafNumber[species]))) * plastochron2[species] + 5*plastochron2[species]);
+			te = (MaxGreenLeafNumber[species]+4) * phyllochron2[species];
 		}else {
 			te = teInt[species];
 			}			
@@ -941,14 +942,16 @@ module Leaf extends VisibleOrgan
 			
 			petangle = 0;
 			
-			if (rank <= 4)	{
+			if (rank <= (MaxGreenLeafNumber[sugarcane] - MaxDewlapNumber[sugarcane]))	{
+				
 				k = 4;	
 				angle = max;		
 				bendingAngleSegment = maxS;
+				
 			} else {
-				k = 2;
-				angle = max*(Math.exp(k * Math.min(1.,age / te))/Math.exp(k));				
-				bendingAngleSegment = maxS*(Math.exp(k * Math.min(1.,age / te))/Math.exp(k));
+				k = 3;
+				angle = max*(Math.exp(k * Math.min(1.,age / (te-tm)))/Math.exp(k));				
+				bendingAngleSegment = maxS*(Math.exp(k * Math.min(1.,age / (te-tm)))/Math.exp(k));
 			}
 			
 			if(live_rank ==0) {

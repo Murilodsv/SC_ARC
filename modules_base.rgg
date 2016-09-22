@@ -521,7 +521,7 @@ module PlantBase extends Null
 			biomStem = sum((* i:Internode, (i.plantNumber == plantNumber) *)[biomass]);
 		}
 		biomRoots = sum((* r:RootSystem, (r.plantNumber == plantNumber) *)[biomass]);
-		biomSucro = sum((* i:Internode, (i.plantNumber == plantNumber) *)[SucroseMass]);
+		biomSucro = sum((* i:Internode, (i.plantNumber == plantNumber) *)[SucroMass]);
 		biomFreshStem = sum((* i:Internode, (i.plantNumber == plantNumber && i.live_rank >= 5) *)[FreshBiomass]);
 		StemPol = biomSucro / biomFreshStem;
 		shootRoot = (biomLeaf + biomStem) / biomRoots;
