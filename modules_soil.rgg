@@ -161,6 +161,10 @@ module SoilProfile() extends Null{
 	double sumes2;
 	double t;
 	
+	//Soil Temperature
+	
+	
+	
 	double[] sw_mm_NEW		= new double[Layer_Depth.length];	
 	double[] swdelts_mm		= new double[Layer_Depth.length];
 	double[] swdeltx_mm		= new double[Layer_Depth.length];
@@ -727,6 +731,7 @@ module SoilProfile() extends Null{
 		
 	}
 	
+	// Calculates actual soil evaporation (ES, mm/d) based on Ritchie water balance method
 	void SoilEvaporation_R(){
 	
 		double swef;
@@ -988,9 +993,7 @@ module SoilProfile() extends Null{
 		sl.swdeltu = Math.min(0.,sl.swdeltu);
 		
 		sl.es_lyr = -sl.swdeltu * sl.Thickness * 10.0;	// (mm)		
-		es = es + sl.es_lyr;					// profile sum (mm)
-		
-		
+		es = es + sl.es_lyr;					// profile sum (mm)	
 		
 		}
 		
@@ -1164,6 +1167,67 @@ module SoilProfile() extends Null{
 	}
 	
 	
+	
+	//Soil Temperature - Based on EPIC model
+	void stemp(){		
+		
+		double abd;
+		double fx;
+		double dp;
+		double ww;
+		double b;
+		double hday;
+		double tbd;
+		double tll;
+		double tdl;
+		double cumdpt;
+		double[] dsmid		= new double[nLayers];
+		
+		
+		//
+		if(latitude < 0){			
+				hday = 20.;			
+		}else{
+				hday = 200.;			
+		}
+		
+		tbd = 0.;
+		tll = 0.;			
+		tdl = 0.;
+		cumdpt = 0.;
+			
+			
+		for(int L = 0; L<=nLayers-1; L++){
+			
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
+			
+			dsmid[L] = cumdpt + sl.Thickness * 5.;
+			cumdpt = cumdpt + sl.Thickness * 10.;
+			tbd = tbd + sl.BDEN * sl.Thickness;
+			tll = tll + sl.LL	* sl.Thickness;
+			tdl = tdl + sl.DUL	* sl.Thickness;
+			
+			if(L ==(nLayers-1)){
+			
+				abd = tbd / sl.Depth;
+			}
+		}
+			
+		tsw = sum((* sl:SoilLayer, (sl.row == row && sl.strip == strip) *)[TSWC]);
+		
+		
+			
+		
+		if((dayOfYear-1) == startingDayOfYear && year == startingyear){			
+						
+		
+		}
+		
+		
+	
+	}
+	
+	
 //Soil-Plant-Atmosphere energy balance components
  void spa(){
 	
@@ -1308,6 +1372,7 @@ module SoilProfile() extends Null{
 		sumes1 = 0.;
 		sumes2 = 0.;
 		t = 0;
+
 		
 		nRootSystemsPrevious	= 0;
 		
