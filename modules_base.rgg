@@ -267,6 +267,7 @@ module PlantBase extends Null
 	boolean emerged;			// Flag for emerged shoots
 	double PlantDepth;			// Depth of planting
 	
+	
 	double swdf1;				// Water stress factor for elongation
 	double swdf2;				// Water stress factor for assimilation
 	
@@ -450,6 +451,7 @@ module PlantBase extends Null
 		this.weed = weed;
 		emerged = false;
 		PlantDepth = PlantingDepth[species];
+		
 		
 		
 		swdf1 = 1.;

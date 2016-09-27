@@ -133,6 +133,19 @@ static void initDatasets()
 		InternodeComp.clear(); chart(InternodeComp,SCATTER_PLOT);
 		InternodeComp.(setColumnKey(0,"Dry weight (g)"), setColumnKey(1," Struc (g)"), setColumnKey(2,"Sugars (g)"), setColumnKey(3,"Hexose (g)"), setColumnKey(4,"Sucrose (g)"));
 		
+		soilWatBal.clear();
+		if(SoilChart){
+		chart(soilWatBal,XY_PLOT);
+		}
+		
+		soilWatBal.(setColumnKey(0,"Total SWC"));
+		
+		for (int nLayer=1; nLayer<=Layer_Depth.length; nLayer++){
+		soilWatBal.(setColumnKey(nLayer,"SWC - LY "+nLayer));
+		}
+		
+		
+		
 		
 		LeavesProfile.clear(); chart(LeavesProfile,SCATTER_PLOT);
 		LeavesProfile.(setColumnKey(0,"blade length (cm)"), setColumnKey(1,"blade width (dm)"), setColumnKey(2,"Leaf Sheath Length (cm)"), setColumnKey(3,"Leaf Sheath diameter (dm)"), setColumnKey(4,"Leaf angle"));

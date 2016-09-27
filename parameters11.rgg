@@ -26,7 +26,7 @@ import static parameters.*;
 	finalLeafNumber[sugarcane]		= 70;				// final number of main stem leaves
 	MaxGreenLeafNumber[sugarcane]	= 10;				// Maximun number of green leaves that a stalk can hold
 	MaxDewlapNumber[sugarcane]		= 5;				// Maximun number of developed leaves (appeared dewlap) that a stalk can hold
-	MaxPop[sugarcane]				= 4;				// Maximun number of shoots per m-2
+	MaxPop[sugarcane]				= 26;				// Maximun number of shoots per m-2
 	nrShortInternodes[sugarcane]	= 5;  			// number of bottom internodes that should NOT elongate and have no mass
 	ratooning[sugarcane]			= false;					//Chose wheter is ratoon or not (true or false)
 	tt_em[sugarcane] = (ratooning[sugarcane]? 100:300); // thermal for emergence in ratooning or planted cane

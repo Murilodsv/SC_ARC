@@ -24,6 +24,7 @@ abstract module Organ(super.length) extends M(length)
 	double delay;			// delay between organ initation and appearance
 	int deb = 1;			// debbuging
 	int type;				// 1 = Roots; 2 = Node; 3 = Internode; 4 = Leaf; 5 = Apex
+	boolean	aborted;
 	
 	// calculate age for EACH organ
 	void calcAge() 
@@ -232,7 +233,7 @@ module RootSystem extends GrowingOrgan
 	double rootDepth;			// Root depth (cm)
 	double rootMax = 100.;		// Max root depth (cm) (effective root)
 	double depthRate = 0.03;	// Rate of deepening of the root front (cm °C-1 d-1) Laclau and Laclau (2009) (0.03)
-	double slr = 1360; 			// Specific Root Length (cm g-1)
+	double slr = 1360.; 			// Specific Root Length (cm g-1)
 	int row;
 	int strip;
 	
@@ -249,6 +250,7 @@ module RootSystem extends GrowingOrgan
 		te = teRoot[species];
 		tm = te / 2;
 		rootDepth = pb.PlantDepth * 100.;
+		aborted = false;
 	}
 	
 	//Root growth and dimensions
@@ -554,8 +556,6 @@ module Internode extends VisibleOrgan
 		
 		}else{
 			
-			println((live_rank)+" SucroMassNoLeaf = "+SucroMass);
-			
 			SucroMass = leafSubs;
 			HexosMass = TSugaMass - SucroMass;
 			
@@ -617,7 +617,7 @@ module Internode extends VisibleOrgan
 		 
 		double tbPER 	= 16.0;
 		double dPERdt	= 0.375;
-		double maxStres = 0.3;
+		double maxStres = 0.5;
 		
 		return Math.max(swdf1,maxStres) * dPERdt * Math.max(0, tav - tbPER) * 24/1000; // Same as CANEGRO (should include hour temp Parton Logan 1981)
 		

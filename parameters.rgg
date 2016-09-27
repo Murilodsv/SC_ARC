@@ -28,23 +28,25 @@ static boolean oldLM			= true;			// true: use old light model, false: use FluxLM
 static boolean seeRays			= false;		// see direction of rays from light sources if true
 
 // Setting clones (Infinity Canopy)
-static boolean infinityCanopy   = false;			// Set whether cloning is on/off (true/false)
+static boolean infinityCanopy   = true;			// Set whether cloning is on/off (true/false)
 static int X_times				= 10;			// Number of cloned plots on X axis
 static int Y_times				= 10;			// Number of cloned plots on Y axis
 
 // Soil Profile Settings
-static boolean UseSoil			= false;
+static boolean UseSoil			= true;
 static int cn_runoff			= 80;
 static double swcon_drain		= 0.5;
 static double albedo			= 0.14;
+static double slu1				= 6.0;
 static double[] Layer_Depth		= {0.050, 0.100, 0.150, 0.300, 0.450, 0.600, 1.000};
-static double[] Layer_LL		= {0.208, 0.226, 0.245, 0.238, 0.319, 0.319, 0.271};
+static double[] Layer_LL		= {0.208, 0.206, 0.215, 0.238, 0.259, 0.259, 0.251};
 static double[] Layer_DUL		= {0.279, 0.289, 0.299, 0.320, 0.396, 0.396, 0.388};
 static double[] Layer_SAT		= {0.400, 0.381, 0.363, 0.377, 0.433, 0.433, 0.450};
 static double[] Layer_KSAT		= {0.100, 0.100, 0.100, 0.100, 0.100, 0.100, 0.100};
 static double[] Layer_BDEN		= {1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200};
 static double[] Layer_SLOC		= {1.400, 1.400, 1.400, 1.400, 1.400, 1.400, 1.400};
 static boolean	irrigation		= false;
+static boolean  SoilChart		= true;
 
 // time and environmental settings
 const float latitude 			= -22.708 * Math.PI/180;	// the latitude of location of the scene
@@ -312,6 +314,8 @@ const DatasetRef biomassPart = new DatasetRef("Biomass partitioning (Profile Pla
 const DatasetRef nGreenLeaves = new DatasetRef("Number of Green Leaves");
 const DatasetRef leafInitApp = new DatasetRef("Leaf init & appearance");
 const DatasetRef thermalTime = new DatasetRef("Thermal time accumulated");
+
+const DatasetRef soilWatBal	= new DatasetRef("Soil Water Content [cm3 / cm3]");
 
 const DatasetRef plantLeafArea = new DatasetRef("Plant Leaf Area (m2)");
 const DatasetRef plantHeight = new DatasetRef("Plant Height (m)");
