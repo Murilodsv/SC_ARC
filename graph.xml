@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?><graph xmlns:gx="http://grogra.de/xmlpersistence" xmlns="http://grogra.de/xmlpersistence">
  <node root="MainGraph" id="0" type="de.grogra.graph.impl.Node">
   <data gx:name="extentIndex" gx:value="7"/>
-  <node id="36209681" type="de.grogra.rgg.RGGRoot" edges="+">
-   <node id="36209683" type="modules_light$temp" edges="-">
-    <node id="36209684" type="de.grogra.turtle.Translate" edges="+">
+  <node id="36217408" type="de.grogra.rgg.RGGRoot" edges="+">
+   <node id="36217410" type="modules_light$temp" edges="-">
+    <node id="36217411" type="de.grogra.turtle.Translate" edges="+">
      <data gx:name="translateX" gx:value="5.0"/>
      <data gx:name="translateY" gx:value="10.0"/>
-     <node id="36209685" type="de.grogra.turtle.RH" edges="-">
-      <node id="36209686" type="modules_light$DirectLight" edges="-">
+     <node id="36217412" type="de.grogra.turtle.RH" edges="-">
+      <node id="36217413" type="modules_light$DirectLight" edges="-">
        <array gx:name="power" gx:value="12.133312 12.594141 13.036223 13.453485 13.840184 14.191006 14.501127 14.766284 14.98283 15.147788 15.258889 15.314606 15.314175 15.2576 15.145658 14.979889 14.762572 14.496697 14.185917 13.834507 13.447297 13.029613 12.587193 12.126125"/>
        <array gx:name="beta" gx:value="2.8360276 8.413039 13.839309 19.07923 24.087383 28.805967 33.16201 37.065205 40.407875 43.06956 44.929054 45.884518 45.87705 44.907127 43.03447 40.361393 37.009235 33.098316 28.736074 24.012535 19.00042 13.757329 8.328493 2.7494028"/>
        <array gx:name="azimuth" gx:value="65.493225 62.628296 59.439606 55.86087 51.814453 47.21231 41.960205 35.96872 29.174347 21.5719 13.253052 4.431885 355.43045 346.61475 338.3056 330.71515 323.93335 317.95383 312.7124 308.11945 304.08087 300.50867 297.32544 294.46503"/>
-       <node id="36209687" type="modules_light$DiffuseLight" edges="-">
+       <node id="36217414" type="modules_light$DiffuseLight" edges="-">
         <data gx:name="power" gx:value="647.7807"/>
        </node>
       </node>
      </node>
     </node>
-    <node id="36209688" type="modules_base$FieldBase" edges="-">
+    <node id="36217415" type="modules_base$FieldBase" edges="-">
      <array gx:name="lai_eoratio" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
      <array gx:name="leafArea" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
      <array gx:name="lai" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
@@ -49,8 +49,8 @@
      <array gx:name="petdiameter" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
      <array gx:name="leafangle" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
      <array gx:name="harvested" gx:value="false false false false false false false false false false false false"/>
-     <node id="36209689" type="de.grogra.turtle.Translate" edges="+">
-      <node id="36209690" type="modules_light$Tile" edges="+">
+     <node id="36217416" type="de.grogra.turtle.Translate" edges="+">
+      <node id="36217417" type="modules_light$Tile" edges="+">
        <data gx:name="length" gx:value="1.4"/>
        <data gx:name="width" gx:value="0.25"/>
        <data gx:name="area" gx:value="0.35"/>
@@ -59,20 +59,23 @@
        <data gx:name="species" gx:value="11"/>
        <data gx:name="plantNumber" gx:value="1"/>
        <data gx:name="strip" gx:value="1"/>
-       <node id="36209691" type="modules_soil$SoilProfile" edges="+">
+       <node id="36217418" type="modules_soil$SoilProfile" edges="+">
         <data gx:name="row" gx:value="1"/>
         <data gx:name="strip" gx:value="1"/>
         <data gx:name="cn" gx:value="80"/>
         <data gx:name="nLayers" gx:value="7"/>
         <data gx:name="swcon" gx:value="0.5"/>
+        <data gx:name="srftemp" gx:value="19.764873760139853"/>
         <data gx:name="u" gx:value="6.0"/>
+        <data gx:name="atot" gx:value="98.82436880069926"/>
+        <array gx:name="tma" gx:value="0.0 0.0 0.0 0.0 0.0"/>
         <array gx:name="sw_mm_NEW" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
         <array gx:name="swdelts_mm" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
         <array gx:name="swdeltx_mm" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
         <array gx:name="swdeltl_mm" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
         <array gx:name="swdeltu_mm" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
         <array gx:name="swdeltt_mm" gx:value="0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
-        <node id="36209692" type="modules_soil$SoilLayer" edges="+">
+        <node id="36217419" type="modules_soil$SoilLayer" edges="+">
          <data gx:name="row" gx:value="1"/>
          <data gx:name="strip" gx:value="1"/>
          <data gx:name="nL" gx:value="1"/>
@@ -93,7 +96,7 @@
          <data gx:name="rld" gx:value="0.02"/>
          <data gx:name="rwf" gx:value="0.396097552934547"/>
         </node>
-        <node id="36209693" type="modules_soil$SoilLayer" edges="+">
+        <node id="36217420" type="modules_soil$SoilLayer" edges="+">
          <data gx:name="row" gx:value="1"/>
          <data gx:name="strip" gx:value="1"/>
          <data gx:name="nL" gx:value="2"/>
@@ -115,7 +118,7 @@
          <data gx:name="rld" gx:value="0.02"/>
          <data gx:name="rwf" gx:value="0.7686315513218586"/>
         </node>
-        <node id="36209694" type="modules_soil$SoilLayer" edges="+">
+        <node id="36217421" type="modules_soil$SoilLayer" edges="+">
          <data gx:name="row" gx:value="1"/>
          <data gx:name="strip" gx:value="1"/>
          <data gx:name="nL" gx:value="3"/>
@@ -137,7 +140,7 @@
          <data gx:name="rld" gx:value="0.02"/>
          <data gx:name="rwf" gx:value="1.0967174223254739"/>
         </node>
-        <node id="36209695" type="modules_soil$SoilLayer" edges="+">
+        <node id="36217422" type="modules_soil$SoilLayer" edges="+">
          <data gx:name="row" gx:value="1"/>
          <data gx:name="strip" gx:value="1"/>
          <data gx:name="nL" gx:value="4"/>
@@ -159,7 +162,7 @@
          <data gx:name="rld" gx:value="0.02"/>
          <data gx:name="rwf" gx:value="1.6744231825704745"/>
         </node>
-        <node id="36209696" type="modules_soil$SoilLayer" edges="+">
+        <node id="36217423" type="modules_soil$SoilLayer" edges="+">
          <data gx:name="row" gx:value="1"/>
          <data gx:name="strip" gx:value="1"/>
          <data gx:name="nL" gx:value="5"/>
@@ -181,7 +184,7 @@
          <data gx:name="rld" gx:value="0.02"/>
          <data gx:name="rwf" gx:value="1.601489038402588"/>
         </node>
-        <node id="36209697" type="modules_soil$SoilLayer" edges="+">
+        <node id="36217424" type="modules_soil$SoilLayer" edges="+">
          <data gx:name="row" gx:value="1"/>
          <data gx:name="strip" gx:value="1"/>
          <data gx:name="nL" gx:value="6"/>
@@ -203,7 +206,7 @@
          <data gx:name="rld" gx:value="0.02"/>
          <data gx:name="rwf" gx:value="1.1372532416741845"/>
         </node>
-        <node id="36209698" type="modules_soil$SoilLayer" edges="+">
+        <node id="36217425" type="modules_soil$SoilLayer" edges="+">
          <data gx:name="row" gx:value="1"/>
          <data gx:name="strip" gx:value="1"/>
          <data gx:name="nL" gx:value="7"/>
@@ -226,41 +229,41 @@
          <data gx:name="rwf" gx:value="0.14652511110987343"/>
         </node>
        </node>
-       <node id="36209699" type="de.grogra.turtle.Translate" edges="-">
+       <node id="36217426" type="de.grogra.turtle.Translate" edges="-">
         <data gx:name="translateX" gx:value="0.25"/>
        </node>
       </node>
-      <node id="36209700" type="de.grogra.turtle.Translate" edges="-">
+      <node id="36217427" type="de.grogra.turtle.Translate" edges="-">
        <data gx:name="translateY" gx:value="1.4"/>
       </node>
      </node>
-     <node id="36209701" type="modules_base$PlantBase" edges="+">
+     <node id="36217428" type="modules_base$PlantBase" edges="+">
       <data gx:name="strip" gx:value="1"/>
       <data gx:name="row" gx:value="1"/>
       <data gx:name="pos" gx:value="1"/>
       <data gx:name="species" gx:value="11"/>
       <data gx:name="plantNumber" gx:value="1"/>
       <data gx:name="reservePool" gx:value="1000.0"/>
-      <data gx:name="initialAngle" gx:value="30.239439010620117"/>
+      <data gx:name="initialAngle" gx:value="298.2633056640625"/>
       <data gx:name="PlantDepth" gx:value="0.25"/>
       <data gx:name="swdf1" gx:value="1.0"/>
       <data gx:name="swdf2" gx:value="1.0"/>
       <array gx:name="weibulF" gx:value="0.0719397568828085 0.9103930713822771 2.207936565224063E-24 6.298556915057643E-256 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
-      <node id="36209702" type="de.grogra.turtle.RH" edges="-">
-       <data gx:name="angle" gx:value="30.239439"/>
-       <node id="36209703" type="modules_organs$Seed" edges="-">
+      <node id="36217429" type="de.grogra.turtle.RH" edges="-">
+       <data gx:name="angle" gx:value="298.2633"/>
+       <node id="36217430" type="modules_organs$Seed" edges="-">
         <data gx:name="species" gx:value="11"/>
         <data gx:name="plantNumber" gx:value="1"/>
         <data gx:name="endo" gx:value="1000.0"/>
-        <data gx:name="germinationDelay" gx:value="2.5973753929138184"/>
-        <data gx:name="germinationDelayDD" gx:value="37.40330505371094"/>
+        <data gx:name="germinationDelay" gx:value="8.473175048828125"/>
+        <data gx:name="germinationDelayDD" gx:value="4.359722137451172"/>
        </node>
       </node>
      </node>
-     <node id="36209704" type="de.grogra.turtle.Translate" edges="+">
+     <node id="36217431" type="de.grogra.turtle.Translate" edges="+">
       <data gx:name="translateX" gx:value="0.25"/>
      </node>
-     <node id="36209705" type="de.grogra.turtle.Translate" edges="+">
+     <node id="36217432" type="de.grogra.turtle.Translate" edges="+">
       <data gx:name="translateY" gx:value="1.4"/>
      </node>
     </node>
@@ -357,95 +360,95 @@
     </node>
    </node>
   </node>
-  <node id="36209658" type="main" edges="+">
+  <node id="36217385" type="main" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209659" type="parameters" edges="+">
+  <node id="36217386" type="parameters" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209660" type="rewrites" edges="+">
+  <node id="36217387" type="rewrites" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209661" type="updates" edges="+">
+  <node id="36217388" type="updates" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209662" type="initiation" edges="+">
+  <node id="36217389" type="initiation" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209663" type="modules_base" edges="+">
+  <node id="36217390" type="modules_base" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209664" type="modules_organs" edges="+">
+  <node id="36217391" type="modules_organs" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209665" type="modules_light" edges="+">
+  <node id="36217392" type="modules_light" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209666" type="parameters0" edges="+">
+  <node id="36217393" type="parameters0" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209667" type="parameters1" edges="+">
+  <node id="36217394" type="parameters1" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209668" type="parameters2" edges="+">
+  <node id="36217395" type="parameters2" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209669" type="parameters3" edges="+">
+  <node id="36217396" type="parameters3" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209670" type="parameters4" edges="+">
+  <node id="36217397" type="parameters4" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209671" type="environment" edges="+">
+  <node id="36217398" type="environment" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209672" type="parameters5" edges="+">
+  <node id="36217399" type="parameters5" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209673" type="parameters6" edges="+">
+  <node id="36217400" type="parameters6" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209674" type="parameters7" edges="+">
+  <node id="36217401" type="parameters7" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209675" type="parameters8" edges="+">
+  <node id="36217402" type="parameters8" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209676" type="parameters9" edges="+">
+  <node id="36217403" type="parameters9" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209677" type="parameters10" edges="+">
+  <node id="36217404" type="parameters10" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209678" type="parameters11" edges="+">
+  <node id="36217405" type="parameters11" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209679" type="modules_soil" edges="+">
+  <node id="36217406" type="modules_soil" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>
-  <node id="36209680" type="CSVReaderFinal" edges="+">
+  <node id="36217407" type="CSVReaderFinal" edges="+">
    <data gx:name="extentIndex" gx:value="7"/>
    <object gx:name="initialTurtleState" color="14" length="100.0" diameter="0.1" tropism="0.0" parameter="0.0" carbon="0.0" heartwood="0.0" internodeCount="0"/>
   </node>

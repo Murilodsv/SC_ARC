@@ -19,7 +19,7 @@ protected void init()// init() is an embedded method of GroIMP.
 	println("total focal area: "+0.01 * Math.round(100 * totalFocalArea)+" m2");
 	println("Starting day: "+startingDayOfYear+" of year "+startingyear);
 	println("Latitude: "+(latitude / Math.PI*180));
-		
+	
 	println();
 	
 	for (int s=0; s<=totalSpecies-1; s++) {
@@ -53,7 +53,10 @@ private void step()
 	
 	if (oldLM==true) {lm.compute();} else {flm.compute();} // Condition to define which light model to use
 	if(dayOfYear == (startingDayOfYear) && year == (startingyear) || dayOfYear == 1) {
-	WeatherData = readData("WTH_Pira_"+year+".csv");	
+	WeatherData = readData("WTH_Pira_"+year+".csv");
+	tamp = mean(WeatherData[0:364][2]) - mean(WeatherData[0:364][3]);
+	tavYear = mean(WeatherData[0:364][2:3]);
+	
 	}
 	develop();
 	renew();

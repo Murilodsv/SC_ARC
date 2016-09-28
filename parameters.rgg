@@ -47,6 +47,7 @@ static double[] Layer_BDEN		= {1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200};
 static double[] Layer_SLOC		= {1.400, 1.400, 1.400, 1.400, 1.400, 1.400, 1.400};
 static boolean	irrigation		= false;
 static boolean  SoilChart		= true;
+static boolean  SoilTemp		= true;
 
 // time and environmental settings
 const float latitude 			= -22.708 * Math.PI/180;	// the latitude of location of the scene

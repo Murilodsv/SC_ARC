@@ -11,6 +11,8 @@ import static modules_soil.*;
 static double tav;
 static double tmax;
 static double tmin;
+static double tamp;
+static double tavYear;
 static double rain;
 static double srad;
 static double rh;

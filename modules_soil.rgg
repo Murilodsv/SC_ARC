@@ -28,6 +28,7 @@ module SoilLayer
 	double SWC;					// Volumetric soil water content in layer nL (cm3 [water] / cm3 [soil])
 	double TSWC;				// Total soil water in nL (cm)
 	double SWCR;
+	double Temp;
 	
 	double 	rld;			// Root length density for soil layer nL (cm[root] / cm3[soil])
 	int 	tss;				// number of days soil layer nL has been saturated
@@ -152,8 +153,9 @@ module SoilProfile() extends Null{
 	double tswini;					// Total initial soil water content (cm)
 	double tsw;						// Total soil water content (cm)
 	double alb_soil;				// albedo for energy balance calculations
+	double srftemp;
 	
-	int mesev = 2;					// 1 = Salus Method; 2 = Ritchie Method;
+	int mesev = 1;					// 1 = Salus Method; 2 = Ritchie Method (only 1st Layer uptake by ES);
 	
 	// For Ritchie Method
 	double u;
@@ -162,7 +164,8 @@ module SoilProfile() extends Null{
 	double t;
 	
 	//Soil Temperature
-	
+	double atot;
+	double[] tma		= new double[5];
 	
 	
 	double[] sw_mm_NEW		= new double[Layer_Depth.length];	
@@ -216,9 +219,7 @@ module SoilProfile() extends Null{
 	
 	nRootSystemsPrevious = nRootSystems;
 	
-	}
-		
-	
+	}	
 	}
 	
 	// Run-off calculations
@@ -455,16 +456,21 @@ module SoilProfile() extends Null{
 		sl.swdeltu = 0.0;
 		swtemp[L] = sl.SWC;
 		sw_inf[L] = sl.sw_avail; // sw_avail has been calculated previously on SatFlow method
-		sl.sw_avail = Math.max(0., sl.sw_avail - sl.DUL);
+		sl.sw_avail = Math.max(0., sl.sw_avail - sl.LL);
 		esw[L] = sl.DUL - sl.LL;	
 	
 	}
 	
 	SoilLayer top_sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (1)));
 	
-	if(top_sl.Thickness >= 5.0){ist=0;}else{ist=1;}
+	if(top_sl.Thickness >= 5.0){
+		ist=0;
+	}else{
+		ist=1;
+	}
 	
 	for(int L = ist; L<=nLayers-2; L++){
+		
 		M = L + 1;
 		swold = swtemp[L];
 		
@@ -474,9 +480,10 @@ module SoilProfile() extends Null{
 		thet1 = Math.max(0,Math.min(swtemp[L] - sl.LL, esw[L]));
 		thet2 = Math.max(0,Math.min(swtemp[M] - sl_M.LL, esw[M]));
 		
-		dbar = 0.88 * Math.exp(35.4 * ((thet1*sl.Thickness + thet2*sl_M.Thickness)/(sl.Thickness + sl_M.Thickness))* 0.5);
+		dbar = 0.88 * Math.exp(35.4 * ((thet1 * sl.Thickness + thet2 * sl_M.Thickness)/(sl.Thickness + sl_M.Thickness))* 0.5);
 		dbar = Math.min(dbar,100.);
 		
+		// Water content gradient between layers
 		grad = (thet2/esw[M] - thet1/esw[L]) * (esw[M] * sl_M.Thickness + esw[L] * sl.Thickness) / (sl_M.Thickness + sl.Thickness);
 		
 		sl.upflow = dbar * grad / ((sl.Thickness + sl_M.Thickness)*0.5);
@@ -504,7 +511,7 @@ module SoilProfile() extends Null{
 				sl.upflow = 0.;							
 			}
 			
-			if(sl.upflow / sl.Thickness > sl_M.sw_avail){
+			if((sl.upflow / sl.Thickness) > sl_M.sw_avail){
 			
 				sl.upflow = sl_M.sw_avail * sl_M.Thickness;
 				swtemp[L] = swold + sl.upflow / sl.Thickness;
@@ -551,7 +558,7 @@ module SoilProfile() extends Null{
 	
 	for(int L = 0; L<=nLayers-1; L++){		
 		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
-		sl.swdeltu = swtemp[L] - sl.SWC;	
+		sl.swdeltu = swtemp[L] - sl.SWC;
 		}	
 	}
 	
@@ -714,11 +721,11 @@ module SoilProfile() extends Null{
 					
 		}else{
 			
-			SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >= 0));
-			
-			trwu 				= 0.;
-			sl_all.rwu			 	= 0.;
-		
+			trwu = 0.;
+			for(int L = 0; L<=nLayers-1; L++){
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL ==(L+1)));
+			sl.rwu = 0.;
+			}
 		}
 		}
 		
@@ -999,19 +1006,26 @@ module SoilProfile() extends Null{
 		
 		// Limit total profile soil evaporation to potential soil evaporation
 		red_factor = 1.0;
-		SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >=0));
 		SoilLayer sl_bot = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (nLayers)));
 		
 		if(es > eos){			
 			
 			red_factor = eos / es;
-			sl_all.es_lyr = sl_all.es_lyr * red_factor;
-			sl_all.swdeltu = sl_all.swdeltu * red_factor;
+			
+			for(int L = 0; L<=nLayers-1; L++){
+				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL ==(L+1)));
+			
+				sl.es_lyr = sl.es_lyr * red_factor;
+				sl.swdeltu = sl.swdeltu * red_factor;
+			}
 			es = eos;		
 		}
 		
-		sl_all.upflow = 0.0;		
-		
+		for(int L = 0; L<=nLayers-1; L++){
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL ==(L+1)));
+				
+			sl.upflow = 0.0;		
+		}
 		//GW - Wet conditions
 		a_val =  0.26;
 		b_val = -0.70;
@@ -1035,7 +1049,7 @@ module SoilProfile() extends Null{
 	// Soil Water balance - Daily rate calculations
 	void WaterBalance_rate(){	
 		
-		SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >= 0));
+		//SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >= 0));
 		
 		//check whether snow is happening
 		if(tmax <= 1 && snow > 0.001){		
@@ -1049,11 +1063,17 @@ module SoilProfile() extends Null{
 		winf				 = 0.;
 		infilt				 = 0.;
 		drain				 = 0.;
-		excs				 = 0.;		
-		sl_all.swdelts		 = 0.;
-		sl_all.swdeltu		 = 0.;
-		sl_all.swdeltt		 = 0.;
-		sl_all.swdeltl		 = 0.;
+		excs				 = 0.;
+		
+		for(int L = 0; L<=nLayers-1; L++){
+				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL ==(L+1)));
+		
+		sl.swdelts		 = 0.;
+		sl.swdeltu		 = 0.;
+		sl.swdeltt		 = 0.;
+		sl.swdeltl		 = 0.;
+		
+		}
 		
 		//condition when the field is pudded
 		if(puddled){
@@ -1109,7 +1129,7 @@ module SoilProfile() extends Null{
 		
 		// Should be used only when evaporation method is not the default (Sulieman-Ritchie 2006)
 		if(flood <= 0.0 && mesev != 1){
-									
+			
 			for(int L = 0; L<=nLayers-1; L++){
 				
 				SoilLayer sl_dt = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
@@ -1129,6 +1149,14 @@ module SoilProfile() extends Null{
 		// -----------------------
 		// Daily integration
 		// -----------------------
+		
+		if(mesev != 1){
+		
+			SoilLayer sl_top = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (1)));
+			
+			sl_top.SWC = sl_top.SWC - 0.1 * es / sl_top.Thickness;
+		
+		}
 		
 		//perform integration of soil water fluxes
 		// substract soil evaporation from layer 1
@@ -1174,17 +1202,23 @@ module SoilProfile() extends Null{
 		double abd;
 		double fx;
 		double dp;
+		double dt;
 		double ww;
+		double wc;
 		double b;
 		double hday;
 		double tbd;
 		double tll;
 		double tdl;
 		double cumdpt;
+		double alx;
+		double pesw;
+		double dd;
+		double ta;
+		double zd;
+		
 		double[] dsmid		= new double[nLayers];
 		
-		
-		//
 		if(latitude < 0){			
 				hday = 20.;			
 		}else{
@@ -1195,6 +1229,7 @@ module SoilProfile() extends Null{
 		tll = 0.;			
 		tdl = 0.;
 		cumdpt = 0.;
+		abd = 0.;
 			
 			
 		for(int L = 0; L<=nLayers-1; L++){
@@ -1215,15 +1250,89 @@ module SoilProfile() extends Null{
 			
 		tsw = sum((* sl:SoilLayer, (sl.row == row && sl.strip == strip) *)[TSWC]);
 		
+		pesw = Math.max(0., tsw - tll);
 		
+		fx = abd / (abd + 686.0 * Math.exp(-5.63 * abd));		
+		dp = 1000.0 + 2500.0 * fx;		
+		ww = 0.356 - 0.144 * abd;
+		b  = Math.log(500./dp);
+		
+		if((dayOfYear-1) == startingDayOfYear && year == startingyear){
 			
+			tma[0:4] = tav;
+			atot = tav * 5.;
+			
+			for(int L = 0; L<=nLayers-1; L++){				
+				
+			SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL ==(L+1)));
+			sl.Temp = tav;
+			
+			}
+			
+			for(int I = 0; I<=7; I++){
+			
+			alx = (dayOfYear - hday) * 0.0174;
+			atot = atot - tma[4];
+			
+			for(int K = 4; K>=1; K--){				
+				tma[K] = tma[K-1];			
+			}			
+			
+			tma[0] = (1. - albedo) * (tav + (tmax - tav) * Math.sqrt(srad * 0.03)) + albedo * tma[0];
+			
+			atot = atot + tma[0];
+			
+			wc = Math.max(0.01, pesw) / (ww * cumdpt) * 10.;
+			fx = Math.exp(b * ((1. - wc) / (1. + wc))**2);
+			dd = fx * dp;
+			ta = tavYear + tamp * Math.cos(alx) / 2.;
+			dt = atot / 5. - ta;
+			
+			for(int L = 0; L<=nLayers-1; L++){				
+				
+				zd = -dsmid[L] / dd;
+				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
+				
+				sl.Temp = tavYear + (tamp / 2. * Math.cos(alx + zd) + dt) * Math.exp(zd);				
+				
+			}
+			
+			srftemp = tavYear + (tamp / 2. * Math.cos(alx) + dt);
+			
+			}
 		
-		if((dayOfYear-1) == startingDayOfYear && year == startingyear){			
-						
+		}else{
 		
-		}
+		alx = (dayOfYear - hday) * 0.0174;
+		atot = atot - tma[4];
 		
+			for(int K = 4; K>=1; K--){				
+				tma[K] = tma[K-1];			
+			}
+			
+			tma[0] = (1. - albedo) * (tav + (tmax - tav) * Math.sqrt(srad * 0.03)) + albedo * tma[0];
+			atot = atot + tma[0];
+			
+			
+			
+			wc = Math.max(0.01, pesw) / (ww * cumdpt) * 10.;
+			fx = Math.exp(b * ((1. - wc) / (1. + wc))**2);
+			dd = fx * dp;
+			ta = tavYear + tamp * Math.cos(alx) / 2.;
+			dt = atot / 5. - ta;
+			
+			for(int L = 0; L<=nLayers-1; L++){				
+				
+				zd = -dsmid[L] / dd;
+				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
+				
+				sl.Temp = tavYear + (tamp / 2. * Math.cos(alx + zd) + dt) * Math.exp(zd);				
+				
+			}
+			
+			srftemp = tavYear + (tamp / 2. * Math.cos(alx) + dt);		
 		
+		}	
 	
 	}
 	
@@ -1231,9 +1340,16 @@ module SoilProfile() extends Null{
 //Soil-Plant-Atmosphere energy balance components
  void spa(){
 	
- 	 SoilLayer sl_all = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL >= 0));
- 	 sl_all.swdeltx = 0.;
- 
+ 	 for(int L = 0; L<=nLayers-1; L++){
+ 	 SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL == (L+1)));
+ 	 sl.swdeltx = 0.; 	
+ 	 }
+ 	
+ 	 //Soil Temperature
+ 	if(SoilTemp){
+ 	 stemp();
+ 	}
+ 	
  	 // Calculate the availability of soil water
  	 for(int L = 0; L<=nLayers-1; L++){
  	 
@@ -1252,7 +1368,11 @@ module SoilProfile() extends Null{
  	 	 RootWatUpPotential();
  	 }else{
  	 	 
- 	 	 sl_all.rwu			= 0.;
+ 	 	 for(int L = 0; L<=nLayers-1; L++){
+				SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL ==(L+1)));
+ 	 	 
+ 	 	 sl.rwu			= 0.;
+ 	 	 }
  	 	 trwup				= 0.;
  	 } 	 
   	 
@@ -1294,8 +1414,14 @@ module SoilProfile() extends Null{
  	 es = 0.;
  	 esm = 0.;
  	 esf = 0.;
- 	 sl_all.upflow = 0.;
- 	 sl_all.es_lyr = 0.;
+ 	 
+ 	 for(int L = 0; L<=nLayers-1; L++){
+		SoilLayer sl = selectWhere((*s:SoilLayer*), (s.row == row && s.strip == strip && s.nL ==(L+1)));
+ 	 
+ 	 sl.upflow = 0.;
+ 	 sl.es_lyr = 0.;
+ 	 
+ 	 }
  	 
  	 if(eos > 1e-6){
  	 
@@ -1327,6 +1453,7 @@ module SoilProfile() extends Null{
  	 }
  	 
  	 es = es + esm + esf;
+ 	 
  	 
  	 //Potential Transpiration
  	 if(fb.lai_total > 0.){ 	 
@@ -1372,7 +1499,9 @@ module SoilProfile() extends Null{
 		sumes1 = 0.;
 		sumes2 = 0.;
 		t = 0;
-
+		tsw = 0;
+		srftemp = tav;
+		atot = tav * 5.;
 		
 		nRootSystemsPrevious	= 0;
 		
