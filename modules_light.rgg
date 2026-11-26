@@ -64,7 +64,7 @@ module TileSensor
  	void calcLight()
 	{
 		if (area > 0) {
-			Spectrum3d spec = lm.getAbsorbedPower3d(this);
+			Spectrum3d spec = activeLM().getAbsorbedPower3d(this);
 			abs = cm * spec.x;
 			absm2 = abs / area ;
 			fabs = absm2 / PPFD;
@@ -200,7 +200,7 @@ module LightSensor extends SensorNode().(setRadius(0.02), setTwoSided(false), se
 	
 	// calculate light perception
 	void calcLight() {
-		Spectrum3d spec = lm.getSensedIrradiance3d(this);
+		Spectrum3d spec = activeLM().getSensedIrradiance3d(this);
 		par = cm * spec.x;
 		fpar = par / PPFD; 
 		red = cm * spec.y;

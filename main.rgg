@@ -11,6 +11,7 @@ import static CSVReaderFinal.*;
 
 protected void init()// init() is an embedded method of GroIMP.
 {
+	path = pathData = outputDir();
 	initiate();
 	if (functional == false) {println("!! SET TO FIXED GROWTH AND DEVELOPMENT !!");println();}
 	println("number of species in scene: "+nrSpecies);
@@ -19,6 +20,8 @@ protected void init()// init() is an embedded method of GroIMP.
 	println("total focal area: "+0.01 * Math.round(100 * totalFocalArea)+" m2");
 	println("Starting day: "+startingDayOfYear+" of year "+startingyear);
 	println("Latitude: "+(latitude / Math.PI*180));
+	println("Light model: "+(oldLM ? "LightModel (CPU)" : "FluxLightModel (GPU)"));
+	println("Input dir: "+inputDir()+"  Output dir: "+pathData);
 	
 	println();
 	
@@ -51,7 +54,7 @@ private void step()
 	);
 	
 	
-	if (oldLM==true) {lm.compute();} else {flm.compute();} // Condition to define which light model to use
+	activeLM().compute(); // CPU LightModel or GPU FluxLightModel, see oldLM in parameters.rgg
 	if(dayOfYear == (startingDayOfYear) && year == (startingyear) || dayOfYear == 1) {
 	WeatherData = readData("WTH_Pira_"+year+".csv");
 	tamp = mean(WeatherData[0:364][2]) - mean(WeatherData[0:364][3]);
@@ -129,6 +132,44 @@ void updateParameters()
 	}
 	if (sims == 20) {weedDens = 200;}
 */
+}
+
+// ---------------------------------------------------------------------------
+// Batch / headless execution (GroIMP 3.x, e.g. on a cluster):
+//   java -jar core.jar --headless /path/to/SC_ARC/project.gs
+// When GroIMP is started headless, startup() schedules run(Object), which
+// resets the scene (calls init()), repeats run() + derive() until all nrSims
+// simulations are finished, then exits the JVM (exit code 1 on error).
+// Optional environment variable: SCARC_MAX_STEPS (safety limit, default 100000).
+// ---------------------------------------------------------------------------
+protected void startup()
+{
+	super.startup();
+	if (de.grogra.pf.boot.Main.getProperty("headless") != null) {runLater(null);}
+}
+
+protected void run(Object info)
+{
+	int status = 0;
+	try {
+		String ms = System.getenv("SCARC_MAX_STEPS");
+		int maxSteps = (ms == null || ms.length() == 0) ? 100000 : Integer.parseInt(ms.trim());
+		reset();	// builds the initial scene and calls init()
+		derive();
+		int steps = 0;
+		while (sims < nrSims && steps < maxSteps) {
+			run();
+			derive();
+			steps++;
+		}
+		if (sims < nrSims) {println("!! stopped after SCARC_MAX_STEPS = "+maxSteps+" steps"); status = 2;}
+		println("headless run finished after "+steps+" steps");
+	} catch (Throwable t) {
+		t.printStackTrace();
+		status = 1;
+	}
+	System.out.flush();
+	System.exit(status);
 }
 
 public void run()

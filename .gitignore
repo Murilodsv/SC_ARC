@@ -219,3 +219,6 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# GroIMP 3 port: simulation outputs
+output/

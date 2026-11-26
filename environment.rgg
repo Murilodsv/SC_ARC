@@ -62,6 +62,9 @@ static int depth						= 10;				// maximum number of reflections / transmissions 
 static LightModel lm					= new LightModel(2500000, depth);
 static FluxLightModel flm				= new FluxLightModel(20000000, depth);
 
+// light model actually used for compute() and for reading results (see oldLM in parameters.rgg)
+static LightModelBase activeLM() {return oldLM ? (LightModelBase) lm : (LightModelBase) flm;}
+
 // setup of light sources (45, 90)
 const float ToRadians					= Math.PI/180;		// conversion factor degrees to radians
 const float ToDegree					= 180/Math.PI;		// conversion factor radians to degrees

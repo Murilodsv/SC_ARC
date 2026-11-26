@@ -14,7 +14,31 @@ import java.util.Arrays;
 	protected static boolean header = false; // keep head or not, however current version can not include head.
 	protected static int skipLines = 0; // skip number of lines
 	
-	public static String PATH = "C:\\Users\\Murilo\\Dropbox\\DOUTORADO\\WUR\\Plant_Architecture\\FSPM_Sugarcane_Working\\Input_Data"; 
+	// Input/output locations (portable). Resolution order:
+	//   input : $SCARC_INPUT  -> <project>/data/Input_Data/
+	//   output: $SCARC_OUTPUT -> <project>/output/
+	// <project> is $SCARC_HOME if set, otherwise the folder holding project.gs.
+	public static String projectDir() {
+		String d = System.getenv("SCARC_HOME");
+		if (d == null || d.length() == 0) {
+			Object f = workbench().getRegistry().getProjectFile("pfs:main.rgg");
+			d = (f instanceof File) ? ((File) f).getAbsoluteFile().getParent() : System.getProperty("user.dir");
+		}
+		return d.endsWith(File.separator) ? d : d + File.separator;
+	}
+
+	public static String inputDir() {
+		String d = System.getenv("SCARC_INPUT");
+		if (d == null || d.length() == 0) {d = projectDir() + "data" + File.separator + "Input_Data";}
+		return d.endsWith(File.separator) ? d : d + File.separator;
+	}
+
+	public static String outputDir() {
+		String d = System.getenv("SCARC_OUTPUT");
+		if (d == null || d.length() == 0) {d = projectDir() + "output";}
+		new File(d).mkdirs();
+		return d.endsWith(File.separator) ? d : d + File.separator;
+	}
 	
 	//static String fileName = "Exp_2010_Antony_SWC_transpiration_climate_data.csv";
 	static List dataRecord = new ArrayList();
@@ -25,7 +49,7 @@ import java.util.Arrays;
 			 try {
 				
 			 //create BufferedReader to read csv file
-			 BufferedReader br = new BufferedReader(new FileReader(PATH +"\\"+ filename));
+			 BufferedReader br = new BufferedReader(new FileReader(inputDir() + filename));
 			 String strLine = "";
              StringTokenizer st = null;
              int lineNumber = 0, tokenNumber = 0;

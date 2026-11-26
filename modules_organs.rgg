@@ -129,7 +129,7 @@ module VisibleOrgan extends GrowingOrgan
  	void calcLight()
 	{
 		if (area > 0.00001) {
-			Spectrum3d spec = lm.getAbsorbedPower3d(this);
+			Spectrum3d spec = activeLM().getAbsorbedPower3d(this);
 			abs = cm * spec.x;
 			absm2 = abs / area ;
 			fabs = absm2 / PPFD; // franction of total PAR that this organ absorbed
@@ -232,7 +232,7 @@ module RootSystem extends GrowingOrgan
 {	
 	double rootDepth;			// Root depth (cm)
 	double rootMax = 100.;		// Max root depth (cm) (effective root)
-	double depthRate = 0.03;	// Rate of deepening of the root front (cm °C-1 d-1) Laclau and Laclau (2009) (0.03)
+	double depthRate = 0.03;	// Rate of deepening of the root front (cm Â°C-1 d-1) Laclau and Laclau (2009) (0.03)
 	double slr = 1360.; 			// Specific Root Length (cm g-1)
 	int row;
 	int strip;
@@ -823,7 +823,7 @@ module Leaf extends VisibleOrgan
 
 
 	
-	double getModifier() // use this modifier to adjust plant extention rate (PER mm °C-1 h-1)
+	double getModifier() // use this modifier to adjust plant extention rate (PER mm Â°C-1 h-1)
 	{
 			PlantBase pb = selectWhere((* p:PlantBase *), p.plantNumber == plantNumber);
 			double max = 20;//10;

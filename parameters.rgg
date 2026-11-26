@@ -17,14 +17,14 @@ static int borderLayer			= 4;			// layer in which to show the border plants
 static boolean showLabels		= false;		// show text labels with leaves and organs indicating fraction of potential biomass
 static boolean sRFR				= false;		// toggle PAR or R:FR visualisation (default value for swColor() method)
 static boolean snapShot			= false;			// take snapshots?
-static String path				= "C:/Murilo/DOUTORADO/WUR/Plant_Architecture/Data/";	//"C:/Users/Murilo/Dropbox/DOUTORADO/WUR/Plant_Architecture/Data/";	// location for the snapshots
-static String pathData			= "C:/Murilo/DOUTORADO/WUR/Plant_Architecture/Data/";	//"C:/Users/Murilo/Dropbox/DOUTORADO/WUR/Plant_Architecture/Data/";	// location for the output text files
+static String path;						// location for the snapshots (set in init() to outputDir(), see CSVReaderFinal.rgg)
+static String pathData;					// location for the output text files (set in init() to outputDir())
 static boolean writePlantTable	= true;		// true: write plant-level tables
 static boolean writeFieldTable	= true;			// true: write field-level tables
 static boolean writeLight		= true;			// true: record tile and sensor light variable (only for plant-independent tiles)
 static boolean functional		= true;			// false: structural model only (light is intercepted but not used for growth)
 static boolean plantDeath		= true;		// toggle possibilities for entire plants to taken from the scene
-static boolean oldLM			= true;			// true: use old light model, false: use FluxLM
+static boolean oldLM			= !"gpu".equalsIgnoreCase(System.getenv("SCARC_LIGHT"));	// true: CPU LightModel, false: GPU FluxLightModel (set env SCARC_LIGHT=gpu)
 static boolean seeRays			= false;		// see direction of rays from light sources if true
 
 // Setting clones (Infinity Canopy)
